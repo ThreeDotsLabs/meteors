@@ -1,0 +1,32 @@
+name: Deploy Web
+on:
+  push:
+    branches:
+      - master
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.21'
+      - run: go build -o web/game.wasm
+        env:
+          GOOS: js
+          GOARCH: wasm
+      - run: cp $(go env GOROOT)/misc/wasm/wasm_exec.js web/
+
+      - uses: actions/configure-pages@v2
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v1
