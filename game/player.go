@@ -6,94 +6,108 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 
-	"github.com/ThreeDotsLabs/meteors/assets"
+	"astrogame/assets"
+	"astrogame/config"
+	"astrogame/objects"
 )
 
 const (
-	shootCooldown     = time.Millisecond * 500
+	shootCooldown     = time.Millisecond * 300
 	rotationPerSecond = math.Pi
-
+	maxAngle          = 256
 	bulletSpawnOffset = 50.0
 )
 
 type Player struct {
 	game *Game
 
-	position Vector
-	rotation float64
-	sprite   *ebiten.Image
-
-	shootCooldown *Timer
+	position            config.Vector
+	rotation            float64
+	sprite              *ebiten.Image
+	objectRotationSpeed float64
+	shootCooldown       *config.Timer
 }
 
-func NewPlayer(game *Game) *Player {
-	sprite := assets.PlayerSprite
-
+func NewPlayer(curgame *Game) *Player {
+	sprite := objects.ScaleImg(assets.PlayerSprite, 0.5)
 	bounds := sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
 	halfH := float64(bounds.Dy()) / 2
 
-	pos := Vector{
-		X: screenWidth/2 - halfW,
-		Y: screenHeight/2 - halfH,
+	pos := config.Vector{
+		X: config.ScreenWidth/2 - halfW,
+		Y: config.ScreenHeight/2 - halfH,
 	}
 
 	return &Player{
-		game:          game,
-		position:      pos,
-		rotation:      0,
-		sprite:        sprite,
-		shootCooldown: NewTimer(shootCooldown),
+		game:                curgame,
+		position:            pos,
+		rotation:            0,
+		sprite:              sprite,
+		shootCooldown:       config.NewTimer(shootCooldown),
+		objectRotationSpeed: 1.2,
 	}
 }
 
 func (p *Player) Update() {
-	speed := rotationPerSecond / float64(ebiten.TPS())
-
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		p.rotation -= speed
+	x, y := ebiten.CursorPosition()
+	if ebiten.IsKeyPressed(ebiten.KeyA) {
+		p.position.X -= 10
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		p.rotation += speed
+	if ebiten.IsKeyPressed(ebiten.KeyD) {
+		p.position.X += 10
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyW) {
+		p.position.Y -= 10
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyS) {
+		p.position.Y += 10
+	}
+
+	targetRotation := math.Atan2(float64(y-int(p.position.Y)), float64(x-int(p.position.X)))
+	// Calculate the rotation difference between the current and target rotation
+	rotationDiff := math.Mod(targetRotation-p.rotation, 2*math.Pi)
+	// Normalize the rotation difference to the range [-Pi, Pi]
+	if rotationDiff > math.Pi {
+		rotationDiff -= 2 * math.Pi
+	} else if rotationDiff < -math.Pi {
+		rotationDiff += 2 * math.Pi
+	}
+	// Calculate the rotation increment based on the rotation speed
+	rotationIncrement := p.objectRotationSpeed * math.Abs(rotationDiff)
+	// Apply the rotation increment to smoothly rotate the object towards the target rotation
+	if rotationDiff > 0 {
+		p.rotation += rotationIncrement
+	} else if rotationDiff < 0 {
+		p.rotation -= rotationIncrement
 	}
 
 	p.shootCooldown.Update()
-	if p.shootCooldown.IsReady() && ebiten.IsKeyPressed(ebiten.KeySpace) {
+	if p.shootCooldown.IsReady() && (ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)) {
 		p.shootCooldown.Reset()
 
 		bounds := p.sprite.Bounds()
 		halfW := float64(bounds.Dx()) / 2
 		halfH := float64(bounds.Dy()) / 2
 
-		spawnPos := Vector{
-			p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-			p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+		spawnPos := config.Vector{
+			X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
+			Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 		}
 
-		bullet := NewBullet(spawnPos, p.rotation)
+		bullet := objects.NewBullet(spawnPos, p.rotation)
 		p.game.AddBullet(bullet)
 	}
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
-	bounds := p.sprite.Bounds()
-	halfW := float64(bounds.Dx()) / 2
-	halfH := float64(bounds.Dy()) / 2
-
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(-halfW, -halfH)
-	op.GeoM.Rotate(p.rotation)
-	op.GeoM.Translate(halfW, halfH)
-
-	op.GeoM.Translate(p.position.X, p.position.Y)
-
-	screen.DrawImage(p.sprite, op)
+	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 }
 
-func (p *Player) Collider() Rect {
+func (p *Player) Collider() config.Rect {
 	bounds := p.sprite.Bounds()
 
-	return NewRect(
+	return config.NewRect(
 		p.position.X,
 		p.position.Y,
 		float64(bounds.Dx()),

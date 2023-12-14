@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/hajimehoshi/ebiten/v2"
+	"astrogame/config"
+	"astrogame/game"
 
-	"github.com/ThreeDotsLabs/meteors/game"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
 	g := game.NewGame()
-
+	ebiten.SetWindowSize(config.ScreenWidth, config.ScreenHeight)
+	ebiten.SetWindowTitle("Astro Ship (Ebitengine Demo)")
 	err := ebiten.RunGame(g)
 	if err != nil {
 		panic(err)

@@ -14,10 +14,14 @@ import (
 //go:embed *
 var assets embed.FS
 
-var PlayerSprite = mustLoadImage("player.png")
-var MeteorSprites = mustLoadImages("meteors/*.png")
-var LaserSprite = mustLoadImage("laser.png")
-var ScoreFont = mustLoadFont("font.ttf")
+var PlayerSprite = mustLoadImage("img/Ships/spaceShips_007.png")
+var HighSpeedFollowPlayerEnemySprite = mustLoadImage("img/Ships/spaceShips_006.png")
+var HighSpeedFollowPlayerEnemySprite2 = mustLoadImage("img/Ships/spaceShips_005.png")
+var MeteorSprites = mustLoadImages("img/Meteors/*.png")
+var MissileSprite = mustLoadImage("img/Missiles/spaceMissiles_015.png")
+var FirstLevelBg = mustLoadImage("img/bg.png")
+var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
+var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 24)
 
 func mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)
@@ -48,7 +52,7 @@ func mustLoadImages(path string) []*ebiten.Image {
 	return images
 }
 
-func mustLoadFont(name string) font.Face {
+func mustLoadFont(name string, size float64) font.Face {
 	f, err := assets.ReadFile(name)
 	if err != nil {
 		panic(err)
@@ -60,7 +64,7 @@ func mustLoadFont(name string) font.Face {
 	}
 
 	face, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    48,
+		Size:    size,
 		DPI:     72,
 		Hinting: font.HintingVertical,
 	})
