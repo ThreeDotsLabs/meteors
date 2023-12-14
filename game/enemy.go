@@ -8,11 +8,12 @@ import (
 )
 
 type Enemy struct {
-	position  config.Vector
-	target    config.Vector
-	rotation  float64
-	movement  config.Vector
-	enemyType *config.EnemyType
+	position   config.Vector
+	target     config.Vector
+	rotation   float64
+	TargetType string
+	movement   config.Vector
+	enemyType  *config.EnemyType
 }
 
 func NewEnemy(target config.Vector, pos config.Vector, enType config.EnemyType) *Enemy {

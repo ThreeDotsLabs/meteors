@@ -101,6 +101,7 @@ func (g *Game) Update() error {
 				var target config.Vector
 				var startPos config.Vector
 				e := NewEnemy(target, startPos, *batch.Type)
+				e.TargetType = batch.TargetType
 				enemyWidth := e.enemyType.Sprite.Bounds().Dx()
 				enemyHight := e.enemyType.Sprite.Bounds().Dy()
 				switch batch.StartPositionType {
@@ -203,6 +204,12 @@ func (g *Game) Update() error {
 	}
 
 	for _, e := range g.enemies {
+		if e.TargetType == "player" {
+			e.target = config.Vector{
+				X: g.player.position.X,
+				Y: g.player.position.Y,
+			}
+		}
 		e.Update()
 	}
 
