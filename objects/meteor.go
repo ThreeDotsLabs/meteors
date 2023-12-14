@@ -65,8 +65,6 @@ func (m *Meteor) Update() {
 
 func (m *Meteor) Draw(screen *ebiten.Image) {
 	RotateAndTranslateObject(m.rotation, m.sprite, screen, m.position.X, m.position.Y)
-	// msg := fmt.Sprintf("PlayerX: %v", RandInt(5, 8))
-	// ebitenutil.DebugPrint(screen, msg)
 }
 
 func (m *Meteor) Collider() config.Rect {

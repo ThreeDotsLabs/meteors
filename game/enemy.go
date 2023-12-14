@@ -1,30 +1,18 @@
 package game
 
 import (
-	"math/rand"
-
 	"github.com/hajimehoshi/ebiten/v2"
 
-	"astrogame/assets"
 	"astrogame/config"
 	"astrogame/objects"
 )
 
 type Enemy struct {
 	position  config.Vector
+	target    config.Vector
 	rotation  float64
 	movement  config.Vector
 	enemyType *config.EnemyType
-}
-
-var HighSpeedFollowPlayerType = &config.EnemyType{
-	RotationSpeed: 0,
-	Sprite:        assets.HighSpeedFollowPlayerEnemySprite,
-	Velocity:      2.5,
-	EnemiesStartPos: config.Vector{
-		X: config.ScreenWidth * rand.Float64(),
-		Y: -10,
-	},
 }
 
 func NewEnemy(target config.Vector, pos config.Vector, enType config.EnemyType) *Enemy {
@@ -66,13 +54,13 @@ func (e *Enemy) SetDirection(target config.Vector, pos config.Vector, enType con
 	e.position = pos
 }
 
-func (e *Enemy) Update(target config.Vector) {
+func (e *Enemy) Update() {
 	e.position.X += e.movement.X
 	e.position.Y += e.movement.Y
 	e.rotation += e.enemyType.RotationSpeed
 	direction := config.Vector{
-		X: target.X - e.position.X,
-		Y: target.Y - e.position.Y,
+		X: e.target.X - e.position.X,
+		Y: e.target.Y - e.position.Y,
 	}
 	normalizedDirection := direction.Normalize()
 

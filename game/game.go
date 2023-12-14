@@ -103,18 +103,6 @@ func (g *Game) Update() error {
 				e := NewEnemy(target, startPos, *batch.Type)
 				enemyWidth := e.enemyType.Sprite.Bounds().Dx()
 				enemyHight := e.enemyType.Sprite.Bounds().Dy()
-				switch batch.TargetType {
-				case "player":
-					target = config.Vector{
-						X: g.player.position.X,
-						Y: g.player.position.Y,
-					}
-				case "straight":
-					target = config.Vector{
-						X: batch.Type.EnemiesStartPos.X,
-						Y: batch.Type.EnemiesStartPos.Y + config.ScreenHeight,
-					}
-				}
 				switch batch.StartPositionType {
 				case "lines":
 					xOffset := batch.StartPosOffset
@@ -147,9 +135,21 @@ func (g *Game) Update() error {
 						}
 					}
 				}
-
+				switch batch.TargetType {
+				case "player":
+					target = config.Vector{
+						X: g.player.position.X,
+						Y: g.player.position.Y,
+					}
+				case "straight":
+					target = config.Vector{
+						X: startPos.X,
+						Y: config.ScreenHeight + 10,
+					}
+				}
 				elemInLineCount++
 				e.SetDirection(target, startPos, *batch.Type)
+				e.target = target
 				g.enemies = append(g.enemies, e)
 			}
 			g.CurWave.Batches = slices.Delete(g.CurWave.Batches, 0, 1)
@@ -201,12 +201,9 @@ func (g *Game) Update() error {
 			}
 		}
 	}
-	target := config.Vector{
-		X: g.player.position.X,
-		Y: g.player.position.Y,
-	}
+
 	for _, e := range g.enemies {
-		e.Update(target)
+		e.Update()
 	}
 
 	for _, m := range g.meteors {
