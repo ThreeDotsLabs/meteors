@@ -9,8 +9,8 @@ import (
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct {
@@ -96,6 +96,7 @@ func (g *Game) Update() error {
 		g.batchesSpawnTimer.Reset()
 		if len(g.CurWave.Batches) > 0 {
 			batch := g.CurWave.Batches[0]
+			//g.batchesSpawnTimer = config.NewTimer(batch.BatchSpawnTime)
 			elemInLineCount := 0
 			linesCount := 0.0
 			for i := 0; i < batch.Count; i++ {
@@ -226,7 +227,6 @@ func (g *Game) Update() error {
 				if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
 					g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
 					g.enemyProjectiles = append(g.enemyProjectiles[:j], g.enemyProjectiles[j+1:]...)
-					g.score++
 				}
 			}
 		}
@@ -245,11 +245,29 @@ func (g *Game) Update() error {
 		}
 	}
 
+	// Check for enemy projectile/player projectile collisions
+	for i, m := range g.enemyProjectiles {
+		for j, b := range g.projectiles {
+			if m.Collider().Intersects(b.Collider()) {
+				if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)-1) {
+					g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+				}
+			}
+		}
+	}
+
 	// Check for projectiles/player collisions
-	for _, p := range g.enemyProjectiles {
+	for i, p := range g.enemyProjectiles {
 		if p.Collider().Intersects(g.player.Collider()) {
-			g.Reset()
-			break
+			g.player.hp -= p.wType.Damage
+			if i < len(g.enemyProjectiles) {
+				g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+			}
+			if g.player.hp <= 0 {
+				g.Reset()
+				break
+			}
 		}
 	}
 
@@ -305,8 +323,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		p.Draw(screen)
 	}
 
-	msg := fmt.Sprintf("StageEn: %v, StageId: %v", g.CurWave.EnemiesCount, g.CurStage.StageId)
-	ebitenutil.DebugPrint(screen, msg)
+	// Draw the hit points bar
+	barX := config.ScreenWidth - 120
+	vector.DrawFilledRect(screen, float32(barX-2), 38, 104, 24, color.RGBA{255, 255, 255, 255}, false)
+	vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.hp)*10, 20, color.RGBA{179, 14, 14, 255}, false)
+
+	// msg := fmt.Sprintf("StageEn: %v, StageId: %v", g.CurWave.EnemiesCount, g.CurStage.StageId)
+	// ebitenutil.DebugPrint(screen, msg)
 	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }

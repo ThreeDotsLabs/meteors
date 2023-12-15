@@ -16,6 +16,7 @@ const (
 	MeteorSpeedUpAmount = 0.1
 	MeteorSpeedUpTime   = 5 * time.Second
 	LightRocket         = "lightRocket"
+	AutoLightRocket     = "autoLightRocket"
 )
 
 type EnemyType struct {
@@ -59,10 +60,9 @@ type EnemyBatch struct {
 }
 
 type WeaponType struct {
-	Sprite               *ebiten.Image
-	Velocity             float64
-	Damage               int
-	Target               Vector
-	TargetType           string
-	ProjectileSpawnSpeed time.Duration
+	Sprite     *ebiten.Image
+	Velocity   float64
+	Damage     int
+	Target     Vector
+	TargetType string
 }

@@ -25,6 +25,7 @@ type Player struct {
 	objectRotationSpeed float64
 	weapons             []*Weapon
 	curWeapon           *Weapon
+	hp                  int
 }
 
 func NewPlayer(curgame *Game) *Player {
@@ -44,6 +45,7 @@ func NewPlayer(curgame *Game) *Player {
 		rotation:            0,
 		sprite:              sprite,
 		objectRotationSpeed: 1.2,
+		hp:                  10,
 		weapons: []*Weapon{
 			&startWeapon,
 		},

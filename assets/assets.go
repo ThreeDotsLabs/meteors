@@ -16,12 +16,15 @@ var assets embed.FS
 
 var PlayerSprite = mustLoadImage("img/Ships/spaceShips_007.png")
 var HighSpeedFollowPlayerEnemySprite = mustLoadImage("img/Ships/spaceShips_006.png")
-var HighSpeedFollowPlayerEnemySprite2 = mustLoadImage("img/Ships/spaceShips_005.png")
+var LowSpeedEnemyLightMissile = mustLoadImage("img/Ships/spaceShips_005.png")
+var LowSpeedEnemyAutoLightMissile = mustLoadImage("img/Ships/spaceShips_003.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
-var MissileSprite = mustLoadImage("img/Missiles/spaceMissiles_015.png")
+var MissileSprite = mustLoadImage("img/Missiles/spaceMissiles_016.png")
+var EnemyLightMissile = mustLoadImage("img/Missiles/spaceMissiles_015.png")
+var EnemyAutoLightMissile = mustLoadImage("img/Missiles/spaceMissiles_018.png")
 var FirstLevelBg = mustLoadImage("img/bg.png")
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
-var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 24)
+var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
 
 func mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)

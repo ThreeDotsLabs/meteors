@@ -32,15 +32,46 @@ var lightRocket = Weapon{
 		movement: config.Vector{},
 		rotation: 0,
 		wType: &config.WeaponType{
-			Sprite:               objects.ScaleImg(assets.MissileSprite, 0.7),
-			Velocity:             400,
-			Damage:               1,
-			ProjectileSpawnSpeed: 5,
-			TargetType:           "straight",
+			Sprite:     objects.ScaleImg(assets.MissileSprite, 0.7),
+			Velocity:   400,
+			Damage:     1,
+			TargetType: "straight",
 		},
 	},
 	shootCooldown: config.NewTimer(time.Millisecond * 250),
 	ammo:          100,
+}
+
+var enemyLightRocket = Weapon{
+	projectile: Projectile{
+		position: config.Vector{},
+		target:   config.Vector{},
+		movement: config.Vector{},
+		rotation: 0,
+		wType: &config.WeaponType{
+			Sprite:     assets.EnemyLightMissile,
+			Velocity:   150,
+			Damage:     1,
+			TargetType: "straight",
+		},
+	},
+	ammo: 10,
+}
+
+var enemyAutoLightRocket = Weapon{
+	projectile: Projectile{
+		position: config.Vector{},
+		target:   config.Vector{},
+		movement: config.Vector{},
+		rotation: 0,
+		wType: &config.WeaponType{
+			Sprite:     assets.EnemyAutoLightMissile,
+			Velocity:   3,
+			Damage:     5,
+			TargetType: "auto",
+		},
+	},
+	ammo: 3,
 }
 
 func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wType *config.WeaponType) *Projectile {
@@ -64,7 +95,7 @@ func (p *Projectile) Update() {
 	if p.wType.TargetType == "auto" {
 		p.position.X += p.movement.X
 		p.position.Y += p.movement.Y
-		p.rotation += p.wType.Velocity
+
 		direction := config.Vector{
 			X: p.target.X - p.position.X,
 			Y: p.target.Y - p.position.Y,
