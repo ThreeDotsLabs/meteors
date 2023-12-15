@@ -1,6 +1,9 @@
 package game
 
 import (
+	"math"
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"astrogame/config"
@@ -8,15 +11,17 @@ import (
 )
 
 type Enemy struct {
+	game       *Game
 	position   config.Vector
 	target     config.Vector
 	rotation   float64
 	TargetType string
 	movement   config.Vector
 	enemyType  *config.EnemyType
+	weapon     Weapon
 }
 
-func NewEnemy(target config.Vector, pos config.Vector, enType config.EnemyType) *Enemy {
+func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.EnemyType) *Enemy {
 	direction := config.Vector{
 		X: target.X - pos.X,
 		Y: target.Y - pos.Y,
@@ -32,9 +37,16 @@ func NewEnemy(target config.Vector, pos config.Vector, enType config.EnemyType) 
 	enType.Sprite = modSprite
 
 	e := &Enemy{
+		game:      g,
 		position:  pos,
 		movement:  movement,
 		enemyType: &enType,
+	}
+
+	switch enType.WeaponTypeStr {
+	case config.LightRocket:
+		e.weapon = lightRocket
+		e.weapon.shootCooldown = config.NewTimer(time.Millisecond * 2000)
 	}
 
 	return e
@@ -70,6 +82,28 @@ func (e *Enemy) Update() {
 		Y: normalizedDirection.Y * e.enemyType.Velocity,
 	}
 	e.movement = movement
+	if e.weapon.projectile.wType != nil {
+		e.weapon.shootCooldown.Update()
+		if e.weapon.shootCooldown.IsReady() {
+			if e.weapon.ammo <= 0 {
+				return
+			}
+			e.weapon.shootCooldown.Reset()
+			bounds := e.enemyType.Sprite.Bounds()
+			halfW := float64(bounds.Dx()) / 2
+			halfH := float64(bounds.Dy()) / 2
+
+			spawnPos := config.Vector{
+				X: e.position.X + halfW + math.Sin(e.rotation)*bulletSpawnOffset,
+				Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
+			}
+
+			projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType)
+			projectile.owner = "enemy"
+			e.game.AddProjectile(projectile)
+			e.weapon.ammo--
+		}
+	}
 }
 
 func (e *Enemy) Draw(screen *ebiten.Image) {

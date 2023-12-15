@@ -17,7 +17,8 @@ type Game struct {
 	player            *Player
 	meteorSpawnTimer  *config.Timer
 	meteors           []*objects.Meteor
-	bullets           []*objects.Bullet
+	projectiles       []*Projectile
+	enemyProjectiles  []*Projectile
 	enemies           []*Enemy
 	bgImage           *ebiten.Image
 	score             int
@@ -100,7 +101,7 @@ func (g *Game) Update() error {
 			for i := 0; i < batch.Count; i++ {
 				var target config.Vector
 				var startPos config.Vector
-				e := NewEnemy(target, startPos, *batch.Type)
+				e := NewEnemy(g, target, startPos, *batch.Type)
 				e.TargetType = batch.TargetType
 				enemyWidth := e.enemyType.Sprite.Bounds().Dx()
 				enemyHight := e.enemyType.Sprite.Bounds().Dy()
@@ -177,32 +178,6 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Check for meteor/bullet collisions
-	for i, m := range g.meteors {
-		for j, b := range g.bullets {
-			if m.Collider().Intersects(b.Collider()) {
-				if (i < len(g.meteors)-1) && (j < len(g.bullets)-1) {
-					g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
-					g.bullets = append(g.bullets[:j], g.bullets[j+1:]...)
-					g.score++
-				}
-			}
-		}
-	}
-
-	// Check for enemy/bullet collisions
-	for i, m := range g.enemies {
-		for j, b := range g.bullets {
-			if m.Collider().Intersects(b.Collider()) {
-				if (i < len(g.enemies)) && (j < len(g.bullets)-1) {
-					g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
-					g.bullets = append(g.bullets[:j], g.bullets[j+1:]...)
-					g.score++
-				}
-			}
-		}
-	}
-
 	for _, e := range g.enemies {
 		if e.TargetType == "player" {
 			e.target = config.Vector{
@@ -217,9 +192,67 @@ func (g *Game) Update() error {
 		m.Update()
 	}
 
-	for _, b := range g.bullets {
-		b.Update()
+	for _, p := range g.projectiles {
+		p.Update()
 	}
+
+	for _, p := range g.enemyProjectiles {
+		if p.wType.TargetType == "auto" && p.owner == "enemy" {
+			p.target = config.Vector{
+				X: g.player.position.X,
+				Y: g.player.position.Y,
+			}
+		}
+		p.Update()
+	}
+
+	// Check for meteor/projectile collisions
+	for i, m := range g.meteors {
+		for j, b := range g.projectiles {
+			if m.Collider().Intersects(b.Collider()) {
+				if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
+					g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
+					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+					g.score++
+				}
+			}
+		}
+	}
+
+	// Check for meteor/enemy projectile collisions
+	for i, m := range g.meteors {
+		for j, b := range g.enemyProjectiles {
+			if m.Collider().Intersects(b.Collider()) {
+				if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
+					g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
+					g.enemyProjectiles = append(g.enemyProjectiles[:j], g.enemyProjectiles[j+1:]...)
+					g.score++
+				}
+			}
+		}
+	}
+
+	// Check for enemy/projectile collisions
+	for i, m := range g.enemies {
+		for j, b := range g.projectiles {
+			if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
+				if (i < len(g.enemies)) && (j < len(g.projectiles)-1) {
+					g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+					g.score++
+				}
+			}
+		}
+	}
+
+	// Check for projectiles/player collisions
+	for _, p := range g.enemyProjectiles {
+		if p.Collider().Intersects(g.player.Collider()) {
+			g.Reset()
+			break
+		}
+	}
+
 	// Check for meteor/player collisions
 	for _, m := range g.meteors {
 		if m.Collider().Intersects(g.player.Collider()) {
@@ -264,23 +297,33 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		m.Draw(screen)
 	}
 
-	for _, b := range g.bullets {
-		b.Draw(screen)
+	for _, p := range g.projectiles {
+		p.Draw(screen)
 	}
+
+	for _, p := range g.enemyProjectiles {
+		p.Draw(screen)
+	}
+
 	msg := fmt.Sprintf("StageEn: %v, StageId: %v", g.CurWave.EnemiesCount, g.CurStage.StageId)
 	ebitenutil.DebugPrint(screen, msg)
-	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1), assets.InfoFont, 20, 50, color.White)
+	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
 
-func (g *Game) AddBullet(b *objects.Bullet) {
-	g.bullets = append(g.bullets, b)
+func (g *Game) AddProjectile(p *Projectile) {
+	if p.owner == "player" {
+		g.projectiles = append(g.projectiles, p)
+	} else {
+		g.enemyProjectiles = append(g.enemyProjectiles, p)
+	}
 }
 
 func (g *Game) Reset() {
 	g.player = NewPlayer(g)
 	g.meteors = nil
-	g.bullets = nil
+	g.projectiles = nil
+	g.enemyProjectiles = nil
 	g.enemies = nil
 	g.score = 0
 	var newLevels = config.NewLevels()

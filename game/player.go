@@ -2,7 +2,6 @@ package game
 
 import (
 	"math"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -12,7 +11,6 @@ import (
 )
 
 const (
-	shootCooldown     = time.Millisecond * 300
 	rotationPerSecond = math.Pi
 	maxAngle          = 256
 	bulletSpawnOffset = 50.0
@@ -25,7 +23,8 @@ type Player struct {
 	rotation            float64
 	sprite              *ebiten.Image
 	objectRotationSpeed float64
-	shootCooldown       *config.Timer
+	weapons             []*Weapon
+	curWeapon           *Weapon
 }
 
 func NewPlayer(curgame *Game) *Player {
@@ -38,15 +37,19 @@ func NewPlayer(curgame *Game) *Player {
 		X: config.ScreenWidth/2 - halfW,
 		Y: config.ScreenHeight/2 - halfH,
 	}
-
-	return &Player{
+	startWeapon := lightRocket
+	p := &Player{
 		game:                curgame,
 		position:            pos,
 		rotation:            0,
 		sprite:              sprite,
-		shootCooldown:       config.NewTimer(shootCooldown),
 		objectRotationSpeed: 1.2,
+		weapons: []*Weapon{
+			&startWeapon,
+		},
 	}
+	p.curWeapon = p.weapons[0]
+	return p
 }
 
 func (p *Player) Update() {
@@ -82,10 +85,12 @@ func (p *Player) Update() {
 		p.rotation -= rotationIncrement
 	}
 
-	p.shootCooldown.Update()
-	if p.shootCooldown.IsReady() && (ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)) {
-		p.shootCooldown.Reset()
-
+	p.curWeapon.shootCooldown.Update()
+	if p.curWeapon.shootCooldown.IsReady() && (ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)) {
+		if p.curWeapon.ammo <= 0 {
+			return
+		}
+		p.curWeapon.shootCooldown.Reset()
 		bounds := p.sprite.Bounds()
 		halfW := float64(bounds.Dx()) / 2
 		halfH := float64(bounds.Dy()) / 2
@@ -95,8 +100,10 @@ func (p *Player) Update() {
 			Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 		}
 
-		bullet := objects.NewBullet(spawnPos, p.rotation)
-		p.game.AddBullet(bullet)
+		projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, p.curWeapon.projectile.wType)
+		projectile.owner = "player"
+		p.game.AddProjectile(projectile)
+		p.curWeapon.ammo--
 	}
 }
 
