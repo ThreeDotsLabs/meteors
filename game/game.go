@@ -93,10 +93,12 @@ func (g *Game) Update() error {
 
 	g.batchesSpawnTimer.Update()
 	if g.batchesSpawnTimer.IsReady() {
-		g.batchesSpawnTimer.Reset()
 		if len(g.CurWave.Batches) > 0 {
 			batch := g.CurWave.Batches[0]
-			//g.batchesSpawnTimer = config.NewTimer(batch.BatchSpawnTime)
+			if len(g.CurWave.Batches) > 1 {
+				g.batchesSpawnTimer = config.NewTimer(g.CurWave.Batches[1].BatchSpawnTime)
+			}
+			g.batchesSpawnTimer.Reset()
 			elemInLineCount := 0
 			linesCount := 0.0
 			for i := 0; i < batch.Count; i++ {
@@ -159,10 +161,9 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if len(g.CurWave.Batches) == 0 && len(g.enemies) == 0 {
+	if len(g.CurWave.Batches) == 0 {
 		if g.CurWave.WaveId < len(g.CurStage.Waves)-1 {
 			g.CurWave = &g.CurStage.Waves[g.CurWave.WaveId+1]
-			g.enemySpawnTimer = config.NewTimer(g.CurWave.EnemyType.EnemySpawnTime)
 		} else {
 			if g.CurStage.MeteorsCount == 0 && g.CurStage.StageId < len(g.curLevel.Stages)-1 {
 				g.CurStage = &g.curLevel.Stages[g.CurStage.StageId+1]

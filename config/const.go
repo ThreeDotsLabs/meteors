@@ -40,6 +40,7 @@ type Level struct {
 type Stage struct {
 	MeteorsCount int
 	StageId      int
+	Items        []Item
 	Waves        []Wave
 }
 
@@ -65,4 +66,20 @@ type WeaponType struct {
 	Damage     int
 	Target     Vector
 	TargetType string
+}
+
+type AmmoType struct {
+	WeaponType string
+	Amount     int
+}
+
+type HealType struct {
+	HP int
+}
+
+type Item struct {
+	AmmoType      *AmmoType
+	WeaponType    *WeaponType
+	HealType      *HealType
+	ItemSpawnTime time.Duration
 }
