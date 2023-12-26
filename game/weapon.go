@@ -136,6 +136,7 @@ func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wT
 	p := &Projectile{
 		position: pos,
 		rotation: rotation,
+		target:   target,
 		wType:    wType,
 	}
 

@@ -89,9 +89,9 @@ func (p *Player) Update() {
 
 	if ebiten.IsKeyPressed(ebiten.Key1) {
 		p.curWeapon = p.weapons[0]
-	} else if ebiten.IsKeyPressed(ebiten.Key2) {
+	} else if ebiten.IsKeyPressed(ebiten.Key2) && len(p.weapons) > 1 {
 		p.curWeapon = p.weapons[1]
-	} else if ebiten.IsKeyPressed(ebiten.Key3) {
+	} else if ebiten.IsKeyPressed(ebiten.Key3) && len(p.weapons) > 2 {
 		p.curWeapon = p.weapons[2]
 	}
 

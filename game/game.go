@@ -281,7 +281,9 @@ func (g *Game) Update() error {
 						g.score++
 					}
 				}
-				g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+				if j < len(g.projectiles) {
+					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+				}
 			}
 		}
 	}
@@ -339,20 +341,20 @@ func (g *Game) Update() error {
 	}
 
 	// Check for enemy/beam collisions
-	for i, m := range g.enemies {
-		for j, b := range g.beams {
-			if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
-				m.HP -= b.Damage
-				if m.HP <= 0 {
-					if i < len(g.enemies) {
-						g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
-						g.score++
-					}
-				}
-			}
-			g.beams = append(g.beams[:j], g.beams[j+1:]...)
-		}
-	}
+	// for i, m := range g.enemies {
+	// 	for j, b := range g.beams {
+	// 		if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
+	// 			m.HP -= b.Damage
+	// 			if m.HP <= 0 {
+	// 				if i < len(g.enemies) {
+	// 					g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+	// 					g.score++
+	// 				}
+	// 			}
+	// 		}
+	// 		g.beams = append(g.beams[:j], g.beams[j+1:]...)
+	// 	}
+	// }
 
 	return nil
 }
