@@ -18,8 +18,11 @@ type Game struct {
 	meteorSpawnTimer  *config.Timer
 	meteors           []*objects.Meteor
 	projectiles       []*Projectile
+	beams             []*Beam
+	enemyBeams        []*Beam
 	enemyProjectiles  []*Projectile
 	enemies           []*Enemy
+	items             []*Item
 	bgImage           *ebiten.Image
 	score             int
 	viewport          viewport
@@ -30,6 +33,7 @@ type Game struct {
 	velocityTimer     *config.Timer
 	enemySpawnTimer   *config.Timer
 	batchesSpawnTimer *config.Timer
+	itemSpawnTimer    *config.Timer
 	CurWave           *config.Wave
 }
 
@@ -40,6 +44,7 @@ func NewGame() *Game {
 		velocityTimer:     config.NewTimer(config.MeteorSpeedUpTime),
 		enemySpawnTimer:   config.NewTimer(config.Levels[0].Stages[0].Waves[0].Batches[0].Type.EnemySpawnTime),
 		batchesSpawnTimer: config.NewTimer(config.Levels[0].Stages[0].Waves[0].Batches[0].BatchSpawnTime),
+		itemSpawnTimer:    config.NewTimer(config.Levels[0].Stages[0].Items[0].ItemSpawnTime),
 		bgImage:           config.Levels[0].BgImg,
 		levels:            config.Levels,
 		curLevel:          config.Levels[0],
@@ -88,6 +93,34 @@ func (g *Game) Update() error {
 			m := objects.NewMeteor(g.baseVelocity)
 			g.meteors = append(g.meteors, m)
 			g.CurStage.MeteorsCount--
+		}
+	}
+
+	g.itemSpawnTimer.Update()
+	if g.itemSpawnTimer.IsReady() {
+		if len(g.CurStage.Items) > 0 {
+			var target config.Vector
+			var startPos config.Vector
+			itemParam := g.CurStage.Items[0]
+			item := NewItem(g, target, startPos, &itemParam)
+			if len(g.CurStage.Items) > 1 {
+				g.itemSpawnTimer = config.NewTimer(g.CurStage.Items[1].ItemSpawnTime)
+			}
+			g.itemSpawnTimer.Reset()
+			itemWidth := item.itemType.Sprite.Bounds().Dx()
+			itemHight := item.itemType.Sprite.Bounds().Dy()
+			startPos = config.Vector{
+				X: float64(config.ScreenWidth/2) - (float64(itemWidth) / 2),
+				Y: -(float64(itemHight)),
+			}
+			target = config.Vector{
+				X: startPos.X,
+				Y: config.ScreenHeight + 10,
+			}
+			item.SetDirection(target, startPos, &itemParam)
+			item.target = target
+			g.items = append(g.items, item)
+			g.CurStage.Items = slices.Delete(g.CurStage.Items, 0, 1)
 		}
 	}
 
@@ -165,7 +198,7 @@ func (g *Game) Update() error {
 		if g.CurWave.WaveId < len(g.CurStage.Waves)-1 {
 			g.CurWave = &g.CurStage.Waves[g.CurWave.WaveId+1]
 		} else {
-			if g.CurStage.MeteorsCount == 0 && g.CurStage.StageId < len(g.curLevel.Stages)-1 {
+			if g.CurStage.MeteorsCount == 0 && g.CurStage.StageId < len(g.curLevel.Stages)-1 && len(g.CurStage.Items) == 0 {
 				g.CurStage = &g.curLevel.Stages[g.CurStage.StageId+1]
 				g.CurWave = &g.CurStage.Waves[0]
 			} else {
@@ -208,6 +241,10 @@ func (g *Game) Update() error {
 		p.Update()
 	}
 
+	for _, i := range g.items {
+		i.Update()
+	}
+
 	// Check for meteor/projectile collisions
 	for i, m := range g.meteors {
 		for j, b := range g.projectiles {
@@ -237,11 +274,14 @@ func (g *Game) Update() error {
 	for i, m := range g.enemies {
 		for j, b := range g.projectiles {
 			if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
-				if (i < len(g.enemies)) && (j < len(g.projectiles)-1) {
-					g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
-					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
-					g.score++
+				m.HP -= b.wType.Damage
+				if m.HP <= 0 {
+					if (i < len(g.enemies)) && (j < len(g.projectiles)) {
+						g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+						g.score++
+					}
 				}
+				g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
 			}
 		}
 	}
@@ -287,6 +327,33 @@ func (g *Game) Update() error {
 			break
 		}
 	}
+
+	// Check for item/player collisions
+	for i, item := range g.items {
+		if item.Collider().Intersects(g.player.Collider()) {
+			item.CollideWithPlayer(g.player)
+			if i < len(g.items) {
+				g.items = append(g.items[:i], g.items[i+1:]...)
+			}
+		}
+	}
+
+	// Check for enemy/beam collisions
+	for i, m := range g.enemies {
+		for j, b := range g.beams {
+			if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
+				m.HP -= b.Damage
+				if m.HP <= 0 {
+					if i < len(g.enemies) {
+						g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+						g.score++
+					}
+				}
+			}
+			g.beams = append(g.beams[:j], g.beams[j+1:]...)
+		}
+	}
+
 	return nil
 }
 
@@ -324,10 +391,27 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		p.Draw(screen)
 	}
 
+	for _, i := range g.items {
+		i.Draw(screen)
+	}
+
+	for _, b := range g.beams {
+		b.Draw(screen)
+	}
+
 	// Draw the hit points bar
 	barX := config.ScreenWidth - 120
 	vector.DrawFilledRect(screen, float32(barX-2), 38, 104, 24, color.RGBA{255, 255, 255, 255}, false)
 	vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.hp)*10, 20, color.RGBA{179, 14, 14, 255}, false)
+
+	// Draw weapons
+	for i, w := range g.player.weapons {
+		offset := 20
+		object := w.projectile.wType.Sprite
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(i*offset+offset), config.ScreenHeight-float64(60))
+		screen.DrawImage(object, op)
+	}
 
 	// msg := fmt.Sprintf("StageEn: %v, StageId: %v", g.CurWave.EnemiesCount, g.CurStage.StageId)
 	// ebitenutil.DebugPrint(screen, msg)
@@ -343,21 +427,31 @@ func (g *Game) AddProjectile(p *Projectile) {
 	}
 }
 
+func (g *Game) AddBeam(b *Beam) {
+	if b.owner == "player" {
+		g.beams = append(g.beams, b)
+	} else {
+		g.enemyBeams = append(g.enemyBeams, b)
+	}
+}
+
 func (g *Game) Reset() {
 	g.player = NewPlayer(g)
 	g.meteors = nil
 	g.projectiles = nil
 	g.enemyProjectiles = nil
 	g.enemies = nil
+	g.items = nil
+	g.beams = nil
 	g.score = 0
 	var newLevels = config.NewLevels()
 	g.curLevel = newLevels[0]
 	g.CurStage = &g.curLevel.Stages[0]
 	g.CurWave = &g.CurStage.Waves[0]
 	g.levels = newLevels
-	g.enemySpawnTimer.Reset()
 	g.meteorSpawnTimer.Reset()
 	g.batchesSpawnTimer.Reset()
+	g.itemSpawnTimer.Reset()
 	g.baseVelocity = config.BaseMeteorVelocity
 	g.velocityTimer.Reset()
 }

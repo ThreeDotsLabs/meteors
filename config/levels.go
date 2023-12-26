@@ -16,11 +16,32 @@ func NewLevels() []*Level {
 				MeteorsCount: 0,
 				Items: []Item{
 					{
+						RotationSpeed: 0,
+						Sprite:        assets.LaserCannon,
+						Velocity:      1.2,
+						WeaponType: &WeaponType{
+							WeaponName: LaserCannon,
+						},
+						ItemSpawnTime: 1 * time.Second,
+					},
+					{
+						RotationSpeed: 0.2,
+						Sprite:        assets.MissileSprite,
+						Velocity:      1,
 						AmmoType: &AmmoType{
 							WeaponType: LightRocket,
 							Amount:     50,
 						},
-						ItemSpawnTime: 40 * time.Second,
+						ItemSpawnTime: 1 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
+						Sprite:        assets.DoubleMissileSprite,
+						Velocity:      1.3,
+						WeaponType: &WeaponType{
+							WeaponName: DoubleLightRocket,
+						},
+						ItemSpawnTime: 5 * time.Second,
 					},
 				},
 				Waves: []Wave{
@@ -32,6 +53,7 @@ func NewLevels() []*Level {
 									RotationSpeed: 0,
 									Sprite:        assets.HighSpeedFollowPlayerEnemySprite,
 									Velocity:      2,
+									StartHP:       2,
 								},
 								Count:             5,
 								TargetType:        "player",
@@ -45,6 +67,7 @@ func NewLevels() []*Level {
 									Sprite:        assets.LowSpeedEnemyLightMissile,
 									Velocity:      1,
 									WeaponTypeStr: LightRocket,
+									StartHP:       1,
 								},
 								Count:             10,
 								TargetType:        "straight",
@@ -57,6 +80,7 @@ func NewLevels() []*Level {
 									Sprite:        assets.LowSpeedEnemyAutoLightMissile,
 									Velocity:      1,
 									WeaponTypeStr: AutoLightRocket,
+									StartHP:       2,
 								},
 								Count:             4,
 								TargetType:        "straight",

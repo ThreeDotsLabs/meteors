@@ -17,6 +17,8 @@ const (
 	MeteorSpeedUpTime   = 5 * time.Second
 	LightRocket         = "lightRocket"
 	AutoLightRocket     = "autoLightRocket"
+	DoubleLightRocket   = "doubleLightRocket"
+	LaserCannon         = "lightCannon"
 )
 
 type EnemyType struct {
@@ -26,6 +28,7 @@ type EnemyType struct {
 	EnemiesStartPos Vector
 	EnemySpawnTime  time.Duration
 	WeaponTypeStr   string
+	StartHP         int
 }
 
 type Level struct {
@@ -66,6 +69,7 @@ type WeaponType struct {
 	Damage     int
 	Target     Vector
 	TargetType string
+	WeaponName string
 }
 
 type AmmoType struct {
@@ -81,5 +85,9 @@ type Item struct {
 	AmmoType      *AmmoType
 	WeaponType    *WeaponType
 	HealType      *HealType
+	RotationSpeed float64
+	Sprite        *ebiten.Image
+	Velocity      float64
+	Target        Vector
 	ItemSpawnTime time.Duration
 }

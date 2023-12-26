@@ -19,6 +19,7 @@ type Enemy struct {
 	movement   config.Vector
 	enemyType  *config.EnemyType
 	weapon     Weapon
+	HP         int
 }
 
 func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.EnemyType) *Enemy {
@@ -41,6 +42,7 @@ func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.En
 		position:  pos,
 		movement:  movement,
 		enemyType: &enType,
+		HP:        enType.StartHP,
 	}
 
 	switch enType.WeaponTypeStr {

@@ -38,7 +38,7 @@ func NewPlayer(curgame *Game) *Player {
 		X: config.ScreenWidth/2 - halfW,
 		Y: config.ScreenHeight/2 - halfH,
 	}
-	startWeapon := lightRocket
+	startWeapon := NewWeapon(config.LightRocket)
 	p := &Player{
 		game:                curgame,
 		position:            pos,
@@ -47,7 +47,7 @@ func NewPlayer(curgame *Game) *Player {
 		objectRotationSpeed: 1.2,
 		hp:                  10,
 		weapons: []*Weapon{
-			&startWeapon,
+			startWeapon,
 		},
 	}
 	p.curWeapon = p.weapons[0]
@@ -87,24 +87,68 @@ func (p *Player) Update() {
 		p.rotation -= rotationIncrement
 	}
 
+	if ebiten.IsKeyPressed(ebiten.Key1) {
+		p.curWeapon = p.weapons[0]
+	} else if ebiten.IsKeyPressed(ebiten.Key2) {
+		p.curWeapon = p.weapons[1]
+	} else if ebiten.IsKeyPressed(ebiten.Key3) {
+		p.curWeapon = p.weapons[2]
+	}
+
 	p.curWeapon.shootCooldown.Update()
 	if p.curWeapon.shootCooldown.IsReady() && (ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)) {
 		if p.curWeapon.ammo <= 0 {
 			return
 		}
 		p.curWeapon.shootCooldown.Reset()
-		bounds := p.sprite.Bounds()
-		halfW := float64(bounds.Dx()) / 2
-		halfH := float64(bounds.Dy()) / 2
+		switch p.curWeapon.projectile.wType.WeaponName {
+		case config.DoubleLightRocket:
+			bounds := p.sprite.Bounds()
+			halfWleft := float64(bounds.Dx()) / 4
+			halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
+			halfH := float64(bounds.Dy()) / 2
 
-		spawnPos := config.Vector{
-			X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-			Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+			spawnPosLeft := config.Vector{
+				X: p.position.X + halfWleft + math.Sin(p.rotation)*bulletSpawnOffset,
+				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+			}
+			projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, p.curWeapon.projectile.wType)
+
+			spawnPosRight := config.Vector{
+				X: p.position.X + halfWright + math.Sin(p.rotation)*bulletSpawnOffset,
+				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+			}
+			projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, p.curWeapon.projectile.wType)
+
+			projectileLeft.owner = "player"
+			projectileRight.owner = "player"
+			p.game.AddProjectile(projectileLeft)
+			p.game.AddProjectile(projectileRight)
+		case config.LaserCannon:
+			bounds := p.sprite.Bounds()
+			halfW := float64(bounds.Dx()) / 2
+			halfH := float64(bounds.Dy()) / 2
+
+			spawnPos := config.Vector{
+				X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
+				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+			}
+			beam := NewBeam(config.Vector{}, spawnPos, p.curWeapon.projectile.wType)
+			beam.owner = "player"
+		default:
+			bounds := p.sprite.Bounds()
+			halfW := float64(bounds.Dx()) / 2
+			halfH := float64(bounds.Dy()) / 2
+
+			spawnPos := config.Vector{
+				X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
+				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+			}
+
+			projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, p.curWeapon.projectile.wType)
+			projectile.owner = "player"
+			p.game.AddProjectile(projectile)
 		}
-
-		projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, p.curWeapon.projectile.wType)
-		projectile.owner = "player"
-		p.game.AddProjectile(projectile)
 		p.curWeapon.ammo--
 	}
 }

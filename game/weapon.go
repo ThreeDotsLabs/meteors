@@ -4,10 +4,12 @@ import (
 	"astrogame/assets"
 	"astrogame/config"
 	"astrogame/objects"
+	"image/color"
 	"math"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Projectile struct {
@@ -19,27 +21,76 @@ type Projectile struct {
 	wType    *config.WeaponType
 }
 
+type Beam struct {
+	position config.Vector
+	target   config.Vector
+	owner    string
+	Damage   int
+}
+
 type Weapon struct {
 	projectile    Projectile
 	ammo          int
 	shootCooldown *config.Timer
 }
 
-var lightRocket = Weapon{
-	projectile: Projectile{
-		position: config.Vector{},
-		target:   config.Vector{},
-		movement: config.Vector{},
-		rotation: 0,
-		wType: &config.WeaponType{
-			Sprite:     objects.ScaleImg(assets.MissileSprite, 0.7),
-			Velocity:   400,
-			Damage:     1,
-			TargetType: "straight",
-		},
-	},
-	shootCooldown: config.NewTimer(time.Millisecond * 250),
-	ammo:          100,
+func NewWeapon(wType string) *Weapon {
+	switch wType {
+	case config.LightRocket:
+		return &Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType: &config.WeaponType{
+					Sprite:     objects.ScaleImg(assets.MissileSprite, 0.7),
+					Velocity:   400,
+					Damage:     1,
+					TargetType: "straight",
+					WeaponName: config.LightRocket,
+				},
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * 250),
+			ammo:          100,
+		}
+	case config.DoubleLightRocket:
+		return &Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType: &config.WeaponType{
+					Sprite:     objects.ScaleImg(assets.DoubleMissileSprite, 0.7),
+					Velocity:   400,
+					Damage:     1,
+					TargetType: "straight",
+					WeaponName: config.DoubleLightRocket,
+				},
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * 250),
+			ammo:          50,
+		}
+	case config.LaserCannon:
+		return &Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType: &config.WeaponType{
+					Sprite:     objects.ScaleImg(assets.LaserCannon, 0.5),
+					Damage:     2,
+					TargetType: "straight",
+					WeaponName: config.LaserCannon,
+				},
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * 300),
+			ammo:          30,
+		}
+	}
+	return nil
 }
 
 var enemyLightRocket = Weapon{
@@ -130,5 +181,39 @@ func (p *Projectile) Collider() config.Rect {
 		p.position.Y,
 		float64(bounds.Dx()),
 		float64(bounds.Dy()),
+	)
+}
+
+func NewBeam(target config.Vector, pos config.Vector, wType *config.WeaponType) *Beam {
+	bounds := wType.Sprite.Bounds()
+	halfW := float64(bounds.Dx()) / 2
+	halfH := float64(bounds.Dy()) / 2
+
+	pos.X -= halfW
+	pos.Y -= halfH
+
+	b := &Beam{
+		position: pos,
+		target:   target,
+		Damage:   wType.Damage,
+	}
+
+	return b
+}
+
+func (b *Beam) Update() {
+
+}
+
+func (b *Beam) Draw(screen *ebiten.Image) {
+	vector.DrawFilledRect(screen, float32(b.position.X), float32(b.position.Y), 4, float32(config.ScreenHeight-b.position.Y), color.RGBA{255, 255, 255, 255}, false)
+}
+
+func (b *Beam) Collider() config.Rect {
+	return config.NewRect(
+		b.position.X,
+		b.position.Y,
+		float64(4),
+		float64(config.ScreenHeight-b.position.Y),
 	)
 }
