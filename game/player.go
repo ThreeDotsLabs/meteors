@@ -58,15 +58,27 @@ func (p *Player) Update() {
 	x, y := ebiten.CursorPosition()
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
 		p.position.X -= 10
+		if p.position.X < 0 {
+			p.position.X = 0
+		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
 		p.position.X += 10
+		if p.position.X > config.ScreenWidth {
+			p.position.X = config.ScreenWidth
+		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
 		p.position.Y -= 10
+		if p.position.Y < 0 {
+			p.position.Y = 0
+		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		p.position.Y += 10
+		if p.position.Y > config.ScreenHeight {
+			p.position.Y = config.ScreenHeight
+		}
 	}
 
 	targetRotation := math.Atan2(float64(y-int(p.position.Y)), float64(x-int(p.position.X)))
@@ -135,6 +147,7 @@ func (p *Player) Update() {
 			}
 			beam := NewBeam(config.Vector{}, spawnPos, p.curWeapon.projectile.wType)
 			beam.owner = "player"
+			p.game.AddBeam(beam)
 		default:
 			bounds := p.sprite.Bounds()
 			halfW := float64(bounds.Dx()) / 2

@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -18,7 +19,8 @@ type Game struct {
 	meteorSpawnTimer  *config.Timer
 	meteors           []*objects.Meteor
 	projectiles       []*Projectile
-	beams             []*Beam
+	beam              *Beam
+	beamAnimations    []*BeamAnimation
 	enemyBeams        []*Beam
 	enemyProjectiles  []*Projectile
 	enemies           []*Enemy
@@ -213,25 +215,21 @@ func (g *Game) Update() error {
 		}
 	}
 
-	for _, e := range g.enemies {
-		if e.TargetType == "player" {
-			e.target = config.Vector{
-				X: g.player.position.X,
-				Y: g.player.position.Y,
-			}
-		}
-		e.Update()
-	}
-
-	for _, m := range g.meteors {
+	for i, m := range g.meteors {
 		m.Update()
+		if m.Collider().Y >= config.ScreenHeight && i < len(g.meteors) {
+			g.meteors = slices.Delete(g.meteors, i, i+1)
+		}
 	}
 
-	for _, p := range g.projectiles {
+	for i, p := range g.projectiles {
 		p.Update()
+		if p.position.Y <= 0 && i < len(g.projectiles) {
+			g.projectiles = slices.Delete(g.projectiles, i, i+1)
+		}
 	}
 
-	for _, p := range g.enemyProjectiles {
+	for i, p := range g.enemyProjectiles {
 		if p.wType.TargetType == "auto" && p.owner == "enemy" {
 			p.target = config.Vector{
 				X: g.player.position.X,
@@ -239,10 +237,29 @@ func (g *Game) Update() error {
 			}
 		}
 		p.Update()
+		if p.position.Y >= config.ScreenHeight && i < len(g.enemyProjectiles) {
+			g.enemyProjectiles = slices.Delete(g.enemyProjectiles, i, i+1)
+		}
 	}
 
-	for _, i := range g.items {
-		i.Update()
+	for i, e := range g.enemies {
+		if e.TargetType == config.TargetTypePlayer {
+			e.target = config.Vector{
+				X: g.player.position.X,
+				Y: g.player.position.Y,
+			}
+		}
+		e.Update()
+		if e.position.Y >= config.ScreenHeight && i < len(g.enemies) {
+			g.enemies = slices.Delete(g.enemies, i, i+1)
+		}
+	}
+
+	for i, item := range g.items {
+		item.Update()
+		if item.position.Y >= config.ScreenHeight && i < len(g.items) {
+			g.items = slices.Delete(g.items, i, i+1)
+		}
 	}
 
 	// Check for meteor/projectile collisions
@@ -271,6 +288,8 @@ func (g *Game) Update() error {
 	}
 
 	// Check for enemy/projectile collisions
+	// Check for enemy/player collisions
+	// Check for enemy/beam collisions
 	for i, m := range g.enemies {
 		for j, b := range g.projectiles {
 			if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
@@ -283,6 +302,25 @@ func (g *Game) Update() error {
 				}
 				if j < len(g.projectiles) {
 					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+				}
+			}
+		}
+		if m.Collider().Intersects(g.player.Collider()) {
+			g.Reset()
+			break
+		}
+		if g.beam != nil {
+			coll := g.beam.Collider()
+			collM := m.Collider()
+			_ = coll
+			_ = collM
+			if g.beam.Collider().Intersects(m.Collider()) {
+				m.HP -= g.beam.Damage
+				if m.HP <= 0 {
+					if i < len(g.enemies) {
+						g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+						g.score++
+					}
 				}
 			}
 		}
@@ -322,14 +360,6 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Check for enemy/player collisions
-	for _, e := range g.enemies {
-		if e.Collider().Intersects(g.player.Collider()) {
-			g.Reset()
-			break
-		}
-	}
-
 	// Check for item/player collisions
 	for i, item := range g.items {
 		if item.Collider().Intersects(g.player.Collider()) {
@@ -340,21 +370,17 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Check for enemy/beam collisions
-	// for i, m := range g.enemies {
-	// 	for j, b := range g.beams {
-	// 		if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
-	// 			m.HP -= b.Damage
-	// 			if m.HP <= 0 {
-	// 				if i < len(g.enemies) {
-	// 					g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
-	// 					g.score++
-	// 				}
-	// 			}
-	// 		}
-	// 		g.beams = append(g.beams[:j], g.beams[j+1:]...)
-	// 	}
-	// }
+	if g.beam != nil {
+		g.AddBeamAnimation(g.beam.NewBeamAnimation())
+		g.beam = nil
+	}
+
+	for i, ba := range g.beamAnimations {
+		ba.Update()
+		if ba.Step >= ba.Steps && i < len(g.beamAnimations) {
+			g.beamAnimations = slices.Delete(g.beamAnimations, i, i+1)
+		}
+	}
 
 	return nil
 }
@@ -377,6 +403,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.player.Draw(screen)
 
+	if g.beam != nil {
+		g.beam.Draw(screen)
+	}
+
+	for _, ba := range g.beamAnimations {
+		ba.Draw(screen)
+	}
+
 	for _, e := range g.enemies {
 		e.Draw(screen)
 	}
@@ -397,10 +431,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		i.Draw(screen)
 	}
 
-	for _, b := range g.beams {
-		b.Draw(screen)
-	}
-
 	// Draw the hit points bar
 	barX := config.ScreenWidth - 120
 	vector.DrawFilledRect(screen, float32(barX-2), 38, 104, 24, color.RGBA{255, 255, 255, 255}, false)
@@ -415,8 +445,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(object, op)
 	}
 
-	// msg := fmt.Sprintf("StageEn: %v, StageId: %v", g.CurWave.EnemiesCount, g.CurStage.StageId)
-	// ebitenutil.DebugPrint(screen, msg)
+	msg := fmt.Sprintf("Beams: %v, StageId: %v", g.beam, g.CurStage.StageId)
+	ebitenutil.DebugPrint(screen, msg)
 	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
@@ -431,10 +461,14 @@ func (g *Game) AddProjectile(p *Projectile) {
 
 func (g *Game) AddBeam(b *Beam) {
 	if b.owner == "player" {
-		g.beams = append(g.beams, b)
+		g.beam = b
 	} else {
 		g.enemyBeams = append(g.enemyBeams, b)
 	}
+}
+
+func (g *Game) AddBeamAnimation(b *BeamAnimation) {
+	g.beamAnimations = append(g.beamAnimations, b)
 }
 
 func (g *Game) Reset() {
@@ -444,7 +478,7 @@ func (g *Game) Reset() {
 	g.enemyProjectiles = nil
 	g.enemies = nil
 	g.items = nil
-	g.beams = nil
+	g.beamAnimations = nil
 	g.score = 0
 	var newLevels = config.NewLevels()
 	g.curLevel = newLevels[0]

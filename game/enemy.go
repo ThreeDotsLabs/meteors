@@ -77,7 +77,7 @@ func (e *Enemy) SetDirection(target config.Vector, pos config.Vector, enType con
 func (e *Enemy) Update() {
 	e.position.X += e.movement.X
 	e.position.Y += e.movement.Y
-	e.rotation += e.enemyType.RotationSpeed
+	//e.rotation += e.enemyType.RotationSpeed
 	direction := config.Vector{
 		X: e.target.X - e.position.X,
 		Y: e.target.Y - e.position.Y,
@@ -89,6 +89,10 @@ func (e *Enemy) Update() {
 		Y: normalizedDirection.Y * e.enemyType.Velocity,
 	}
 	e.movement = movement
+	if e.TargetType == config.TargetTypePlayer {
+		e.rotation = math.Atan2(float64(e.target.Y-e.position.Y), float64(e.target.X-e.position.X))
+		e.rotation -= (90 * math.Pi) / 180
+	}
 	if e.weapon.projectile.wType != nil {
 		e.weapon.shootCooldown.Update()
 		if e.weapon.shootCooldown.IsReady() {

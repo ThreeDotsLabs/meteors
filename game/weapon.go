@@ -28,6 +28,12 @@ type Beam struct {
 	Damage   int
 }
 
+type BeamAnimation struct {
+	curRect config.Rect
+	Steps   int
+	Step    int
+}
+
 type Weapon struct {
 	projectile    Projectile
 	ammo          int
@@ -159,6 +165,8 @@ func (p *Projectile) Update() {
 			Y: normalizedDirection.Y * p.wType.Velocity,
 		}
 		p.movement = movement
+		p.rotation = math.Atan2(float64(p.target.Y-p.position.Y), float64(p.target.X-p.position.X))
+		p.rotation -= (90 * math.Pi) / 180
 	} else {
 		speed := p.wType.Velocity / float64(ebiten.TPS())
 		quant := speed
@@ -185,6 +193,14 @@ func (p *Projectile) Collider() config.Rect {
 	)
 }
 
+func (b *Beam) NewBeamAnimation() *BeamAnimation {
+	return &BeamAnimation{
+		curRect: b.Collider(),
+		Steps:   400,
+		Step:    1,
+	}
+}
+
 func NewBeam(target config.Vector, pos config.Vector, wType *config.WeaponType) *Beam {
 	bounds := wType.Sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
@@ -202,19 +218,24 @@ func NewBeam(target config.Vector, pos config.Vector, wType *config.WeaponType) 
 	return b
 }
 
-func (b *Beam) Update() {
-
-}
-
 func (b *Beam) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, float32(b.position.X), float32(b.position.Y), 4, float32(config.ScreenHeight-b.position.Y), color.RGBA{255, 255, 255, 255}, false)
+	vector.DrawFilledRect(screen, float32(b.position.X), float32(b.position.Y), 4, -float32(config.ScreenHeight-(config.ScreenHeight-b.position.Y)), color.RGBA{255, 255, 255, 255}, false)
 }
 
 func (b *Beam) Collider() config.Rect {
 	return config.NewRect(
 		b.position.X,
-		b.position.Y,
+		0,
 		float64(4),
-		float64(config.ScreenHeight-b.position.Y),
+		float64(config.ScreenHeight-(config.ScreenHeight-b.position.Y)),
 	)
+}
+
+func (b *BeamAnimation) Update() {
+	b.curRect.Width += float64(b.Step)
+	b.Step++
+}
+
+func (b *BeamAnimation) Draw(screen *ebiten.Image) {
+	vector.DrawFilledRect(screen, float32(b.curRect.X), float32(b.curRect.Y), float32(b.curRect.Width), -float32(config.ScreenHeight-(config.ScreenHeight-b.curRect.Y)), color.RGBA{255, 255, 255, (255 - uint8(b.Step*20))}, false)
 }

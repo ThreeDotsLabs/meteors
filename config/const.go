@@ -15,6 +15,7 @@ const (
 	BaseMeteorVelocity  = 0.25
 	MeteorSpeedUpAmount = 0.1
 	MeteorSpeedUpTime   = 5 * time.Second
+	TargetTypePlayer    = "player"
 	LightRocket         = "lightRocket"
 	AutoLightRocket     = "autoLightRocket"
 	DoubleLightRocket   = "doubleLightRocket"
