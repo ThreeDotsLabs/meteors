@@ -4,12 +4,10 @@ import (
 	"astrogame/assets"
 	"astrogame/config"
 	"astrogame/objects"
-	"image/color"
 	"math"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Projectile struct {
@@ -29,9 +27,10 @@ type Beam struct {
 }
 
 type BeamAnimation struct {
-	curRect config.Rect
-	Steps   int
-	Step    int
+	curRect  config.Rect
+	rotation float64
+	Steps    int
+	Step     int
 }
 
 type Weapon struct {
@@ -195,9 +194,10 @@ func (p *Projectile) Collider() config.Rect {
 
 func (b *Beam) NewBeamAnimation() *BeamAnimation {
 	return &BeamAnimation{
-		curRect: b.Collider(),
-		Steps:   400,
-		Step:    1,
+		curRect:  b.Collider(),
+		Steps:    5,
+		Step:     1,
+		rotation: math.Atan2(float64(b.target.Y-b.position.Y), float64(b.target.X-b.position.X)) - (90*math.Pi)/180,
 	}
 }
 
@@ -218,10 +218,6 @@ func NewBeam(target config.Vector, pos config.Vector, wType *config.WeaponType) 
 	return b
 }
 
-func (b *Beam) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, float32(b.position.X), float32(b.position.Y), 4, -float32(config.ScreenHeight-(config.ScreenHeight-b.position.Y)), color.RGBA{255, 255, 255, 255}, false)
-}
-
 func (b *Beam) Collider() config.Rect {
 	return config.NewRect(
 		b.position.X,
@@ -233,9 +229,19 @@ func (b *Beam) Collider() config.Rect {
 
 func (b *BeamAnimation) Update() {
 	b.curRect.Width += float64(b.Step)
+	b.curRect.X -= 1
 	b.Step++
 }
 
 func (b *BeamAnimation) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, float32(b.curRect.X), float32(b.curRect.Y), float32(b.curRect.Width), -float32(config.ScreenHeight-(config.ScreenHeight-b.curRect.Y)), color.RGBA{255, 255, 255, (255 - uint8(b.Step*20))}, false)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.SetElement(1, 0, -1)
+	op.GeoM.Translate(-float64(b.curRect.Width)/2, -float64(b.curRect.Height)/2)
+	op.GeoM.Rotate(b.rotation)
+	op.GeoM.Translate(float64(b.curRect.Width)/2, float64(b.curRect.Height)/2)
+	// op.ColorScale.ScaleWithColor(color.White)
+	// op.ColorScale.ScaleAlpha(float32(255 - uint8(b.Step*20)))
+	beamImg := ebiten.NewImage(int(b.curRect.Width), int(b.curRect.Height))
+	screen.DrawImage(beamImg, op)
+	//vector.DrawFilledRect(screen, float32(b.curRect.X), float32(b.curRect.Y), float32(b.curRect.Width), float32(b.curRect.Height), color.RGBA{255, 255, 255, (255 - uint8(b.Step*20))}, false)
 }

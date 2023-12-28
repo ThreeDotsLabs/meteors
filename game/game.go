@@ -403,10 +403,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.player.Draw(screen)
 
-	if g.beam != nil {
-		g.beam.Draw(screen)
-	}
-
 	for _, ba := range g.beamAnimations {
 		ba.Draw(screen)
 	}
