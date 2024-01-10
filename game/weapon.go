@@ -4,6 +4,8 @@ import (
 	"astrogame/assets"
 	"astrogame/config"
 	"astrogame/objects"
+	"image"
+	"image/color"
 	"math"
 	"time"
 
@@ -22,8 +24,10 @@ type Projectile struct {
 type Beam struct {
 	position config.Vector
 	target   config.Vector
+	rotation float64
 	owner    string
 	Damage   int
+	Line     config.Line
 }
 
 type BeamAnimation struct {
@@ -181,50 +185,75 @@ func (p *Projectile) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(p.rotation, p.wType.Sprite, screen, p.position.X, p.position.Y)
 }
 
-func (p *Projectile) Collider() config.Rect {
+func (p *Projectile) Collider() image.Rectangle {
 	bounds := p.wType.Sprite.Bounds()
-
-	return config.NewRect(
-		p.position.X,
-		p.position.Y,
-		float64(bounds.Dx()),
-		float64(bounds.Dy()),
-	)
-}
-
-func (b *Beam) NewBeamAnimation() *BeamAnimation {
-	return &BeamAnimation{
-		curRect:  b.Collider(),
-		Steps:    5,
-		Step:     1,
-		rotation: math.Atan2(float64(b.target.Y-b.position.Y), float64(b.target.X-b.position.X)) - (90*math.Pi)/180,
+	return image.Rectangle{
+		Min: image.Point{
+			X: int(p.position.X),
+			Y: int(p.position.Y),
+		},
+		Max: image.Point{
+			X: int(p.position.X + float64(bounds.Dx())),
+			Y: int(p.position.Y + float64(bounds.Dy())),
+		},
 	}
 }
 
-func NewBeam(target config.Vector, pos config.Vector, wType *config.WeaponType) *Beam {
+func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *config.WeaponType) *Beam {
 	bounds := wType.Sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
 	halfH := float64(bounds.Dy()) / 2
-
 	pos.X -= halfW
 	pos.Y -= halfH
 
+	line := config.NewLine(
+		pos.X,
+		pos.Y,
+		math.Cos(rotation-math.Pi/2)*(200)+pos.X,
+		math.Sin(rotation-math.Pi/2)*(200)+pos.Y,
+	)
 	b := &Beam{
 		position: pos,
 		target:   target,
+		rotation: rotation,
 		Damage:   wType.Damage,
+		Line:     line,
 	}
 
 	return b
 }
 
-func (b *Beam) Collider() config.Rect {
-	return config.NewRect(
+func (b *Beam) Draw(screen *ebiten.Image) {
+	rectImage := ebiten.NewImage(int(4), int(200))
+	rectImage.Fill(color.White)
+	rotationOpts := &ebiten.DrawImageOptions{}
+	rotationOpts.GeoM.Rotate(b.rotation + math.Pi)
+	rotationOpts.GeoM.Translate(b.position.X, b.position.Y)
+	screen.DrawImage(rectImage, rotationOpts)
+	lineStartRect := ebiten.NewImage(int(4), int(4))
+	lineStartRect.Fill(color.RGBA{R: 255, G: 0, B: 0, A: 255})
+	opts1 := &ebiten.DrawImageOptions{}
+	opts1.GeoM.Translate(b.Line.X1, b.Line.Y1)
+	lineEndRect := ebiten.NewImage(int(4), int(4))
+	lineEndRect.Fill(color.RGBA{R: 0, G: 255, B: 0, A: 255})
+	opts2 := &ebiten.DrawImageOptions{}
+	opts2.GeoM.Translate(b.Line.X2, b.Line.Y2)
+	screen.DrawImage(lineStartRect, opts1)
+	screen.DrawImage(lineEndRect, opts2)
+}
+func (b *Beam) NewBeamAnimation() *BeamAnimation {
+	rect := config.NewRectangle(
 		b.position.X,
-		0,
-		float64(4),
-		float64(config.ScreenHeight-(config.ScreenHeight-b.position.Y)),
+		b.position.Y,
+		float64(1),
+		float64(config.ScreenHeight+config.ScreenWidth),
 	)
+	return &BeamAnimation{
+		curRect:  rect,
+		Steps:    5,
+		Step:     1,
+		rotation: b.rotation + math.Pi,
+	}
 }
 
 func (b *BeamAnimation) Update() {
@@ -234,14 +263,10 @@ func (b *BeamAnimation) Update() {
 }
 
 func (b *BeamAnimation) Draw(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.SetElement(1, 0, -1)
-	op.GeoM.Translate(-float64(b.curRect.Width)/2, -float64(b.curRect.Height)/2)
-	op.GeoM.Rotate(b.rotation)
-	op.GeoM.Translate(float64(b.curRect.Width)/2, float64(b.curRect.Height)/2)
-	// op.ColorScale.ScaleWithColor(color.White)
-	// op.ColorScale.ScaleAlpha(float32(255 - uint8(b.Step*20)))
-	beamImg := ebiten.NewImage(int(b.curRect.Width), int(b.curRect.Height))
-	screen.DrawImage(beamImg, op)
-	//vector.DrawFilledRect(screen, float32(b.curRect.X), float32(b.curRect.Y), float32(b.curRect.Width), float32(b.curRect.Height), color.RGBA{255, 255, 255, (255 - uint8(b.Step*20))}, false)
+	rectImage := ebiten.NewImage(int(b.curRect.Width), int(b.curRect.Height))
+	rectImage.Fill(color.White)
+	rotationOpts := &ebiten.DrawImageOptions{}
+	rotationOpts.GeoM.Rotate(b.rotation)
+	rotationOpts.GeoM.Translate(b.curRect.X, b.curRect.Y)
+	screen.DrawImage(rectImage, rotationOpts)
 }

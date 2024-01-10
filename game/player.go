@@ -1,6 +1,7 @@
 package game
 
 import (
+	"image"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -145,7 +146,7 @@ func (p *Player) Update() {
 				X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
 				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 			}
-			beam := NewBeam(config.Vector{}, spawnPos, p.curWeapon.projectile.wType)
+			beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPos, p.curWeapon.projectile.wType)
 			beam.owner = "player"
 			p.game.AddBeam(beam)
 		default:
@@ -170,13 +171,16 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 }
 
-func (p *Player) Collider() config.Rect {
+func (p *Player) Collider() image.Rectangle {
 	bounds := p.sprite.Bounds()
-
-	return config.NewRect(
-		p.position.X,
-		p.position.Y,
-		float64(bounds.Dx()),
-		float64(bounds.Dy()),
-	)
+	return image.Rectangle{
+		Min: image.Point{
+			X: int(p.position.X),
+			Y: int(p.position.Y),
+		},
+		Max: image.Point{
+			X: int(p.position.X + float64(bounds.Dx())),
+			Y: int(p.position.Y + float64(bounds.Dy())),
+		},
+	}
 }

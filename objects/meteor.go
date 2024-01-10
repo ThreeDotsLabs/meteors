@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"image"
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -67,13 +68,22 @@ func (m *Meteor) Draw(screen *ebiten.Image) {
 	RotateAndTranslateObject(m.rotation, m.sprite, screen, m.position.X, m.position.Y)
 }
 
-func (m *Meteor) Collider() config.Rect {
+func (m *Meteor) Collider() image.Rectangle {
 	bounds := m.sprite.Bounds()
-
-	return config.NewRect(
-		m.position.X,
-		m.position.Y,
-		float64(bounds.Dx()),
-		float64(bounds.Dy()),
-	)
+	return image.Rectangle{
+		Min: image.Point{
+			X: int(m.position.X),
+			Y: int(m.position.Y),
+		},
+		Max: image.Point{
+			X: int(m.position.X + float64(bounds.Dx())),
+			Y: int(m.position.Y + float64(bounds.Dy())),
+		},
+	}
+	// return config.NewRect(
+	// 	m.position.X,
+	// 	m.position.Y,
+	// 	float64(bounds.Dx()),
+	// 	float64(bounds.Dy()),
+	// )
 }

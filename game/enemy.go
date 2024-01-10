@@ -1,6 +1,7 @@
 package game
 
 import (
+	"image"
 	"math"
 	"time"
 
@@ -121,13 +122,22 @@ func (e *Enemy) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(e.rotation, e.enemyType.Sprite, screen, e.position.X, e.position.Y)
 }
 
-func (e *Enemy) Collider() config.Rect {
+func (e *Enemy) Collider() image.Rectangle {
 	bounds := e.enemyType.Sprite.Bounds()
-
-	return config.NewRect(
-		e.position.X,
-		e.position.Y,
-		float64(bounds.Dx()),
-		float64(bounds.Dy()),
-	)
+	return image.Rectangle{
+		Min: image.Point{
+			X: int(e.position.X),
+			Y: int(e.position.Y),
+		},
+		Max: image.Point{
+			X: int(e.position.X + float64(bounds.Dx())),
+			Y: int(e.position.Y + float64(bounds.Dy())),
+		},
+	}
+	// return config.NewRect(
+	// 	e.position.X,
+	// 	e.position.Y,
+	// 	float64(bounds.Dx()),
+	// 	float64(bounds.Dy()),
+	// )
 }

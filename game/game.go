@@ -6,6 +6,7 @@ import (
 	"astrogame/objects"
 	"fmt"
 	"image/color"
+	"math"
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -217,7 +218,7 @@ func (g *Game) Update() error {
 
 	for i, m := range g.meteors {
 		m.Update()
-		if m.Collider().Y >= config.ScreenHeight && i < len(g.meteors) {
+		if m.Collider().Min.Y >= config.ScreenHeight && i < len(g.meteors) {
 			g.meteors = slices.Delete(g.meteors, i, i+1)
 		}
 	}
@@ -265,7 +266,7 @@ func (g *Game) Update() error {
 	// Check for meteor/projectile collisions
 	for i, m := range g.meteors {
 		for j, b := range g.projectiles {
-			if m.Collider().Intersects(b.Collider()) {
+			if config.IntersectRect(m.Collider(), b.Collider()) {
 				if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
 					g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
 					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
@@ -278,7 +279,7 @@ func (g *Game) Update() error {
 	// Check for meteor/enemy projectile collisions
 	for i, m := range g.meteors {
 		for j, b := range g.enemyProjectiles {
-			if m.Collider().Intersects(b.Collider()) {
+			if config.IntersectRect(m.Collider(), b.Collider()) {
 				if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
 					g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
 					g.enemyProjectiles = append(g.enemyProjectiles[:j], g.enemyProjectiles[j+1:]...)
@@ -292,7 +293,7 @@ func (g *Game) Update() error {
 	// Check for enemy/beam collisions
 	for i, m := range g.enemies {
 		for j, b := range g.projectiles {
-			if m.Collider().Intersects(b.Collider()) && b.owner == "player" {
+			if config.IntersectRect(m.Collider(), b.Collider()) && b.owner == "player" {
 				m.HP -= b.wType.Damage
 				if m.HP <= 0 {
 					if (i < len(g.enemies)) && (j < len(g.projectiles)) {
@@ -305,16 +306,12 @@ func (g *Game) Update() error {
 				}
 			}
 		}
-		if m.Collider().Intersects(g.player.Collider()) {
+		if config.IntersectRect(m.Collider(), g.player.Collider()) {
 			g.Reset()
 			break
 		}
 		if g.beam != nil {
-			coll := g.beam.Collider()
-			collM := m.Collider()
-			_ = coll
-			_ = collM
-			if g.beam.Collider().Intersects(m.Collider()) {
+			if config.IntersectLine(g.beam.Line, m.Collider()) {
 				m.HP -= g.beam.Damage
 				if m.HP <= 0 {
 					if i < len(g.enemies) {
@@ -329,7 +326,7 @@ func (g *Game) Update() error {
 	// Check for enemy projectile/player projectile collisions
 	for i, m := range g.enemyProjectiles {
 		for j, b := range g.projectiles {
-			if m.Collider().Intersects(b.Collider()) {
+			if config.IntersectRect(m.Collider(), b.Collider()) {
 				if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)-1) {
 					g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
 					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
@@ -340,7 +337,7 @@ func (g *Game) Update() error {
 
 	// Check for projectiles/player collisions
 	for i, p := range g.enemyProjectiles {
-		if p.Collider().Intersects(g.player.Collider()) {
+		if config.IntersectRect(p.Collider(), g.player.Collider()) {
 			g.player.hp -= p.wType.Damage
 			if i < len(g.enemyProjectiles) {
 				g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
@@ -354,7 +351,7 @@ func (g *Game) Update() error {
 
 	// Check for meteor/player collisions
 	for _, m := range g.meteors {
-		if m.Collider().Intersects(g.player.Collider()) {
+		if config.IntersectRect(m.Collider(), g.player.Collider()) {
 			g.Reset()
 			break
 		}
@@ -362,7 +359,7 @@ func (g *Game) Update() error {
 
 	// Check for item/player collisions
 	for i, item := range g.items {
-		if item.Collider().Intersects(g.player.Collider()) {
+		if config.IntersectRect(item.Collider(), g.player.Collider()) {
 			item.CollideWithPlayer(g.player)
 			if i < len(g.items) {
 				g.items = append(g.items[:i], g.items[i+1:]...)
@@ -371,8 +368,8 @@ func (g *Game) Update() error {
 	}
 
 	if g.beam != nil {
-		g.AddBeamAnimation(g.beam.NewBeamAnimation())
-		g.beam = nil
+		//g.AddBeamAnimation(g.beam.NewBeamAnimation())
+		//g.beam = nil
 	}
 
 	for i, ba := range g.beamAnimations {
@@ -440,9 +437,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(float64(i*offset+offset), config.ScreenHeight-float64(60))
 		screen.DrawImage(object, op)
 	}
+	if g.beam != nil {
+		g.beam.Draw(screen)
+		gradRot := float64(180) / math.Pi * g.beam.rotation
+		gradRotPl := float64(180) / math.Pi * g.player.rotation
+		msg := fmt.Sprintf("Beams: %v, Rotation: %v, PlayerRotation: %v", g.beam.Line, gradRot, gradRotPl)
+		ebitenutil.DebugPrint(screen, msg)
+	}
 
-	msg := fmt.Sprintf("Beams: %v, StageId: %v", g.beam, g.CurStage.StageId)
-	ebitenutil.DebugPrint(screen, msg)
 	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }

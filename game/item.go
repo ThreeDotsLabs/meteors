@@ -3,6 +3,7 @@ package game
 import (
 	"astrogame/config"
 	"astrogame/objects"
+	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -128,13 +129,22 @@ func (i *Item) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(i.rotation, i.itemType.Sprite, screen, i.position.X, i.position.Y)
 }
 
-func (i *Item) Collider() config.Rect {
+func (i *Item) Collider() image.Rectangle {
 	bounds := i.itemType.Sprite.Bounds()
-
-	return config.NewRect(
-		i.position.X,
-		i.position.Y,
-		float64(bounds.Dx()),
-		float64(bounds.Dy()),
-	)
+	return image.Rectangle{
+		Min: image.Point{
+			X: int(i.position.X),
+			Y: int(i.position.Y),
+		},
+		Max: image.Point{
+			X: int(i.position.X + float64(bounds.Dx())),
+			Y: int(i.position.Y + float64(bounds.Dy())),
+		},
+	}
+	// return config.NewRect(
+	// 	i.position.X,
+	// 	i.position.Y,
+	// 	float64(bounds.Dx()),
+	// 	float64(bounds.Dy()),
+	// )
 }
