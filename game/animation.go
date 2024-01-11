@@ -20,6 +20,7 @@ type Animation struct {
 	currF         int
 	frameHeight   int
 	frameWidth    int
+	curTick       int
 }
 
 func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int) *Animation {
@@ -42,6 +43,11 @@ func (a *Animation) Update() {
 	if !a.run {
 		return
 	}
+	if a.curTick < a.speed {
+		a.curTick++
+		return
+	}
+	a.curTick = 0
 	a.currF++
 }
 

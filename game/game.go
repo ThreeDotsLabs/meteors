@@ -492,7 +492,7 @@ func (g *Game) AddAnimation(a *Animation) {
 }
 
 func (g *Game) KillEnemy(i int) {
-	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75)
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 2, 31, 73, 75)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 }
