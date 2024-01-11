@@ -134,10 +134,4 @@ func (e *Enemy) Collider() image.Rectangle {
 			Y: int(e.position.Y + float64(bounds.Dy())),
 		},
 	}
-	// return config.NewRect(
-	// 	e.position.X,
-	// 	e.position.Y,
-	// 	float64(bounds.Dx()),
-	// 	float64(bounds.Dy()),
-	// )
 }

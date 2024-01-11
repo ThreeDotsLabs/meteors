@@ -28,6 +28,7 @@ var LaserBeam = mustLoadImage("img/Effects/spaceEffects_006.png")
 var FirstLevelBg = mustLoadImage("img/bg.png")
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
 var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
+var EnemyBlowSpriteSheet = mustLoadImage("img/Effects/blow.png")
 
 func mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)

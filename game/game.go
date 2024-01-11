@@ -6,11 +6,9 @@ import (
 	"astrogame/objects"
 	"fmt"
 	"image/color"
-	"math"
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -26,6 +24,7 @@ type Game struct {
 	enemyProjectiles  []*Projectile
 	enemies           []*Enemy
 	items             []*Item
+	animations        []*Animation
 	bgImage           *ebiten.Image
 	score             int
 	viewport          viewport
@@ -297,7 +296,7 @@ func (g *Game) Update() error {
 				m.HP -= b.wType.Damage
 				if m.HP <= 0 {
 					if (i < len(g.enemies)) && (j < len(g.projectiles)) {
-						g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+						g.KillEnemy(i)
 						g.score++
 					}
 				}
@@ -315,7 +314,7 @@ func (g *Game) Update() error {
 				m.HP -= g.beam.Damage
 				if m.HP <= 0 {
 					if i < len(g.enemies) {
-						g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+						g.KillEnemy(i)
 						g.score++
 					}
 				}
@@ -368,14 +367,21 @@ func (g *Game) Update() error {
 	}
 
 	if g.beam != nil {
-		//g.AddBeamAnimation(g.beam.NewBeamAnimation())
-		//g.beam = nil
+		g.AddBeamAnimation(g.beam.NewBeamAnimation())
+		g.beam = nil
 	}
 
 	for i, ba := range g.beamAnimations {
 		ba.Update()
 		if ba.Step >= ba.Steps && i < len(g.beamAnimations) {
 			g.beamAnimations = slices.Delete(g.beamAnimations, i, i+1)
+		}
+	}
+
+	for i, a := range g.animations {
+		a.Update()
+		if a.currF >= a.numFrames && i < len(g.animations) {
+			g.animations = slices.Delete(g.animations, i, i+1)
 		}
 	}
 
@@ -424,6 +430,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		i.Draw(screen)
 	}
 
+	for _, a := range g.animations {
+		a.Draw(screen)
+	}
+
 	// Draw the hit points bar
 	barX := config.ScreenWidth - 120
 	vector.DrawFilledRect(screen, float32(barX-2), 38, 104, 24, color.RGBA{255, 255, 255, 255}, false)
@@ -437,14 +447,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(float64(i*offset+offset), config.ScreenHeight-float64(60))
 		screen.DrawImage(object, op)
 	}
-	if g.beam != nil {
-		g.beam.Draw(screen)
-		gradRot := float64(180) / math.Pi * g.beam.rotation
-		gradRotPl := float64(180) / math.Pi * g.player.rotation
-		msg := fmt.Sprintf("Beams: %v, Rotation: %v, PlayerRotation: %v", g.beam.Line, gradRot, gradRotPl)
-		ebitenutil.DebugPrint(screen, msg)
-	}
-
+	// if g.beam != nil {
+	// 	gradRot := float64(180) / math.Pi * g.beam.rotation
+	// 	gradRotPl := float64(180) / math.Pi * g.player.rotation
+	// 	msg := fmt.Sprintf("Beams: %v, Rotation: %v, PlayerRotation: %v", g.beam.Line, gradRot, gradRotPl)
+	// 	ebitenutil.DebugPrint(screen, msg)
+	// }
 	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
@@ -469,6 +477,16 @@ func (g *Game) AddBeamAnimation(b *BeamAnimation) {
 	g.beamAnimations = append(g.beamAnimations, b)
 }
 
+func (g *Game) AddAnimation(a *Animation) {
+	g.animations = append(g.animations, a)
+}
+
+func (g *Game) KillEnemy(i int) {
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 32, 73, 75)
+	g.AddAnimation(enemyBlow)
+	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+}
+
 func (g *Game) Reset() {
 	g.player = NewPlayer(g)
 	g.meteors = nil
@@ -477,6 +495,7 @@ func (g *Game) Reset() {
 	g.enemies = nil
 	g.items = nil
 	g.beamAnimations = nil
+	g.animations = nil
 	g.score = 0
 	var newLevels = config.NewLevels()
 	g.curLevel = newLevels[0]

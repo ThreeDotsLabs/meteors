@@ -43,6 +43,8 @@ type Weapon struct {
 	shootCooldown *config.Timer
 }
 
+var screenDiag = math.Sqrt(config.ScreenWidth*config.ScreenWidth + config.ScreenHeight*config.ScreenHeight)
+
 func NewWeapon(wType string) *Weapon {
 	switch wType {
 	case config.LightRocket:
@@ -209,8 +211,8 @@ func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *c
 	line := config.NewLine(
 		pos.X,
 		pos.Y,
-		math.Cos(rotation-math.Pi/2)*(200)+pos.X,
-		math.Sin(rotation-math.Pi/2)*(200)+pos.Y,
+		math.Cos(rotation-math.Pi/2)*(screenDiag)+pos.X,
+		math.Sin(rotation-math.Pi/2)*(screenDiag)+pos.Y,
 	)
 	b := &Beam{
 		position: pos,
@@ -223,30 +225,30 @@ func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *c
 	return b
 }
 
-func (b *Beam) Draw(screen *ebiten.Image) {
-	rectImage := ebiten.NewImage(int(4), int(200))
-	rectImage.Fill(color.White)
-	rotationOpts := &ebiten.DrawImageOptions{}
-	rotationOpts.GeoM.Rotate(b.rotation + math.Pi)
-	rotationOpts.GeoM.Translate(b.position.X, b.position.Y)
-	screen.DrawImage(rectImage, rotationOpts)
-	lineStartRect := ebiten.NewImage(int(4), int(4))
-	lineStartRect.Fill(color.RGBA{R: 255, G: 0, B: 0, A: 255})
-	opts1 := &ebiten.DrawImageOptions{}
-	opts1.GeoM.Translate(b.Line.X1, b.Line.Y1)
-	lineEndRect := ebiten.NewImage(int(4), int(4))
-	lineEndRect.Fill(color.RGBA{R: 0, G: 255, B: 0, A: 255})
-	opts2 := &ebiten.DrawImageOptions{}
-	opts2.GeoM.Translate(b.Line.X2, b.Line.Y2)
-	screen.DrawImage(lineStartRect, opts1)
-	screen.DrawImage(lineEndRect, opts2)
-}
+//	func (b *Beam) Draw(screen *ebiten.Image) {
+//		rectImage := ebiten.NewImage(int(4), int(screenDiag))
+//		rectImage.Fill(color.White)
+//		rotationOpts := &ebiten.DrawImageOptions{}
+//		rotationOpts.GeoM.Rotate(b.rotation + math.Pi)
+//		rotationOpts.GeoM.Translate(b.position.X, b.position.Y)
+//		screen.DrawImage(rectImage, rotationOpts)
+//		lineStartRect := ebiten.NewImage(int(4), int(4))
+//		lineStartRect.Fill(color.RGBA{R: 255, G: 0, B: 0, A: 255})
+//		opts1 := &ebiten.DrawImageOptions{}
+//		opts1.GeoM.Translate(b.Line.X1, b.Line.Y1)
+//		lineEndRect := ebiten.NewImage(int(4), int(4))
+//		lineEndRect.Fill(color.RGBA{R: 0, G: 255, B: 0, A: 255})
+//		opts2 := &ebiten.DrawImageOptions{}
+//		opts2.GeoM.Translate(b.Line.X2, b.Line.Y2)
+//		screen.DrawImage(lineStartRect, opts1)
+//		screen.DrawImage(lineEndRect, opts2)
+//	}
 func (b *Beam) NewBeamAnimation() *BeamAnimation {
 	rect := config.NewRectangle(
 		b.position.X,
 		b.position.Y,
 		float64(1),
-		float64(config.ScreenHeight+config.ScreenWidth),
+		float64(screenDiag),
 	)
 	return &BeamAnimation{
 		curRect:  rect,
