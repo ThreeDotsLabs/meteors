@@ -445,6 +445,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		object := w.projectile.wType.Sprite
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(i*offset+offset), config.ScreenHeight-float64(60))
+		if w.projectile.wType.WeaponName == g.player.curWeapon.projectile.wType.WeaponName {
+			vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(config.ScreenHeight-float64(30)), float32(object.Bounds().Dx()+4), 3, color.RGBA{255, 255, 255, 255}, false)
+		}
 		screen.DrawImage(object, op)
 	}
 	// if g.beam != nil {
@@ -482,7 +485,7 @@ func (g *Game) AddAnimation(a *Animation) {
 }
 
 func (g *Game) KillEnemy(i int) {
-	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 32, 73, 75)
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 }
