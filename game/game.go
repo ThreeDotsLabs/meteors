@@ -332,6 +332,13 @@ func (g *Game) Update() error {
 				}
 			}
 		}
+		if g.beam != nil {
+			if config.IntersectLine(g.beam.Line, m.Collider()) {
+				if i < len(g.enemyProjectiles) {
+					g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+				}
+			}
+		}
 	}
 
 	// Check for projectiles/player collisions
