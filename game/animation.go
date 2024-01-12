@@ -20,6 +20,7 @@ type Animation struct {
 	currF         int
 	frameHeight   int
 	frameWidth    int
+	curTick       int
 }
 
 func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int, looping bool) *Animation {
