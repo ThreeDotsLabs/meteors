@@ -22,12 +22,12 @@ type Animation struct {
 	frameWidth    int
 }
 
-func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int) *Animation {
+func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int, looping bool) *Animation {
 	return &Animation{
 		position:      position,
 		sprite:        sprite,
 		speed:         speed,
-		looping:       false,
+		looping:       looping,
 		run:           true,
 		numFrames:     numFrames,
 		startAt:       0,
@@ -41,6 +41,9 @@ func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFr
 func (a *Animation) Update() {
 	if !a.run {
 		return
+	}
+	if a.looping && a.currF == a.numFrames-1 {
+		a.currF = 0
 	}
 	a.currF++
 }

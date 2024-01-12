@@ -168,6 +168,8 @@ func (p *Player) Update() {
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
+	engineFireburst := NewAnimation(p.position, assets.PlayerFireburstSpriteSheet, 1, 31, 73, 75, true)
+	p.game.AddAnimation(engineFireburst)
 	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 }
 
