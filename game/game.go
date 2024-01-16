@@ -466,7 +466,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// }
 	for _, a := range g.animations {
 		if a.name == "engineFireburst" {
-			msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v", a.position.X, a.position.Y, a.rotation)
+			msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v, Step: %v, Frame: %v", a.position.X, a.position.Y, a.rotation, a.currF, a.curTick)
 			ebitenutil.DebugPrint(screen, msg)
 		}
 	}

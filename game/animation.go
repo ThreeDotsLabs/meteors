@@ -38,6 +38,7 @@ func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFr
 		startAt:       0,
 		numberOfPlays: 1,
 		currF:         0,
+		curTick:       0,
 		frameHeight:   frameHeight,
 		frameWidth:    frameWidth,
 		name:          name,
@@ -55,7 +56,9 @@ func (a *Animation) Update() {
 	}
 	if a.looping && a.currF == a.numFrames-1 {
 		a.currF = 0
+		a.curTick = 0
 	}
+	a.curTick = 0
 	a.currF++
 }
 
@@ -74,7 +77,7 @@ func LoadSpritesheet(sourceImg *ebiten.Image, n int, width int, height int) []*e
 	numFramesInLine := sourceImg.Bounds().Dx() / width
 	for l := 0; l < numOfLines; l++ {
 		for i := 0; i < numFramesInLine; i++ {
-			dH := l * height
+			dH := l*height + height
 			if l == 0 {
 				dH = height
 			}
