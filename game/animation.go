@@ -10,7 +10,9 @@ import (
 
 type Animation struct {
 	position      config.Vector
-	sprite        *ebiten.Image
+	rotationPoint config.Vector
+	rotation      float64
+	sprites       []*ebiten.Image
 	speed         int
 	looping       bool
 	run           bool
@@ -21,12 +23,14 @@ type Animation struct {
 	frameHeight   int
 	frameWidth    int
 	curTick       int
+	name          string
 }
 
-func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int, looping bool) *Animation {
+func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int, looping bool, name string, rotation float64) *Animation {
+	sprites := LoadSpritesheet(sprite, numFrames, frameWidth, frameHeight)
 	return &Animation{
 		position:      position,
-		sprite:        sprite,
+		sprites:       sprites,
 		speed:         speed,
 		looping:       looping,
 		run:           true,
@@ -36,11 +40,17 @@ func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFr
 		currF:         0,
 		frameHeight:   frameHeight,
 		frameWidth:    frameWidth,
+		name:          name,
+		rotation:      rotation,
 	}
 }
 
 func (a *Animation) Update() {
 	if !a.run {
+		return
+	}
+	if a.curTick < a.speed {
+		a.curTick++
 		return
 	}
 	if a.looping && a.currF == a.numFrames-1 {
@@ -50,8 +60,12 @@ func (a *Animation) Update() {
 }
 
 func (a *Animation) Draw(screen *ebiten.Image) {
-	sprites := LoadSpritesheet(a.sprite, a.numFrames, a.frameWidth, a.frameHeight)
-	objects.RotateAndTranslateObject(0, sprites[a.currF], screen, a.position.X, a.position.Y)
+	switch a.name {
+	case "engineFireburst":
+		objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+	default:
+		objects.RotateAndTranslateObject(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+	}
 }
 
 func LoadSpritesheet(sourceImg *ebiten.Image, n int, width int, height int) []*ebiten.Image {

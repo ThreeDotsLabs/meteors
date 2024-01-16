@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -387,7 +388,7 @@ func (g *Game) Update() error {
 
 	for i, a := range g.animations {
 		a.Update()
-		if a.currF >= a.numFrames && i < len(g.animations) {
+		if a.currF >= a.numFrames && i < len(g.animations) && !a.looping {
 			g.animations = slices.Delete(g.animations, i, i+1)
 		}
 	}
@@ -463,6 +464,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 	msg := fmt.Sprintf("Beams: %v, Rotation: %v, PlayerRotation: %v", g.beam.Line, gradRot, gradRotPl)
 	// 	ebitenutil.DebugPrint(screen, msg)
 	// }
+	for _, a := range g.animations {
+		if a.name == "engineFireburst" {
+			msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v", a.position.X, a.position.Y, a.rotation)
+			ebitenutil.DebugPrint(screen, msg)
+		}
+	}
 	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
@@ -492,13 +499,12 @@ func (g *Game) AddAnimation(a *Animation) {
 }
 
 func (g *Game) KillEnemy(i int) {
-	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75, false)
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75, false, "enemyBlow", 0)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 }
 
 func (g *Game) Reset() {
-	g.player = NewPlayer(g)
 	g.meteors = nil
 	g.projectiles = nil
 	g.enemyProjectiles = nil
@@ -507,6 +513,7 @@ func (g *Game) Reset() {
 	g.beamAnimations = nil
 	g.animations = nil
 	g.score = 0
+	g.player = NewPlayer(g)
 	var newLevels = config.NewLevels()
 	g.curLevel = newLevels[0]
 	g.CurStage = &g.curLevel.Stages[0]

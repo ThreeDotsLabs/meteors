@@ -26,6 +26,7 @@ type Player struct {
 	objectRotationSpeed float64
 	weapons             []*Weapon
 	curWeapon           *Weapon
+	animations          []*Animation
 	hp                  int
 }
 
@@ -39,7 +40,13 @@ func NewPlayer(curgame *Game) *Player {
 		X: config.ScreenWidth/2 - halfW,
 		Y: config.ScreenHeight/2 - halfH,
 	}
+	posFireburst := config.Vector{
+		X: config.ScreenWidth/2 - halfW,
+		Y: config.ScreenHeight/2 + float64(bounds.Dy()/2),
+	}
 	startWeapon := NewWeapon(config.LightRocket)
+	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 3, 30, 192, 96, true, "engineFireburst", 0)
+	curgame.AddAnimation(engineFireburst)
 	p := &Player{
 		game:                curgame,
 		position:            pos,
@@ -49,6 +56,9 @@ func NewPlayer(curgame *Game) *Player {
 		hp:                  10,
 		weapons: []*Weapon{
 			startWeapon,
+		},
+		animations: []*Animation{
+			engineFireburst,
 		},
 	}
 	p.curWeapon = p.weapons[0]
@@ -100,6 +110,22 @@ func (p *Player) Update() {
 		p.rotation -= rotationIncrement
 	}
 
+	for _, a := range p.animations {
+		switch a.name {
+		case "engineFireburst":
+			w := p.sprite.Bounds().Dx()
+			h := p.sprite.Bounds().Dy()
+			px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
+			a.position.X = px + ((p.position.X-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation))
+			a.position.Y = py - ((p.position.X-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation))
+			a.rotation = p.rotation
+			a.rotationPoint.X = float64(w)
+			a.rotationPoint.Y = float64(h)
+		default:
+			a.position = p.position
+			a.rotation = p.rotation
+		}
+	}
 	if ebiten.IsKeyPressed(ebiten.Key1) {
 		p.curWeapon = p.weapons[0]
 	} else if ebiten.IsKeyPressed(ebiten.Key2) && len(p.weapons) > 1 {
@@ -168,8 +194,6 @@ func (p *Player) Update() {
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
-	engineFireburst := NewAnimation(p.position, assets.PlayerFireburstSpriteSheet, 1, 31, 73, 75, true)
-	p.game.AddAnimation(engineFireburst)
 	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 }
 

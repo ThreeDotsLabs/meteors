@@ -13,7 +13,15 @@ func RotateAndTranslateObject(angle float64, object *ebiten.Image, screen *ebite
 	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 	op.GeoM.Rotate(angle)
 	op.GeoM.Translate(x+float64(w)/2, y+float64(h)/2)
+	//vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 2, color.RGBA{255, 255, 255, 255}, false)
+	screen.DrawImage(object, op)
+}
 
+func RotateAndTranslateAnimation(angle float64, object *ebiten.Image, screen *ebiten.Image, x, y float64) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Rotate(angle)
+	op.GeoM.Translate(x, y)
+	//vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 2, color.RGBA{255, 255, 255, 255}, false)
 	screen.DrawImage(object, op)
 }
 

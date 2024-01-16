@@ -29,7 +29,7 @@ var FirstLevelBg = mustLoadImage("img/bg.png")
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
 var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
 var EnemyBlowSpriteSheet = mustLoadImage("img/Effects/blow.png")
-var PlayerFireburstSpriteSheet = mustLoadImage("img/Effects/fireburst.png")
+var PlayerFireburstSpriteSheet = mustLoadImage("img/Effects/fire.png")
 
 func mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)

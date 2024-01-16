@@ -141,10 +141,4 @@ func (i *Item) Collider() image.Rectangle {
 			Y: int(i.position.Y + float64(bounds.Dy())),
 		},
 	}
-	// return config.NewRect(
-	// 	i.position.X,
-	// 	i.position.Y,
-	// 	float64(bounds.Dx()),
-	// 	float64(bounds.Dy()),
-	// )
 }
