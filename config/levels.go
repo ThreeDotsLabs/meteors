@@ -15,12 +15,21 @@ func NewLevels() []*Level {
 				StageId:      0,
 				MeteorsCount: 0,
 				Items: []Item{
+					// {
+					// 	RotationSpeed: 0,
+					// 	Sprite:        assets.LaserCannon,
+					// 	Velocity:      1.2,
+					// 	WeaponType: &WeaponType{
+					// 		WeaponName: LaserCannon,
+					// 	},
+					// 	ItemSpawnTime: 1 * time.Second,
+					// },
 					{
 						RotationSpeed: 0,
-						Sprite:        assets.LaserCannon,
-						Velocity:      1.2,
+						Sprite:        assets.ClusterMines,
+						Velocity:      1.5,
 						WeaponType: &WeaponType{
-							WeaponName: LaserCannon,
+							WeaponName: ClusterMines,
 						},
 						ItemSpawnTime: 1 * time.Second,
 					},

@@ -26,6 +26,8 @@ type Player struct {
 	objectRotationSpeed float64
 	weapons             []*Weapon
 	curWeapon           *Weapon
+	secondaryWeapons    []*Weapon
+	curSecondaryWeapon  *Weapon
 	animations          []*Animation
 	hp                  int
 }
@@ -134,6 +136,10 @@ func (p *Player) Update() {
 		p.curWeapon = p.weapons[2]
 	}
 
+	if ebiten.IsKeyPressed(ebiten.Key0) && len(p.secondaryWeapons) > 0 {
+		p.curSecondaryWeapon = p.secondaryWeapons[0]
+	}
+
 	p.curWeapon.shootCooldown.Update()
 	if p.curWeapon.shootCooldown.IsReady() && (ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)) {
 		if p.curWeapon.ammo <= 0 {
@@ -190,6 +196,33 @@ func (p *Player) Update() {
 			p.game.AddProjectile(projectile)
 		}
 		p.curWeapon.ammo--
+	}
+	if p.curSecondaryWeapon != nil {
+		p.curSecondaryWeapon.shootCooldown.Update()
+		if p.curSecondaryWeapon.shootCooldown.IsReady() && ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+			if p.curSecondaryWeapon.ammo <= 0 {
+				return
+			}
+			p.curSecondaryWeapon.shootCooldown.Reset()
+			switch p.curSecondaryWeapon.projectile.wType.WeaponName {
+			case config.ClusterMines:
+				bounds := p.sprite.Bounds()
+				halfW := float64(bounds.Dx()) / 2
+				halfH := float64(bounds.Dy()) / 2
+
+				for i := 0; i < 20; i++ {
+					angle := (math.Pi / 180) * float64(i*18)
+					spawnPos := config.Vector{
+						X: p.position.X + halfW + math.Sin(angle),
+						Y: p.position.Y + halfH + math.Cos(angle),
+					}
+					projectile := NewProjectile(config.Vector{}, spawnPos, angle, p.curSecondaryWeapon.projectile.wType)
+					projectile.owner = "player"
+					p.game.AddProjectile(projectile)
+				}
+			}
+			p.curSecondaryWeapon.ammo--
+		}
 	}
 }
 

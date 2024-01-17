@@ -86,6 +86,21 @@ func (i *Item) CollideWithPlayer(p *Player) {
 			if !persist {
 				p.weapons = append(p.weapons, NewWeapon(config.LaserCannon))
 			}
+		case config.ClusterMines:
+			persist := false
+			for _, w := range p.secondaryWeapons {
+				if w.projectile.wType.WeaponName == config.ClusterMines {
+					clusterMines := NewWeapon(config.ClusterMines)
+					w.ammo += clusterMines.ammo
+					persist = true
+				}
+			}
+			if !persist {
+				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.ClusterMines))
+				if p.curSecondaryWeapon == nil {
+					p.curSecondaryWeapon = p.secondaryWeapons[0]
+				}
+			}
 		}
 	} else if i.itemType.HealType != nil {
 		p.hp += i.itemType.HealType.HP

@@ -100,6 +100,24 @@ func NewWeapon(wType string) *Weapon {
 			shootCooldown: config.NewTimer(time.Millisecond * 300),
 			ammo:          30,
 		}
+	case config.ClusterMines:
+		return &Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType: &config.WeaponType{
+					Velocity:   200,
+					Sprite:     objects.ScaleImg(assets.ClusterMines, 0.5),
+					Damage:     2,
+					TargetType: "straight",
+					WeaponName: config.ClusterMines,
+				},
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * 400),
+			ammo:          5,
+		}
 	}
 	return nil
 }
@@ -225,24 +243,6 @@ func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *c
 	return b
 }
 
-//	func (b *Beam) Draw(screen *ebiten.Image) {
-//		rectImage := ebiten.NewImage(int(4), int(screenDiag))
-//		rectImage.Fill(color.White)
-//		rotationOpts := &ebiten.DrawImageOptions{}
-//		rotationOpts.GeoM.Rotate(b.rotation + math.Pi)
-//		rotationOpts.GeoM.Translate(b.position.X, b.position.Y)
-//		screen.DrawImage(rectImage, rotationOpts)
-//		lineStartRect := ebiten.NewImage(int(4), int(4))
-//		lineStartRect.Fill(color.RGBA{R: 255, G: 0, B: 0, A: 255})
-//		opts1 := &ebiten.DrawImageOptions{}
-//		opts1.GeoM.Translate(b.Line.X1, b.Line.Y1)
-//		lineEndRect := ebiten.NewImage(int(4), int(4))
-//		lineEndRect.Fill(color.RGBA{R: 0, G: 255, B: 0, A: 255})
-//		opts2 := &ebiten.DrawImageOptions{}
-//		opts2.GeoM.Translate(b.Line.X2, b.Line.Y2)
-//		screen.DrawImage(lineStartRect, opts1)
-//		screen.DrawImage(lineEndRect, opts2)
-//	}
 func (b *Beam) NewBeamAnimation() *BeamAnimation {
 	rect := config.NewRectangle(
 		b.position.X,

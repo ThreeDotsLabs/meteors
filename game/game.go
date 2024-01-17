@@ -9,7 +9,6 @@ import (
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -456,21 +455,37 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		if w.projectile.wType.WeaponName == g.player.curWeapon.projectile.wType.WeaponName {
 			vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(config.ScreenHeight-float64(30)), float32(object.Bounds().Dx()+4), 3, color.RGBA{255, 255, 255, 255}, false)
 		}
+		text.Draw(screen, fmt.Sprintf("%v", w.ammo), assets.SmallFont, i*offset+offset, config.ScreenHeight-80, color.White)
 		screen.DrawImage(object, op)
 	}
+
+	// Draw secondary weapons
+	for i, w := range g.player.secondaryWeapons {
+		startOffset := config.ScreenWidth - 40
+		offset := 20
+		object := w.projectile.wType.Sprite
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(startOffset-i*offset), config.ScreenHeight-float64(60))
+		if g.player.curSecondaryWeapon != nil && w.projectile.wType.WeaponName == g.player.curSecondaryWeapon.projectile.wType.WeaponName {
+			vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(config.ScreenHeight-float64(30)), float32(object.Bounds().Dx()+4), 3, color.RGBA{255, 255, 255, 255}, false)
+		}
+		text.Draw(screen, fmt.Sprintf("%v", w.ammo), assets.SmallFont, startOffset-i*offset, config.ScreenHeight-80, color.White)
+		screen.DrawImage(object, op)
+	}
+
 	// if g.beam != nil {
 	// 	gradRot := float64(180) / math.Pi * g.beam.rotation
 	// 	gradRotPl := float64(180) / math.Pi * g.player.rotation
 	// 	msg := fmt.Sprintf("Beams: %v, Rotation: %v, PlayerRotation: %v", g.beam.Line, gradRot, gradRotPl)
 	// 	ebitenutil.DebugPrint(screen, msg)
 	// }
-	for _, a := range g.animations {
-		if a.name == "engineFireburst" {
-			msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v, Step: %v, Frame: %v", a.position.X, a.position.Y, a.rotation, a.currF, a.curTick)
-			ebitenutil.DebugPrint(screen, msg)
-		}
-	}
-	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v Ammo: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId+1, g.player.curWeapon.ammo), assets.InfoFont, 20, 50, color.White)
+	// for _, a := range g.animations {
+	// 	if a.name == "engineFireburst" {
+	// 		msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v, Step: %v, Frame: %v", a.position.X, a.position.Y, a.rotation, a.currF, a.curTick)
+	// 		ebitenutil.DebugPrint(screen, msg)
+	// 	}
+	// }
+	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
 

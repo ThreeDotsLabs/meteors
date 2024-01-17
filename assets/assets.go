@@ -25,11 +25,14 @@ var EnemyLightMissile = mustLoadImage("img/Missiles/spaceMissiles_015.png")
 var EnemyAutoLightMissile = mustLoadImage("img/Missiles/spaceMissiles_018.png")
 var LaserCannon = mustLoadImage("img/Effects/spaceEffects_004.png")
 var LaserBeam = mustLoadImage("img/Effects/spaceEffects_006.png")
+var ClusterMines = mustLoadImage("img/Building/spaceBuilding_006.png")
 var FirstLevelBg = mustLoadImage("img/bg.png")
-var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
-var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
 var EnemyBlowSpriteSheet = mustLoadImage("img/Effects/blow.png")
 var PlayerFireburstSpriteSheet = mustLoadImage("img/Effects/fire.png")
+
+var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
+var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
+var SmallFont = mustLoadFont("fonts/Kenney Mini.ttf", 18)
 
 func mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)
