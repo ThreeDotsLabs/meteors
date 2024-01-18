@@ -18,6 +18,7 @@ type Game struct {
 	meteorSpawnTimer  *config.Timer
 	meteors           []*objects.Meteor
 	projectiles       []*Projectile
+	blows             []*Blow
 	beam              *Beam
 	beamAnimations    []*BeamAnimation
 	enemyBeams        []*Beam
@@ -290,25 +291,49 @@ func (g *Game) Update() error {
 	// Check for enemy/projectile collisions
 	// Check for enemy/player collisions
 	// Check for enemy/beam collisions
+	// Check for enemy/blow collisions
 	for i, m := range g.enemies {
 		for j, b := range g.projectiles {
 			if config.IntersectRect(m.Collider(), b.Collider()) && b.owner == "player" {
-				m.HP -= b.wType.Damage
-				if m.HP <= 0 {
-					if (i < len(g.enemies)) && (j < len(g.projectiles)) {
-						g.KillEnemy(i)
-						g.score++
+				switch b.wType.WeaponName {
+				case config.BigBomb:
+					bounds := b.wType.Sprite.Bounds()
+					blow := NewBlow(b.position.X+float64(bounds.Dx()/2), b.position.Y+float64(bounds.Dy()/2), float64(bounds.Dx())*4, b.wType.Damage)
+					blow.Steps = 5
+					g.AddBlow(blow, m.position)
+				default:
+					m.HP -= b.wType.Damage
+					if m.HP <= 0 {
+						if (i < len(g.enemies)) && (j < len(g.projectiles)) {
+							g.KillEnemy(i)
+							g.score++
+						}
 					}
 				}
+
 				if j < len(g.projectiles) {
 					g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
 				}
 			}
 		}
+
+		for _, blow := range g.blows {
+			if config.IntersectCircle(m.Collider(), blow.circle) {
+				m.HP -= blow.Damage
+				if m.HP <= 0 {
+					if i < len(g.enemies) {
+						g.KillEnemy(i)
+						g.score++
+					}
+				}
+			}
+		}
+
 		if config.IntersectRect(m.Collider(), g.player.Collider()) {
 			g.Reset()
 			break
 		}
+
 		if g.beam != nil {
 			if config.IntersectLine(g.beam.Line, m.Collider()) {
 				m.HP -= g.beam.Damage
@@ -392,6 +417,14 @@ func (g *Game) Update() error {
 		}
 	}
 
+	// Remove blows
+	for k, b := range g.blows {
+		b.Update()
+		if b.Step >= b.Steps && k < len(g.blows) {
+			g.blows = slices.Delete(g.blows, k, k+1)
+		}
+	}
+
 	return nil
 }
 
@@ -437,11 +470,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		i.Draw(screen)
 	}
 
-	for _, a := range g.animations {
-		a.Draw(screen)
+	for i, a := range g.animations {
+		if i < len(g.animations) {
+			a.Draw(screen)
+		}
 	}
 
-	// Draw the hit points bar
+	// Draw the hit points bara
 	barX := config.ScreenWidth - 120
 	vector.DrawFilledRect(screen, float32(barX-2), 38, 104, 24, color.RGBA{255, 255, 255, 255}, false)
 	vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.hp)*10, 20, color.RGBA{179, 14, 14, 255}, false)
@@ -485,6 +520,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 		ebitenutil.DebugPrint(screen, msg)
 	// 	}
 	// }
+
 	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
@@ -513,8 +549,14 @@ func (g *Game) AddAnimation(a *Animation) {
 	g.animations = append(g.animations, a)
 }
 
+func (g *Game) AddBlow(b *Blow, target config.Vector) {
+	g.blows = append(g.blows, b)
+	blowAnimation := NewAnimation(target, assets.BigBlowSpriteSheet, 1, 48, 124, 128, false, "digBlow", 0)
+	g.AddAnimation(blowAnimation)
+}
+
 func (g *Game) KillEnemy(i int) {
-	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75, false, "enemyBlow", 0)
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 30, 73, 75, false, "enemyBlow", 0)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 }

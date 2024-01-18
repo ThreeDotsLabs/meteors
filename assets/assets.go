@@ -14,11 +14,14 @@ import (
 //go:embed *
 var assets embed.FS
 
+// objects
 var PlayerSprite = mustLoadImage("img/Ships/spaceShips_007.png")
 var HighSpeedFollowPlayerEnemySprite = mustLoadImage("img/Ships/spaceShips_006.png")
 var LowSpeedEnemyLightMissile = mustLoadImage("img/Ships/spaceShips_005.png")
 var LowSpeedEnemyAutoLightMissile = mustLoadImage("img/Ships/spaceShips_003.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
+
+// weapons
 var MissileSprite = mustLoadImage("img/Missiles/spaceMissiles_016.png")
 var DoubleMissileSprite = mustLoadImage("img/Missiles/spaceMissiles_010.png")
 var EnemyLightMissile = mustLoadImage("img/Missiles/spaceMissiles_015.png")
@@ -26,10 +29,17 @@ var EnemyAutoLightMissile = mustLoadImage("img/Missiles/spaceMissiles_018.png")
 var LaserCannon = mustLoadImage("img/Effects/spaceEffects_004.png")
 var LaserBeam = mustLoadImage("img/Effects/spaceEffects_006.png")
 var ClusterMines = mustLoadImage("img/Building/spaceBuilding_006.png")
+var BigBomb = mustLoadImage("img/Building/spaceBuilding_003.png")
+
+// backgrounds
 var FirstLevelBg = mustLoadImage("img/bg.png")
+
+// spritesheets
 var EnemyBlowSpriteSheet = mustLoadImage("img/Effects/blow.png")
+var BigBlowSpriteSheet = mustLoadImage("img/Effects/bigblow.png")
 var PlayerFireburstSpriteSheet = mustLoadImage("img/Effects/fire.png")
 
+// fonts
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
 var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
 var SmallFont = mustLoadFont("fonts/Kenney Mini.ttf", 18)

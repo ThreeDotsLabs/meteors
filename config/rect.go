@@ -2,6 +2,7 @@ package config
 
 import (
 	"image"
+	"math"
 )
 
 type Rect struct {
@@ -10,6 +11,10 @@ type Rect struct {
 
 type Line struct {
 	X1, Y1, X2, Y2 float64
+}
+
+type Circle struct {
+	X, Y, Radius float64
 }
 
 const (
@@ -77,6 +82,31 @@ func IntersectLine(l Line, r image.Rectangle) bool {
 	x1, y1, x2, y2 := l.X1, l.Y1, l.X2, l.Y2
 	res := LineTorectIntersection(x1, y1, x2, y2, r)
 	return res
+}
+
+func IntersectCircle(r image.Rectangle, c Circle) bool {
+	testX := c.X
+	testY := c.Y
+
+	// which edge is closest?
+	if c.X < float64(r.Min.X) {
+		testX = float64(r.Min.X) // test left edge
+	} else if c.X > float64(r.Max.X) {
+		testX = float64(r.Max.X) // right edge
+	}
+	if c.Y < float64(r.Min.Y) {
+		testY = float64(r.Min.Y) // top edge
+	} else if c.Y > float64(r.Max.Y) {
+		testY = float64(r.Max.Y) // bottom edge
+	}
+
+	// get distance from closest edges
+	distX := c.X - testX
+	distY := c.Y - testY
+	distance := math.Sqrt((distX * distX) + (distY * distY))
+
+	// if the distance is less than the radius, collision!
+	return distance <= c.Radius
 }
 
 // from https://jeffreythompson.org/collision-detection/line-rect.php

@@ -101,6 +101,21 @@ func (i *Item) CollideWithPlayer(p *Player) {
 					p.curSecondaryWeapon = p.secondaryWeapons[0]
 				}
 			}
+		case config.BigBomb:
+			persist := false
+			for _, w := range p.secondaryWeapons {
+				if w.projectile.wType.WeaponName == config.ClusterMines {
+					bigBomb := NewWeapon(config.BigBomb)
+					w.ammo += bigBomb.ammo
+					persist = true
+				}
+			}
+			if !persist {
+				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.BigBomb))
+				if p.curSecondaryWeapon == nil {
+					p.curSecondaryWeapon = p.secondaryWeapons[0]
+				}
+			}
 		}
 	} else if i.itemType.HealType != nil {
 		p.hp += i.itemType.HealType.HP

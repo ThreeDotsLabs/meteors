@@ -220,6 +220,19 @@ func (p *Player) Update() {
 					projectile.owner = "player"
 					p.game.AddProjectile(projectile)
 				}
+			case config.BigBomb:
+				bounds := p.sprite.Bounds()
+				halfW := float64(bounds.Dx()) / 2
+				halfH := float64(bounds.Dy()) / 2
+
+				spawnPos := config.Vector{
+					X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
+					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+				}
+
+				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, p.curSecondaryWeapon.projectile.wType)
+				projectile.owner = "player"
+				p.game.AddProjectile(projectile)
 			}
 			p.curSecondaryWeapon.ammo--
 		}

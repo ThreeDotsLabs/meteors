@@ -43,6 +43,13 @@ type Weapon struct {
 	shootCooldown *config.Timer
 }
 
+type Blow struct {
+	circle config.Circle
+	Damage int
+	Steps  int
+	Step   int
+}
+
 var screenDiag = math.Sqrt(config.ScreenWidth*config.ScreenWidth + config.ScreenHeight*config.ScreenHeight)
 
 func NewWeapon(wType string) *Weapon {
@@ -117,6 +124,24 @@ func NewWeapon(wType string) *Weapon {
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * 400),
 			ammo:          5,
+		}
+	case config.BigBomb:
+		return &Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType: &config.WeaponType{
+					Velocity:   200,
+					Sprite:     objects.ScaleImg(assets.BigBomb, 0.8),
+					Damage:     5,
+					TargetType: "straight",
+					WeaponName: config.BigBomb,
+				},
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * 600),
+			ammo:          20,
 		}
 	}
 	return nil
@@ -272,3 +297,24 @@ func (b *BeamAnimation) Draw(screen *ebiten.Image) {
 	rotationOpts.GeoM.Translate(b.curRect.X, b.curRect.Y)
 	screen.DrawImage(rectImage, rotationOpts)
 }
+
+func NewBlow(x, y, radius float64, damage int) *Blow {
+	return &Blow{
+		circle: config.Circle{
+			X:      x,
+			Y:      y,
+			Radius: radius,
+		},
+		Damage: damage,
+	}
+}
+
+func (b *Blow) Update() {
+	if b.Step < b.Steps {
+		b.Step++
+	}
+}
+
+// func (b *Blow) Draw(screen *ebiten.Image) {
+// 	vector.DrawFilledCircle(screen, float32(b.circle.X), float32(b.circle.Y), float32(b.circle.Radius), color.RGBA{255, 255, 255, 255}, false)
+// }

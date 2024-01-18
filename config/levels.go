@@ -26,12 +26,21 @@ func NewLevels() []*Level {
 					// },
 					{
 						RotationSpeed: 0,
+						Sprite:        assets.BigBomb,
+						Velocity:      2,
+						WeaponType: &WeaponType{
+							WeaponName: BigBomb,
+						},
+						ItemSpawnTime: 1 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
 						Sprite:        assets.ClusterMines,
 						Velocity:      1.5,
 						WeaponType: &WeaponType{
 							WeaponName: ClusterMines,
 						},
-						ItemSpawnTime: 1 * time.Second,
+						ItemSpawnTime: 2 * time.Second,
 					},
 					// {
 					// 	RotationSpeed: 0.2,

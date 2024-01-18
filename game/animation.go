@@ -59,7 +59,9 @@ func (a *Animation) Update() {
 		a.curTick = 0
 	}
 	a.curTick = 0
-	a.currF++
+	if a.currF < a.numFrames {
+		a.currF++
+	}
 }
 
 func (a *Animation) Draw(screen *ebiten.Image) {
