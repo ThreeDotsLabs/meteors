@@ -128,6 +128,7 @@ func (p *Player) Update() {
 			a.rotation = p.rotation
 		}
 	}
+
 	if ebiten.IsKeyPressed(ebiten.Key1) {
 		p.curWeapon = p.weapons[0]
 	} else if ebiten.IsKeyPressed(ebiten.Key2) && len(p.weapons) > 1 {
@@ -136,8 +137,10 @@ func (p *Player) Update() {
 		p.curWeapon = p.weapons[2]
 	}
 
-	if ebiten.IsKeyPressed(ebiten.Key0) && len(p.secondaryWeapons) > 0 {
+	if ebiten.IsKeyPressed(ebiten.Key7) && len(p.secondaryWeapons) > 0 {
 		p.curSecondaryWeapon = p.secondaryWeapons[0]
+	} else if ebiten.IsKeyPressed(ebiten.Key8) && len(p.secondaryWeapons) > 1 {
+		p.curSecondaryWeapon = p.secondaryWeapons[1]
 	}
 
 	p.curWeapon.shootCooldown.Update()

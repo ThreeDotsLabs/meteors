@@ -30,6 +30,7 @@ var LaserCannon = mustLoadImage("img/Effects/spaceEffects_004.png")
 var LaserBeam = mustLoadImage("img/Effects/spaceEffects_006.png")
 var ClusterMines = mustLoadImage("img/Building/spaceBuilding_006.png")
 var BigBomb = mustLoadImage("img/Building/spaceBuilding_003.png")
+var MachineGun = mustLoadImage("img/Missiles/spaceMissiles_038.png")
 
 // backgrounds
 var FirstLevelBg = mustLoadImage("img/bg.png")

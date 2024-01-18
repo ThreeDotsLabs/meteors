@@ -521,7 +521,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 	}
 	// }
 
-	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1), assets.InfoFont, 20, 50, color.White)
+	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId), assets.InfoFont, 20, 50, color.White)
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
 }
 
@@ -556,7 +556,7 @@ func (g *Game) AddBlow(b *Blow, target config.Vector) {
 }
 
 func (g *Game) KillEnemy(i int) {
-	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 30, 73, 75, false, "enemyBlow", 0)
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75, false, "enemyBlow", 0)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 }

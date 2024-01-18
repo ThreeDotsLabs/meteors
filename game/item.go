@@ -86,6 +86,19 @@ func (i *Item) CollideWithPlayer(p *Player) {
 			if !persist {
 				p.weapons = append(p.weapons, NewWeapon(config.LaserCannon))
 			}
+		case config.MachineGun:
+			persist := false
+			for _, w := range p.weapons {
+				if w.projectile.wType.WeaponName == config.MachineGun {
+					machineGun := NewWeapon(config.MachineGun)
+					w.ammo += machineGun.ammo
+					persist = true
+				}
+			}
+			if !persist {
+				p.weapons = append(p.weapons, NewWeapon(config.MachineGun))
+			}
+		// Secondary weapons
 		case config.ClusterMines:
 			persist := false
 			for _, w := range p.secondaryWeapons {

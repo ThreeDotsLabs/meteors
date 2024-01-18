@@ -64,7 +64,7 @@ func NewWeapon(wType string) *Weapon {
 				wType: &config.WeaponType{
 					Sprite:     objects.ScaleImg(assets.MissileSprite, 0.7),
 					Velocity:   400,
-					Damage:     1,
+					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.LightRocket,
 				},
@@ -82,7 +82,7 @@ func NewWeapon(wType string) *Weapon {
 				wType: &config.WeaponType{
 					Sprite:     objects.ScaleImg(assets.DoubleMissileSprite, 0.7),
 					Velocity:   400,
-					Damage:     1,
+					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.DoubleLightRocket,
 				},
@@ -99,7 +99,7 @@ func NewWeapon(wType string) *Weapon {
 				rotation: 0,
 				wType: &config.WeaponType{
 					Sprite:     objects.ScaleImg(assets.LaserCannon, 0.5),
-					Damage:     2,
+					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.LaserCannon,
 				},
@@ -117,7 +117,7 @@ func NewWeapon(wType string) *Weapon {
 				wType: &config.WeaponType{
 					Velocity:   200,
 					Sprite:     objects.ScaleImg(assets.ClusterMines, 0.5),
-					Damage:     2,
+					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.ClusterMines,
 				},
@@ -135,13 +135,31 @@ func NewWeapon(wType string) *Weapon {
 				wType: &config.WeaponType{
 					Velocity:   200,
 					Sprite:     objects.ScaleImg(assets.BigBomb, 0.8),
-					Damage:     5,
+					Damage:     10,
 					TargetType: "straight",
 					WeaponName: config.BigBomb,
 				},
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * 600),
 			ammo:          20,
+		}
+	case config.MachineGun:
+		return &Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType: &config.WeaponType{
+					Velocity:   600,
+					Sprite:     objects.ScaleImg(assets.MachineGun, 0.3),
+					Damage:     1,
+					TargetType: "straight",
+					WeaponName: config.MachineGun,
+				},
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * 150),
+			ammo:          999,
 		}
 	}
 	return nil

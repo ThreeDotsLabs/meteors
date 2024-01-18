@@ -22,6 +22,7 @@ const (
 	LaserCannon         = "lightCannon"
 	ClusterMines        = "clusterMines"
 	BigBomb             = "bigBomb"
+	MachineGun          = "machineGun"
 )
 
 type EnemyType struct {
