@@ -25,6 +25,13 @@ const (
 	MachineGun          = "machineGun"
 )
 
+type GameState string
+
+var (
+	MainMenu GameState = "mainMenu"
+	InGame   GameState = "inGame"
+)
+
 type EnemyType struct {
 	RotationSpeed   float64
 	Sprite          *ebiten.Image
