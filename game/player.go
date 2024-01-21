@@ -3,6 +3,7 @@ package game
 import (
 	"image"
 	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -17,9 +18,30 @@ const (
 	bulletSpawnOffset = 50.0
 )
 
-type Player struct {
-	game *Game
+type PlayerParams struct {
+	Level int
+	HP    int
+	speed float64
 
+	LightRocketSpeedUpscale       time.Duration
+	AutoLightRocketSpeedUpscale   time.Duration
+	DoubleLightRocketSpeedUpscale time.Duration
+	LaserCannonSpeedUpscale       time.Duration
+	ClusterMinesSpeedUpscale      time.Duration
+	BigBombSpeedUpscale           time.Duration
+	MachineGunSpeedUpscale        time.Duration
+
+	LightRocketVelocityMultiplier       float64
+	AutoLightRocketVelocityMultiplier   float64
+	DoubleLightRocketVelocityMultiplier float64
+	ClusterMinesVelocityMultiplier      float64
+	BigBombVelocityMultiplier           float64
+	MachineGunVelocityMultiplier        float64
+}
+
+type Player struct {
+	game                *Game
+	params              *PlayerParams
 	position            config.Vector
 	rotation            float64
 	sprite              *ebiten.Image
@@ -29,7 +51,13 @@ type Player struct {
 	secondaryWeapons    []*Weapon
 	curSecondaryWeapon  *Weapon
 	animations          []*Animation
-	hp                  int
+	shield              *Shield
+}
+
+type Shield struct {
+	position config.Vector
+	sprite   *ebiten.Image
+	HP       int
 }
 
 func NewPlayer(curgame *Game) *Player {
@@ -46,23 +74,41 @@ func NewPlayer(curgame *Game) *Player {
 		X: config.ScreenWidth/2 - halfW,
 		Y: config.ScreenHeight/2 + float64(bounds.Dy()/2),
 	}
-	startWeapon := NewWeapon(config.LightRocket)
+
 	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 1, 32, 192, 96, true, "engineFireburst", 0)
 	curgame.AddAnimation(engineFireburst)
 	p := &Player{
+		params: &PlayerParams{
+			Level: 1,
+			HP:    10,
+			speed: 10,
+
+			LightRocketSpeedUpscale:       0,
+			AutoLightRocketSpeedUpscale:   0,
+			DoubleLightRocketSpeedUpscale: 0,
+			LaserCannonSpeedUpscale:       0,
+			ClusterMinesSpeedUpscale:      0,
+			BigBombSpeedUpscale:           0,
+			MachineGunSpeedUpscale:        0,
+
+			LightRocketVelocityMultiplier:       1,
+			AutoLightRocketVelocityMultiplier:   1,
+			DoubleLightRocketVelocityMultiplier: 1,
+			ClusterMinesVelocityMultiplier:      1,
+			BigBombVelocityMultiplier:           1,
+			MachineGunVelocityMultiplier:        1,
+		},
 		game:                curgame,
 		position:            pos,
 		rotation:            0,
 		sprite:              sprite,
 		objectRotationSpeed: 1.2,
-		hp:                  10,
-		weapons: []*Weapon{
-			startWeapon,
-		},
 		animations: []*Animation{
 			engineFireburst,
 		},
 	}
+	startWeapon := NewWeapon(config.LightRocket, p)
+	p.weapons = append(p.weapons, startWeapon)
 	p.curWeapon = p.weapons[0]
 	return p
 }
@@ -70,28 +116,33 @@ func NewPlayer(curgame *Game) *Player {
 func (p *Player) Update() {
 	x, y := ebiten.CursorPosition()
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		p.position.X -= 10
+		p.position.X -= p.params.speed
 		if p.position.X < 0 {
 			p.position.X = 0
 		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		p.position.X += 10
+		p.position.X += p.params.speed
 		if p.position.X > config.ScreenWidth {
 			p.position.X = config.ScreenWidth
 		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		p.position.Y -= 10
+		p.position.Y -= p.params.speed
 		if p.position.Y < 0 {
 			p.position.Y = 0
 		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		p.position.Y += 10
+		p.position.Y += p.params.speed
 		if p.position.Y > config.ScreenHeight {
 			p.position.Y = config.ScreenHeight
 		}
+	}
+
+	if p.shield != nil {
+		p.shield.position.X = p.position.X
+		p.shield.position.Y = p.position.Y
 	}
 
 	targetRotation := math.Atan2(float64(y-int(p.position.Y)), float64(x-int(p.position.X)))
@@ -244,6 +295,10 @@ func (p *Player) Update() {
 
 func (p *Player) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
+}
+
+func (s *Shield) Draw(screen *ebiten.Image) {
+	objects.RotateAndTranslateObject(0, s.sprite, screen, s.position.X, s.position.Y)
 }
 
 func (p *Player) Collider() image.Rectangle {

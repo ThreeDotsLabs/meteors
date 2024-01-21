@@ -52,7 +52,7 @@ type Blow struct {
 
 var screenDiag = math.Sqrt(config.ScreenWidth*config.ScreenWidth + config.ScreenHeight*config.ScreenHeight)
 
-func NewWeapon(wType string) *Weapon {
+func NewWeapon(wType string, p *Player) *Weapon {
 	switch wType {
 	case config.LightRocket:
 		return &Weapon{
@@ -63,13 +63,13 @@ func NewWeapon(wType string) *Weapon {
 				rotation: 0,
 				wType: &config.WeaponType{
 					Sprite:     objects.ScaleImg(assets.MissileSprite, 0.7),
-					Velocity:   400,
+					Velocity:   400 * p.params.LightRocketVelocityMultiplier,
 					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.LightRocket,
 				},
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * 250),
+			shootCooldown: config.NewTimer(time.Millisecond * (250 - p.params.LightRocketSpeedUpscale)),
 			ammo:          100,
 		}
 	case config.DoubleLightRocket:
@@ -81,13 +81,13 @@ func NewWeapon(wType string) *Weapon {
 				rotation: 0,
 				wType: &config.WeaponType{
 					Sprite:     objects.ScaleImg(assets.DoubleMissileSprite, 0.7),
-					Velocity:   400,
+					Velocity:   400 * p.params.DoubleLightRocketVelocityMultiplier,
 					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.DoubleLightRocket,
 				},
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * 250),
+			shootCooldown: config.NewTimer(time.Millisecond * (250 - p.params.DoubleLightRocketSpeedUpscale)),
 			ammo:          50,
 		}
 	case config.LaserCannon:
@@ -104,7 +104,7 @@ func NewWeapon(wType string) *Weapon {
 					WeaponName: config.LaserCannon,
 				},
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * 300),
+			shootCooldown: config.NewTimer(time.Millisecond * (300 - p.params.LaserCannonSpeedUpscale)),
 			ammo:          30,
 		}
 	case config.ClusterMines:
@@ -115,14 +115,14 @@ func NewWeapon(wType string) *Weapon {
 				movement: config.Vector{},
 				rotation: 0,
 				wType: &config.WeaponType{
-					Velocity:   200,
+					Velocity:   240 * p.params.ClusterMinesVelocityMultiplier,
 					Sprite:     objects.ScaleImg(assets.ClusterMines, 0.5),
 					Damage:     3,
 					TargetType: "straight",
 					WeaponName: config.ClusterMines,
 				},
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * 400),
+			shootCooldown: config.NewTimer(time.Millisecond * (400 - p.params.ClusterMinesSpeedUpscale)),
 			ammo:          5,
 		}
 	case config.BigBomb:
@@ -133,14 +133,14 @@ func NewWeapon(wType string) *Weapon {
 				movement: config.Vector{},
 				rotation: 0,
 				wType: &config.WeaponType{
-					Velocity:   200,
+					Velocity:   200 * p.params.BigBombVelocityMultiplier,
 					Sprite:     objects.ScaleImg(assets.BigBomb, 0.8),
 					Damage:     10,
 					TargetType: "straight",
 					WeaponName: config.BigBomb,
 				},
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * 600),
+			shootCooldown: config.NewTimer(time.Millisecond * (600 - p.params.BigBombSpeedUpscale)),
 			ammo:          20,
 		}
 	case config.MachineGun:
@@ -151,15 +151,15 @@ func NewWeapon(wType string) *Weapon {
 				movement: config.Vector{},
 				rotation: 0,
 				wType: &config.WeaponType{
-					Velocity:   600,
+					Velocity:   600 * p.params.MachineGunVelocityMultiplier,
 					Sprite:     objects.ScaleImg(assets.MachineGun, 0.3),
 					Damage:     1,
 					TargetType: "straight",
 					WeaponName: config.MachineGun,
 				},
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * 150),
-			ammo:          999,
+			shootCooldown: config.NewTimer(time.Millisecond * (160 - p.params.MachineGunSpeedUpscale)),
+			ammo:          99,
 		}
 	}
 	return nil

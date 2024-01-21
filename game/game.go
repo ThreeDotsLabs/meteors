@@ -368,8 +368,12 @@ func (g *Game) Update() error {
 			}
 
 			if config.IntersectRect(m.Collider(), g.player.Collider()) {
-				g.Reset()
-				break
+				if g.player.shield != nil {
+					g.player.shield = nil
+				} else {
+					g.Reset()
+					break
+				}
 			}
 
 			if g.beam != nil {
@@ -407,11 +411,18 @@ func (g *Game) Update() error {
 		// Check for projectiles/player collisions
 		for i, p := range g.enemyProjectiles {
 			if config.IntersectRect(p.Collider(), g.player.Collider()) {
-				g.player.hp -= p.wType.Damage
+				if g.player.shield != nil {
+					g.player.shield.HP -= p.wType.Damage
+					if g.player.shield.HP <= 0 {
+						g.player.shield = nil
+					}
+				} else {
+					g.player.params.HP -= p.wType.Damage
+				}
 				if i < len(g.enemyProjectiles) {
 					g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
 				}
-				if g.player.hp <= 0 {
+				if g.player.params.HP <= 0 {
 					g.Reset()
 					break
 				}
@@ -521,8 +532,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 		// Draw the hit points bar
 		barX := config.ScreenWidth - 120
-		vector.DrawFilledRect(screen, float32(barX-2), 38, 104, 24, color.RGBA{255, 255, 255, 255}, false)
-		vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.hp)*10, 20, color.RGBA{179, 14, 14, 255}, false)
+		backWidth := float32(g.player.params.HP)*10 + 4
+		if backWidth < 104 {
+			backWidth = 104
+		}
+
+		vector.DrawFilledRect(screen, float32(barX-2), 38, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
+		vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.params.HP)*10, 20, color.RGBA{179, 14, 14, 255}, false)
 
 		// Draw weapons
 		for i, w := range g.player.weapons {

@@ -97,10 +97,16 @@ type HealType struct {
 	HP int
 }
 
+type ShieldType struct {
+	HP     int
+	Sprite *ebiten.Image
+}
+
 type Item struct {
 	AmmoType      *AmmoType
 	WeaponType    *WeaponType
 	HealType      *HealType
+	ShieldType    *ShieldType
 	RotationSpeed float64
 	Sprite        *ebiten.Image
 	Velocity      float64

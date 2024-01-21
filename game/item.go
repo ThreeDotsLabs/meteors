@@ -58,7 +58,7 @@ func (i *Item) CollideWithPlayer(p *Player) {
 		case config.LightRocket:
 			for _, w := range p.weapons {
 				if w.projectile.wType.WeaponName == config.LightRocket {
-					lightRocket := NewWeapon(config.LightRocket)
+					lightRocket := NewWeapon(config.LightRocket, p)
 					w.ammo += lightRocket.ammo
 				}
 			}
@@ -66,50 +66,50 @@ func (i *Item) CollideWithPlayer(p *Player) {
 			persist := false
 			for _, w := range p.weapons {
 				if w.projectile.wType.WeaponName == config.DoubleLightRocket {
-					doubleLightRocket := NewWeapon(config.DoubleLightRocket)
+					doubleLightRocket := NewWeapon(config.DoubleLightRocket, p)
 					w.ammo += doubleLightRocket.ammo
 					persist = true
 				}
 			}
 			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.DoubleLightRocket))
+				p.weapons = append(p.weapons, NewWeapon(config.DoubleLightRocket, p))
 			}
 		case config.LaserCannon:
 			persist := false
 			for _, w := range p.weapons {
 				if w.projectile.wType.WeaponName == config.LaserCannon {
-					laserCannon := NewWeapon(config.LaserCannon)
+					laserCannon := NewWeapon(config.LaserCannon, p)
 					w.ammo += laserCannon.ammo
 					persist = true
 				}
 			}
 			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.LaserCannon))
+				p.weapons = append(p.weapons, NewWeapon(config.LaserCannon, p))
 			}
 		case config.MachineGun:
 			persist := false
 			for _, w := range p.weapons {
 				if w.projectile.wType.WeaponName == config.MachineGun {
-					machineGun := NewWeapon(config.MachineGun)
+					machineGun := NewWeapon(config.MachineGun, p)
 					w.ammo += machineGun.ammo
 					persist = true
 				}
 			}
 			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.MachineGun))
+				p.weapons = append(p.weapons, NewWeapon(config.MachineGun, p))
 			}
 		// Secondary weapons
 		case config.ClusterMines:
 			persist := false
 			for _, w := range p.secondaryWeapons {
 				if w.projectile.wType.WeaponName == config.ClusterMines {
-					clusterMines := NewWeapon(config.ClusterMines)
+					clusterMines := NewWeapon(config.ClusterMines, p)
 					w.ammo += clusterMines.ammo
 					persist = true
 				}
 			}
 			if !persist {
-				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.ClusterMines))
+				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.ClusterMines, p))
 				if p.curSecondaryWeapon == nil {
 					p.curSecondaryWeapon = p.secondaryWeapons[0]
 				}
@@ -118,20 +118,30 @@ func (i *Item) CollideWithPlayer(p *Player) {
 			persist := false
 			for _, w := range p.secondaryWeapons {
 				if w.projectile.wType.WeaponName == config.ClusterMines {
-					bigBomb := NewWeapon(config.BigBomb)
+					bigBomb := NewWeapon(config.BigBomb, p)
 					w.ammo += bigBomb.ammo
 					persist = true
 				}
 			}
 			if !persist {
-				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.BigBomb))
+				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.BigBomb, p))
 				if p.curSecondaryWeapon == nil {
 					p.curSecondaryWeapon = p.secondaryWeapons[0]
 				}
 			}
 		}
 	} else if i.itemType.HealType != nil {
-		p.hp += i.itemType.HealType.HP
+		p.params.HP += i.itemType.HealType.HP
+	} else if i.itemType.ShieldType != nil {
+		if p.shield != nil {
+			p.shield.HP += i.itemType.ShieldType.HP
+		} else {
+			p.shield = &Shield{
+				position: p.position,
+				HP:       i.itemType.ShieldType.HP,
+				sprite:   i.itemType.ShieldType.Sprite,
+			}
+		}
 	}
 }
 
