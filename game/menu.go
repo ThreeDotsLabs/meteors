@@ -90,6 +90,7 @@ func NewMainMenu(g *Game) *MainMenu {
 }
 
 func (m *MainMenu) Update() error {
+	// Keyboard arrows input handling
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
 		for i := 0; i < len(m.Items); i++ {
 			if m.Items[i].Choosen && i < len(m.Items)-1 {
@@ -121,6 +122,7 @@ func (m *MainMenu) Update() error {
 		}
 	}
 
+	// Choose menu item
 	if ebiten.IsKeyPressed(ebiten.KeyEnter) {
 		for i := 0; i < len(m.Items); i++ {
 			if m.Items[i].Choosen {
@@ -133,9 +135,25 @@ func (m *MainMenu) Update() error {
 		}
 	}
 
+	// Mouse hover on menu items
+	mouseX, mouseY := ebiten.CursorPosition()
+	for i, menuItem := range m.Items {
+		if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && m.Items[i].Active {
+			m.Items[i].Choosen = false
+			if m.Items[i].Active {
+				m.Items[i].Choosen = true
+				for idx, menuItemInner := range m.Items {
+					if idx != i {
+						menuItemInner.Choosen = false
+					}
+				}
+				break
+			}
+		}
+	}
+
 	// Mouse click on menu items
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		mouseX, mouseY := ebiten.CursorPosition()
 		for i, menuItem := range m.Items {
 			if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && m.Items[i].Active {
 				err := m.Items[i].Action(m.Game)
@@ -147,6 +165,7 @@ func (m *MainMenu) Update() error {
 		}
 	}
 
+	// Return to game if started
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && m.Game.started {
 		err := ContinueGame(m.Game)
 		if err != nil {
