@@ -11,7 +11,9 @@ const (
 	ScreenHeight              = 768
 	Screen1024X768XMenuShift  = 120
 	Screen1024X768YMenuShift  = 120
-	Screen1024X768YMenuHeight = 60
+	Screen1024X768YMenuHeight = 40
+	Screen1024X768FontHeight  = 20
+	Screen1024X768FontWidth   = 16
 
 	MeteorSpawnTime     = 2 * time.Second
 	EnemySpawnTime      = 1 * time.Second

@@ -11,7 +11,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type MainMenu struct {
@@ -20,7 +19,7 @@ type MainMenu struct {
 }
 
 type MenuItem struct {
-	vector  *image.Rectangle
+	vector  image.Rectangle
 	Label   string
 	Active  bool
 	Choosen bool
@@ -50,7 +49,6 @@ func NewMainMenu(g *Game) *MainMenu {
 		Game: g,
 		Items: []*MenuItem{
 			{
-				vector:  &image.Rectangle{Min: image.Point{X: config.ScreenWidth/2 - 100, Y: config.ScreenHeight/2 - 20}, Max: image.Point{X: config.ScreenWidth/2 + 230, Y: config.ScreenHeight / 2}},
 				Label:   "Start new game",
 				Action:  StartGame,
 				Active:  true,
@@ -58,7 +56,6 @@ func NewMainMenu(g *Game) *MainMenu {
 				Pos:     0,
 			},
 			{
-				vector:  &image.Rectangle{Min: image.Point{X: config.ScreenWidth/2 - 100, Y: config.ScreenHeight/2 + 60}, Max: image.Point{X: config.ScreenWidth/2 + 212, Y: config.ScreenHeight/2 + 80}},
 				Label:   "Continue game",
 				Action:  ContinueGame,
 				Active:  false,
@@ -66,7 +63,6 @@ func NewMainMenu(g *Game) *MainMenu {
 				Pos:     1,
 			},
 			{
-				vector:  &image.Rectangle{Min: image.Point{X: config.ScreenWidth/2 - 100, Y: config.ScreenHeight/2 + 140}, Max: image.Point{X: config.ScreenWidth/2 + 110, Y: config.ScreenHeight/2 + 160}},
 				Label:   "Options",
 				Action:  StartGame,
 				Active:  false,
@@ -74,7 +70,6 @@ func NewMainMenu(g *Game) *MainMenu {
 				Pos:     2,
 			},
 			{
-				vector:  &image.Rectangle{Min: image.Point{X: config.ScreenWidth/2 - 100, Y: config.ScreenHeight/2 + 220}, Max: image.Point{X: config.ScreenWidth/2 + 140, Y: config.ScreenHeight/2 + 240}},
 				Label:   "Exit game",
 				Action:  ExitGame,
 				Active:  true,
@@ -85,9 +80,10 @@ func NewMainMenu(g *Game) *MainMenu {
 	}
 	sort.Slice(MainMenu.Items, func(i, j int) bool { return MainMenu.Items[i].Pos < MainMenu.Items[j].Pos })
 	for idx, i := range MainMenu.Items {
-		i.vector = &image.Rectangle{
-			Min: image.Point{X: config.ScreenWidth/2 - config.Screen1024X768XMenuShift, Y: config.ScreenHeight/2 - config.Screen1024X768YMenuShift + config.Screen1024X768YMenuHeight*idx},
-			Max: image.Point{X: i.vector.Max.X, Y: config.ScreenHeight/2 - config.Screen1024X768YMenuShift + config.Screen1024X768YMenuHeight*idx},
+		chars := len([]rune(i.Label))
+		i.vector = image.Rectangle{
+			Min: image.Point{X: config.ScreenWidth/2 - config.Screen1024X768XMenuShift, Y: config.ScreenHeight/2 - config.Screen1024X768YMenuShift + config.Screen1024X768YMenuHeight*idx - config.Screen1024X768FontHeight},
+			Max: image.Point{X: config.ScreenWidth/2 - config.Screen1024X768XMenuShift + chars*config.Screen1024X768FontWidth, Y: config.ScreenHeight/2 - config.Screen1024X768YMenuShift + config.Screen1024X768YMenuHeight*idx + config.Screen1024X768FontHeight},
 		}
 	}
 	return &MainMenu
@@ -174,14 +170,12 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 			screen.DrawImage(m.Game.bgImage, op)
 		}
 	}
-	for idx, i := range m.Items {
-		vector.StrokeRect(screen, config.ScreenWidth/2-config.Screen1024X768XMenuShift, float32(config.ScreenHeight/2-config.Screen1024X768YMenuShift+config.Screen1024X768YMenuHeight*idx), float32(i.vector.Max.X), config.Screen1024X768YMenuHeight, 1, color.RGBA{255, 255, 255, 255}, false)
-	}
 
-	// vector.StrokeRect(screen, config.ScreenWidth/2-100, config.ScreenHeight/2-20, 230, 20, 1, color.RGBA{255, 255, 255, 255}, false)
-	// vector.StrokeRect(screen, config.ScreenWidth/2-100, config.ScreenHeight/2+60, 212, 20, 1, color.RGBA{255, 255, 255, 255}, false)
-	// vector.StrokeRect(screen, config.ScreenWidth/2-100, config.ScreenHeight/2+140, 110, 20, 1, color.RGBA{255, 255, 255, 255}, false)
-	// vector.StrokeRect(screen, config.ScreenWidth/2-100, config.ScreenHeight/2+220, 140, 20, 1, color.RGBA{255, 255, 255, 255}, false)
+	// for _, i := range m.Items {
+	// 	chars := len([]rune(i.Label))
+	// 	vector.StrokeRect(screen, float32(i.vector.Min.X), float32(i.vector.Min.Y), float32(chars*config.Screen1024X768FontWidth), config.Screen1024X768FontHeight, 1, color.RGBA{255, 255, 255, 255}, false)
+	// }
+
 	for index, i := range m.Items {
 		colorr := color.RGBA{255, 255, 255, 255}
 		if i.Choosen {
