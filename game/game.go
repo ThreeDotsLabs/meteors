@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -114,7 +115,7 @@ func (g *Game) Update() error {
 			}
 		}
 
-		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 			g.state = config.MainMenu
 		}
 
