@@ -7,8 +7,11 @@ import (
 )
 
 const (
-	ScreenWidth  = 1024
-	ScreenHeight = 768
+	ScreenWidth               = 1024
+	ScreenHeight              = 768
+	Screen1024X768XMenuShift  = 120
+	Screen1024X768YMenuShift  = 120
+	Screen1024X768YMenuHeight = 60
 
 	MeteorSpawnTime     = 2 * time.Second
 	EnemySpawnTime      = 1 * time.Second
