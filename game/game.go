@@ -98,7 +98,10 @@ func (g *Game) Update() error {
 	switch g.state {
 	case config.MainMenu:
 		g.MoveBgPosition()
-		g.menu.Update()
+		err := g.menu.Update()
+		if err != nil {
+			return err
+		}
 	case config.InGame:
 		// Main menu logic
 		if !g.started {
