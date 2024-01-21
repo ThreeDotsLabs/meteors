@@ -59,7 +59,7 @@ func NewMainMenu(g *Game) *MainMenu {
 			{
 				vector:  &image.Rectangle{Min: image.Point{X: config.ScreenWidth/2 - 100, Y: config.ScreenHeight/2 + 60}, Max: image.Point{X: config.ScreenWidth/2 + 212, Y: config.ScreenHeight/2 + 80}},
 				Label:   "Continue game",
-				Action:  StartGame,
+				Action:  ContinueGame,
 				Active:  false,
 				Choosen: false,
 				Pos:     1,
@@ -121,7 +121,7 @@ func (m *MainMenu) Update() error {
 
 		// Check if the mouse click is within the bounds of any menu item
 		for i, menuItem := range m.Items {
-			if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y {
+			if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && m.Items[i].Active {
 				err := m.Items[i].Action(m.Game)
 				if err != nil {
 					return err

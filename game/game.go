@@ -105,14 +105,13 @@ func (g *Game) Update() error {
 	case config.InGame:
 		// Main menu logic
 		if !g.started {
-			g.menu.Items = append(g.menu.Items, &MenuItem{
-				Label:   "Continue current game",
-				Action:  ContinueGame,
-				Choosen: false,
-				Pos:     1,
-			})
-			g.menu.Items[0].Choosen = true
 			g.started = true
+			// Unlock the continue button
+			for i := range g.menu.Items {
+				if g.menu.Items[i].Label == "Continue game" {
+					g.menu.Items[i].Active = true
+				}
+			}
 		}
 
 		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
