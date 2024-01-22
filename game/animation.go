@@ -65,13 +65,15 @@ func (a *Animation) Update() {
 }
 
 func (a *Animation) Draw(screen *ebiten.Image) {
-	switch a.name {
-	case "engineFireburst":
-		objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
-	case "shield":
-		objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
-	default:
-		objects.RotateAndTranslateObject(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+	if a.currF < a.numFrames {
+		switch a.name {
+		case "engineFireburst":
+			objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+		case "shield":
+			objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+		default:
+			objects.RotateAndTranslateObject(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+		}
 	}
 }
 

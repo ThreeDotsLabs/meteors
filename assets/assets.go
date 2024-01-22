@@ -41,7 +41,9 @@ var EnemyBlowSpriteSheet = mustLoadImage("img/Effects/blow.png")
 var BigBlowSpriteSheet = mustLoadImage("img/Effects/bigblow.png")
 var PlayerFireburstSpriteSheet = mustLoadImage("img/Effects/fire.png")
 var ShieldSpriteSheet = mustLoadImage("img/Ships/shieldSpriteSheet1.png")
-var ProjectileBlowSpriteSheet = mustLoadImage("img/Effects/projectile_blow1.png")
+var ProjectileBlowSpriteSheet = mustLoadImage("img/Effects/projectile_blow.png")
+var LightMissileBlowSpriteSheet = mustLoadImage("img/Effects/light_missile_blow2.png")
+var ClusterMinesBlowSpriteSheet = mustLoadImage("img/Effects/cluster_mines_blow.png")
 
 // fonts
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)

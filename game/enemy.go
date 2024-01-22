@@ -101,18 +101,7 @@ func (e *Enemy) Update() {
 				return
 			}
 			e.weapon.shootCooldown.Reset()
-			bounds := e.enemyType.Sprite.Bounds()
-			halfW := float64(bounds.Dx()) / 2
-			halfH := float64(bounds.Dy()) / 2
-
-			spawnPos := config.Vector{
-				X: e.position.X + halfW + math.Sin(e.rotation)*bulletSpawnOffset,
-				Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
-			}
-			animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-			projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation)
-			projectile.owner = "enemy"
-			e.game.AddProjectile(projectile)
+			e.weapon.EnemyShoot(e)
 			e.weapon.ammo--
 		}
 	}

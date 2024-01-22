@@ -17,10 +17,19 @@ func NewLevels() []*Level {
 				Items: []Item{
 					{
 						RotationSpeed: 0,
+						Sprite:        assets.ClusterMines,
+						Velocity:      1.5,
+						WeaponType: &WeaponType{
+							WeaponName: ClusterMines,
+						},
+						ItemSpawnTime: 2 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
 						Sprite:        assets.ShieldSprite,
 						Velocity:      2,
 						ShieldType: &ShieldType{
-							HP:     10,
+							HP:     5,
 							Sprite: assets.ShieldSprite,
 						},
 						ItemSpawnTime: 1 * time.Second,
@@ -51,15 +60,6 @@ func NewLevels() []*Level {
 							WeaponName: BigBomb,
 						},
 						ItemSpawnTime: 20 * time.Second,
-					},
-					{
-						RotationSpeed: 0,
-						Sprite:        assets.ClusterMines,
-						Velocity:      1.5,
-						WeaponType: &WeaponType{
-							WeaponName: ClusterMines,
-						},
-						ItemSpawnTime: 2 * time.Second,
 					},
 					// {
 					// 	RotationSpeed: 0.2,
@@ -92,11 +92,11 @@ func NewLevels() []*Level {
 									Velocity:      2,
 									StartHP:       6,
 								},
-								Count:             1,
+								Count:             6,
 								TargetType:        TargetTypePlayer,
 								BatchSpawnTime:    1 * time.Second,
-								StartPositionType: "lines",
-								StartPosOffset:    20.0,
+								StartPositionType: "centered",
+								StartPosOffset:    40.0,
 							},
 							{
 								Type: &EnemyType{

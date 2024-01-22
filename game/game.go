@@ -6,6 +6,7 @@ import (
 	"astrogame/objects"
 	"fmt"
 	"image/color"
+	"math/rand"
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -149,8 +150,10 @@ func (g *Game) Update() error {
 				g.itemSpawnTimer.Reset()
 				itemWidth := item.itemType.Sprite.Bounds().Dx()
 				itemHight := item.itemType.Sprite.Bounds().Dy()
+				r := rand.New(rand.NewSource(99))
+				posX := r.Intn(config.ScreenWidth - (itemWidth + itemWidth/2))
 				startPos = config.Vector{
-					X: float64(config.ScreenWidth/2) - (float64(itemWidth) / 2),
+					X: float64(posX + itemWidth),
 					Y: -(float64(itemHight)),
 				}
 				target = config.Vector{
@@ -175,6 +178,12 @@ func (g *Game) Update() error {
 				g.batchesSpawnTimer.Reset()
 				elemInLineCount := 0
 				linesCount := 0.0
+				var xOffsetMod float64
+				if batch.StartPositionType == "centered" {
+					eTst := NewEnemy(g, config.Vector{}, config.Vector{}, *batch.Type)
+					enemyWidthTst := eTst.enemyType.Sprite.Bounds().Dx()
+					xOffsetMod = (config.ScreenWidth - float64(batch.Count*(enemyWidthTst+int(batch.StartPosOffset))-int(batch.StartPosOffset))) / 2
+				}
 				for i := 0; i < batch.Count; i++ {
 					var target config.Vector
 					var startPos config.Vector
@@ -183,6 +192,20 @@ func (g *Game) Update() error {
 					enemyWidth := e.enemyType.Sprite.Bounds().Dx()
 					enemyHight := e.enemyType.Sprite.Bounds().Dy()
 					switch batch.StartPositionType {
+					case "centered":
+						xOffset := batch.StartPosOffset
+						elemInLine := config.ScreenWidth / (enemyWidth + int(xOffset))
+						if elemInLineCount == 0 {
+							xOffset = 0.0
+						}
+						if elemInLineCount >= elemInLine {
+							elemInLineCount = 0
+							linesCount++
+						}
+						startPos = config.Vector{
+							X: (float64(enemyWidth)+xOffset)*float64(elemInLineCount) + xOffsetMod,
+							Y: -(float64(enemyHight)*linesCount + 10),
+						}
 					case "lines":
 						xOffset := batch.StartPosOffset
 						elemInLine := config.ScreenWidth / (enemyWidth + int(xOffset))
@@ -548,6 +571,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 		vector.DrawFilledRect(screen, float32(barX-2), 38, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
 		vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.params.HP)*10, 20, color.RGBA{179, 14, 14, 255}, false)
+
+		// Draw shield bar
+		if g.player.shield != nil {
+			backWidth := float32(g.player.shield.HP)*10 + 4
+			if backWidth < 104 {
+				backWidth = 104
+			}
+			shiftX := int(backWidth) - 104
+			vector.DrawFilledRect(screen, float32(barX-shiftX-2), 82, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
+			vector.DrawFilledRect(screen, float32(barX-shiftX), 84, float32(g.player.shield.HP)*10, 20, color.RGBA{26, 14, 189, 255}, false)
+		}
 
 		// Draw weapons
 		for i, w := range g.player.weapons {
