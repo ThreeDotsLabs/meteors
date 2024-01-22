@@ -26,15 +26,15 @@ type Animation struct {
 	name          string
 }
 
-func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, numFrames int, frameHeight int, frameWidth int, looping bool, name string, rotation float64) *Animation {
-	sprites := LoadSpritesheet(sprite, numFrames, frameWidth, frameHeight)
+func NewAnimation(position config.Vector, sprite *ebiten.Image, speed int, frameHeight int, frameWidth int, looping bool, name string, rotation float64) *Animation {
+	sprites, calcNumFrames := LoadSpritesheet(sprite, frameWidth, frameHeight)
 	return &Animation{
 		position:      position,
 		sprites:       sprites,
 		speed:         speed,
 		looping:       looping,
 		run:           true,
-		numFrames:     numFrames,
+		numFrames:     calcNumFrames,
 		startAt:       0,
 		numberOfPlays: 1,
 		currF:         0,
@@ -68,12 +68,14 @@ func (a *Animation) Draw(screen *ebiten.Image) {
 	switch a.name {
 	case "engineFireburst":
 		objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
+	case "shield":
+		objects.RotateAndTranslateAnimation(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
 	default:
 		objects.RotateAndTranslateObject(a.rotation, a.sprites[a.currF], screen, a.position.X, a.position.Y)
 	}
 }
 
-func LoadSpritesheet(sourceImg *ebiten.Image, n int, width int, height int) []*ebiten.Image {
+func LoadSpritesheet(sourceImg *ebiten.Image, width int, height int) ([]*ebiten.Image, int) {
 	sprites := []*ebiten.Image{}
 	numOfLines := sourceImg.Bounds().Dy() / height
 	numFramesInLine := sourceImg.Bounds().Dx() / width
@@ -89,5 +91,5 @@ func LoadSpritesheet(sourceImg *ebiten.Image, n int, width int, height int) []*e
 		}
 	}
 
-	return sprites
+	return sprites, numFramesInLine * numOfLines
 }

@@ -16,6 +16,7 @@ var assets embed.FS
 
 // objects
 var PlayerSprite = mustLoadImage("img/Ships/spaceShips_007.png")
+var ShieldSprite = mustLoadImage("img/Ships/shield.png")
 var HighSpeedFollowPlayerEnemySprite = mustLoadImage("img/Ships/spaceShips_006.png")
 var LowSpeedEnemyLightMissile = mustLoadImage("img/Ships/spaceShips_005.png")
 var LowSpeedEnemyAutoLightMissile = mustLoadImage("img/Ships/spaceShips_003.png")
@@ -33,12 +34,14 @@ var BigBomb = mustLoadImage("img/Building/spaceBuilding_003.png")
 var MachineGun = mustLoadImage("img/Missiles/spaceMissiles_038.png")
 
 // backgrounds
-var FirstLevelBg = mustLoadImage("img/bg.png")
+var FirstLevelBg = mustLoadImage("img/bg1.png")
 
 // spritesheets
 var EnemyBlowSpriteSheet = mustLoadImage("img/Effects/blow.png")
 var BigBlowSpriteSheet = mustLoadImage("img/Effects/bigblow.png")
 var PlayerFireburstSpriteSheet = mustLoadImage("img/Effects/fire.png")
+var ShieldSpriteSheet = mustLoadImage("img/Ships/shieldSpriteSheet1.png")
+var ProjectileBlowSpriteSheet = mustLoadImage("img/Effects/projectile_blow1.png")
 
 // fonts
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)

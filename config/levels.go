@@ -17,12 +17,22 @@ func NewLevels() []*Level {
 				Items: []Item{
 					{
 						RotationSpeed: 0,
+						Sprite:        assets.ShieldSprite,
+						Velocity:      2,
+						ShieldType: &ShieldType{
+							HP:     10,
+							Sprite: assets.ShieldSprite,
+						},
+						ItemSpawnTime: 1 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
 						Sprite:        assets.MachineGun,
 						Velocity:      1.7,
 						WeaponType: &WeaponType{
 							WeaponName: MachineGun,
 						},
-						ItemSpawnTime: 1 * time.Second,
+						ItemSpawnTime: 5 * time.Second,
 					},
 					{
 						RotationSpeed: 0,
@@ -31,7 +41,7 @@ func NewLevels() []*Level {
 						WeaponType: &WeaponType{
 							WeaponName: LaserCannon,
 						},
-						ItemSpawnTime: 1 * time.Second,
+						ItemSpawnTime: 10 * time.Second,
 					},
 					{
 						RotationSpeed: 0,
@@ -40,7 +50,7 @@ func NewLevels() []*Level {
 						WeaponType: &WeaponType{
 							WeaponName: BigBomb,
 						},
-						ItemSpawnTime: 1 * time.Second,
+						ItemSpawnTime: 20 * time.Second,
 					},
 					{
 						RotationSpeed: 0,
@@ -88,32 +98,32 @@ func NewLevels() []*Level {
 								StartPositionType: "lines",
 								StartPosOffset:    20.0,
 							},
-							// {
-							// 	Type: &EnemyType{
-							// 		RotationSpeed: 0,
-							// 		Sprite:        assets.LowSpeedEnemyLightMissile,
-							// 		Velocity:      1,
-							// 		WeaponTypeStr: LightRocket,
-							// 		StartHP:       1,
-							// 	},
-							// 	Count:             20,
-							// 	TargetType:        "straight",
-							// 	BatchSpawnTime:    5 * time.Second,
-							// 	StartPositionType: "checkmate",
-							// },
-							// {
-							// 	Type: &EnemyType{
-							// 		RotationSpeed: 0,
-							// 		Sprite:        assets.LowSpeedEnemyAutoLightMissile,
-							// 		Velocity:      1,
-							// 		WeaponTypeStr: AutoLightRocket,
-							// 		StartHP:       2,
-							// 	},
-							// 	Count:             4,
-							// 	TargetType:        "straight",
-							// 	BatchSpawnTime:    10 * time.Second,
-							// 	StartPositionType: "checkmate",
-							// },
+							{
+								Type: &EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.LowSpeedEnemyLightMissile,
+									Velocity:      1,
+									WeaponTypeStr: LightRocket,
+									StartHP:       1,
+								},
+								Count:             20,
+								TargetType:        "straight",
+								BatchSpawnTime:    5 * time.Second,
+								StartPositionType: "checkmate",
+							},
+							{
+								Type: &EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.LowSpeedEnemyAutoLightMissile,
+									Velocity:      1,
+									WeaponTypeStr: AutoLightRocket,
+									StartHP:       2,
+								},
+								Count:             4,
+								TargetType:        "straight",
+								BatchSpawnTime:    10 * time.Second,
+								StartPositionType: "checkmate",
+							},
 						},
 					},
 					{

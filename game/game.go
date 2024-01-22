@@ -281,19 +281,6 @@ func (g *Game) Update() error {
 			}
 		}
 
-		for i, e := range g.enemies {
-			if e.TargetType == config.TargetTypePlayer {
-				e.target = config.Vector{
-					X: g.player.position.X,
-					Y: g.player.position.Y,
-				}
-			}
-			e.Update()
-			if e.position.Y >= config.ScreenHeight && i < len(g.enemies) {
-				g.enemies = slices.Delete(g.enemies, i, i+1)
-			}
-		}
-
 		for i, item := range g.items {
 			item.Update()
 			if item.position.Y >= config.ScreenHeight && i < len(g.items) {
@@ -302,6 +289,7 @@ func (g *Game) Update() error {
 		}
 
 		// Check for meteor/projectile collisions
+		// Check for meteor/enemy projectile collisions
 		for i, m := range g.meteors {
 			for j, b := range g.projectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
@@ -312,10 +300,7 @@ func (g *Game) Update() error {
 					}
 				}
 			}
-		}
 
-		// Check for meteor/enemy projectile collisions
-		for i, m := range g.meteors {
 			for j, b := range g.enemyProjectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
 					if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
@@ -331,6 +316,17 @@ func (g *Game) Update() error {
 		// Check for enemy/beam collisions
 		// Check for enemy/blow collisions
 		for i, m := range g.enemies {
+			if m.TargetType == config.TargetTypePlayer {
+				m.target = config.Vector{
+					X: g.player.position.X,
+					Y: g.player.position.Y,
+				}
+			}
+			m.Update()
+			if m.position.Y >= config.ScreenHeight && i < len(g.enemies) {
+				g.enemies = slices.Delete(g.enemies, i, i+1)
+			}
+
 			for j, b := range g.projectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) && b.owner == "player" {
 					switch b.wType.WeaponName {
@@ -350,6 +346,8 @@ func (g *Game) Update() error {
 					}
 
 					if j < len(g.projectiles) {
+						g.projectiles[j].intercectAnimation.position = b.position
+						g.AddAnimation(g.projectiles[j].intercectAnimation)
 						g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
 					}
 				}
@@ -394,7 +392,11 @@ func (g *Game) Update() error {
 			for j, b := range g.projectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
 					if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)-1) {
+						g.enemyProjectiles[i].intercectAnimation.position = m.position
+						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
 						g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+						g.projectiles[j].intercectAnimation.position = b.position
+						g.AddAnimation(g.projectiles[j].intercectAnimation)
 						g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
 					}
 				}
@@ -402,6 +404,8 @@ func (g *Game) Update() error {
 			if g.beam != nil {
 				if config.IntersectLine(g.beam.Line, m.Collider()) {
 					if i < len(g.enemyProjectiles) {
+						g.enemyProjectiles[i].intercectAnimation.position = m.position
+						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
 						g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
 					}
 				}
@@ -420,6 +424,8 @@ func (g *Game) Update() error {
 					g.player.params.HP -= p.wType.Damage
 				}
 				if i < len(g.enemyProjectiles) {
+					g.enemyProjectiles[i].intercectAnimation.position = p.position
+					g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
 					g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
 				}
 				if g.player.params.HP <= 0 {
@@ -462,6 +468,9 @@ func (g *Game) Update() error {
 		for i, a := range g.animations {
 			a.Update()
 			if a.currF >= a.numFrames && i < len(g.animations) && !a.looping {
+				g.animations = slices.Delete(g.animations, i, i+1)
+			}
+			if a.name == "shield" && g.player.shield == nil && i < len(g.animations) {
 				g.animations = slices.Delete(g.animations, i, i+1)
 			}
 		}
@@ -611,12 +620,12 @@ func (g *Game) AddAnimation(a *Animation) {
 
 func (g *Game) AddBlow(b *Blow, target config.Vector) {
 	g.blows = append(g.blows, b)
-	blowAnimation := NewAnimation(target, assets.BigBlowSpriteSheet, 1, 48, 124, 128, false, "digBlow", 0)
+	blowAnimation := NewAnimation(target, assets.BigBlowSpriteSheet, 1, 124, 128, false, "digBlow", 0)
 	g.AddAnimation(blowAnimation)
 }
 
 func (g *Game) KillEnemy(i int) {
-	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 31, 73, 75, false, "enemyBlow", 0)
+	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 73, 75, false, "enemyBlow", 0)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 }

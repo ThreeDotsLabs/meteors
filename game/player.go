@@ -75,7 +75,7 @@ func NewPlayer(curgame *Game) *Player {
 		Y: config.ScreenHeight/2 + float64(bounds.Dy()/2),
 	}
 
-	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 1, 32, 192, 96, true, "engineFireburst", 0)
+	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 1, 192, 96, true, "engineFireburst", 0)
 	curgame.AddAnimation(engineFireburst)
 	p := &Player{
 		params: &PlayerParams{
@@ -174,6 +174,12 @@ func (p *Player) Update() {
 			a.rotation = p.rotation
 			a.rotationPoint.X = float64(w)
 			a.rotationPoint.Y = float64(h)
+		case "shield":
+			w := p.sprite.Bounds().Dx()
+			h := p.sprite.Bounds().Dy()
+			px, py := p.position.X-float64(w)/2, p.position.Y-float64(h)/2
+			a.position.X = px
+			a.position.Y = py
 		default:
 			a.position = p.position
 			a.rotation = p.rotation
@@ -200,55 +206,7 @@ func (p *Player) Update() {
 			return
 		}
 		p.curWeapon.shootCooldown.Reset()
-		switch p.curWeapon.projectile.wType.WeaponName {
-		case config.DoubleLightRocket:
-			bounds := p.sprite.Bounds()
-			halfWleft := float64(bounds.Dx()) / 4
-			halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
-			halfH := float64(bounds.Dy()) / 2
-
-			spawnPosLeft := config.Vector{
-				X: p.position.X + halfWleft + math.Sin(p.rotation)*bulletSpawnOffset,
-				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
-			}
-			projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, p.curWeapon.projectile.wType)
-
-			spawnPosRight := config.Vector{
-				X: p.position.X + halfWright + math.Sin(p.rotation)*bulletSpawnOffset,
-				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
-			}
-			projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, p.curWeapon.projectile.wType)
-
-			projectileLeft.owner = "player"
-			projectileRight.owner = "player"
-			p.game.AddProjectile(projectileLeft)
-			p.game.AddProjectile(projectileRight)
-		case config.LaserCannon:
-			bounds := p.sprite.Bounds()
-			halfW := float64(bounds.Dx()) / 2
-			halfH := float64(bounds.Dy()) / 2
-
-			spawnPos := config.Vector{
-				X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
-			}
-			beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPos, p.curWeapon.projectile.wType)
-			beam.owner = "player"
-			p.game.AddBeam(beam)
-		default:
-			bounds := p.sprite.Bounds()
-			halfW := float64(bounds.Dx()) / 2
-			halfH := float64(bounds.Dy()) / 2
-
-			spawnPos := config.Vector{
-				X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-				Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
-			}
-
-			projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, p.curWeapon.projectile.wType)
-			projectile.owner = "player"
-			p.game.AddProjectile(projectile)
-		}
+		p.curWeapon.Shoot(p)
 		p.curWeapon.ammo--
 	}
 	if p.curSecondaryWeapon != nil {
@@ -258,36 +216,7 @@ func (p *Player) Update() {
 				return
 			}
 			p.curSecondaryWeapon.shootCooldown.Reset()
-			switch p.curSecondaryWeapon.projectile.wType.WeaponName {
-			case config.ClusterMines:
-				bounds := p.sprite.Bounds()
-				halfW := float64(bounds.Dx()) / 2
-				halfH := float64(bounds.Dy()) / 2
-
-				for i := 0; i < 20; i++ {
-					angle := (math.Pi / 180) * float64(i*18)
-					spawnPos := config.Vector{
-						X: p.position.X + halfW + math.Sin(angle),
-						Y: p.position.Y + halfH + math.Cos(angle),
-					}
-					projectile := NewProjectile(config.Vector{}, spawnPos, angle, p.curSecondaryWeapon.projectile.wType)
-					projectile.owner = "player"
-					p.game.AddProjectile(projectile)
-				}
-			case config.BigBomb:
-				bounds := p.sprite.Bounds()
-				halfW := float64(bounds.Dx()) / 2
-				halfH := float64(bounds.Dy()) / 2
-
-				spawnPos := config.Vector{
-					X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
-				}
-
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, p.curSecondaryWeapon.projectile.wType)
-				projectile.owner = "player"
-				p.game.AddProjectile(projectile)
-			}
+			p.curSecondaryWeapon.Shoot(p)
 			p.curSecondaryWeapon.ammo--
 		}
 	}
@@ -297,9 +226,9 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 }
 
-func (s *Shield) Draw(screen *ebiten.Image) {
-	objects.RotateAndTranslateObject(0, s.sprite, screen, s.position.X, s.position.Y)
-}
+// func (s *Shield) Draw(screen *ebiten.Image) {
+// 	objects.RotateAndTranslateObject(0, s.sprite, screen, s.position.X, s.position.Y)
+// }
 
 func (p *Player) Collider() image.Rectangle {
 	bounds := p.sprite.Bounds()

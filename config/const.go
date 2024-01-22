@@ -80,12 +80,13 @@ type EnemyBatch struct {
 }
 
 type WeaponType struct {
-	Sprite     *ebiten.Image
-	Velocity   float64
-	Damage     int
-	Target     Vector
-	TargetType string
-	WeaponName string
+	Sprite                        *ebiten.Image
+	IntercectAnimationSpriteSheet *ebiten.Image
+	Velocity                      float64
+	Damage                        int
+	Target                        Vector
+	TargetType                    string
+	WeaponName                    string
 }
 
 type AmmoType struct {

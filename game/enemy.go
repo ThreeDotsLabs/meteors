@@ -109,8 +109,8 @@ func (e *Enemy) Update() {
 				X: e.position.X + halfW + math.Sin(e.rotation)*bulletSpawnOffset,
 				Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
 			}
-
-			projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType)
+			animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
+			projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation)
 			projectile.owner = "enemy"
 			e.game.AddProjectile(projectile)
 			e.weapon.ammo--

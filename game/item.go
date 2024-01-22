@@ -1,6 +1,7 @@
 package game
 
 import (
+	"astrogame/assets"
 	"astrogame/config"
 	"astrogame/objects"
 	"image"
@@ -136,11 +137,21 @@ func (i *Item) CollideWithPlayer(p *Player) {
 		if p.shield != nil {
 			p.shield.HP += i.itemType.ShieldType.HP
 		} else {
+			w := p.sprite.Bounds().Dx()
+			h := p.sprite.Bounds().Dy()
+			px, py := p.position.X-float64(w)/2, p.position.Y-float64(h)/2
 			p.shield = &Shield{
 				position: p.position,
 				HP:       i.itemType.ShieldType.HP,
 				sprite:   i.itemType.ShieldType.Sprite,
 			}
+			animationPos := config.Vector{
+				X: px,
+				Y: py,
+			}
+			shieldAnimation := NewAnimation(animationPos, assets.ShieldSpriteSheet, 1, 192, 192, true, "shield", 0)
+			p.animations = append(p.animations, shieldAnimation)
+			p.game.AddAnimation(shieldAnimation)
 		}
 	}
 }
