@@ -17,6 +17,7 @@ import (
 
 type Game struct {
 	menu              *MainMenu
+	profile           *ProfileScreen
 	state             config.GameState
 	player            *Player
 	meteorSpawnTimer  *config.Timer
@@ -64,6 +65,7 @@ func NewGame() *Game {
 
 	g.player = NewPlayer(g)
 	g.menu = NewMainMenu(g)
+	g.profile = NewPlayerProfile(g)
 
 	return g
 }
@@ -97,9 +99,11 @@ func (g *Game) MoveBgPosition() {
 }
 
 func (g *Game) Update() error {
+	g.MoveBgPosition()
 	switch g.state {
+	case config.Profile:
+		g.profile.Update()
 	case config.MainMenu:
-		g.MoveBgPosition()
 		err := g.menu.Update()
 		if err != nil {
 			return err
@@ -120,9 +124,14 @@ func (g *Game) Update() error {
 			g.state = config.MainMenu
 		}
 
+		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+			for _, i := range g.profile.LeftBar.Items {
+				i.UpdatePrevValue(g)
+			}
+			g.state = config.Profile
+		}
+
 		// Game logic
-		// Background movement
-		g.MoveBgPosition()
 		g.player.Update()
 
 		// Meteor spawning
@@ -363,7 +372,6 @@ func (g *Game) Update() error {
 						if m.HP <= 0 {
 							if (i < len(g.enemies)) && (j < len(g.projectiles)) {
 								g.KillEnemy(i)
-								g.score++
 							}
 						}
 					}
@@ -382,7 +390,6 @@ func (g *Game) Update() error {
 					if m.HP <= 0 {
 						if i < len(g.enemies) {
 							g.KillEnemy(i)
-							g.score++
 						}
 					}
 				}
@@ -403,7 +410,6 @@ func (g *Game) Update() error {
 					if m.HP <= 0 {
 						if i < len(g.enemies) {
 							g.KillEnemy(i)
-							g.score++
 						}
 					}
 				}
@@ -512,6 +518,8 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.state {
+	case config.Profile:
+		g.profile.Draw(screen)
 	case config.MainMenu:
 		g.menu.Draw(screen)
 	case config.InGame:
@@ -662,6 +670,8 @@ func (g *Game) KillEnemy(i int) {
 	enemyBlow := NewAnimation(g.enemies[i].position, assets.EnemyBlowSpriteSheet, 1, 73, 75, false, "enemyBlow", 0)
 	g.AddAnimation(enemyBlow)
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
+	g.score++
+	g.profile.credits += 10
 }
 
 func (g *Game) Reset() {

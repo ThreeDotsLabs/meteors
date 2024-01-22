@@ -7,13 +7,15 @@ import (
 )
 
 const (
-	ScreenWidth               = 1024
-	ScreenHeight              = 768
-	Screen1024X768XMenuShift  = 120
-	Screen1024X768YMenuShift  = 120
-	Screen1024X768YMenuHeight = 40
-	Screen1024X768FontHeight  = 20
-	Screen1024X768FontWidth   = 16
+	ScreenWidth                 = 1024
+	ScreenHeight                = 768
+	Screen1024X768XMenuShift    = 120
+	Screen1024X768YMenuShift    = 120
+	Screen1024X768XProfileShift = 120
+	Screen1024X768YProfileShift = 120
+	Screen1024X768YMenuHeight   = 40
+	Screen1024X768FontHeight    = 20
+	Screen1024X768FontWidth     = 16
 
 	MeteorSpawnTime     = 2 * time.Second
 	EnemySpawnTime      = 1 * time.Second
@@ -35,6 +37,7 @@ type GameState string
 var (
 	MainMenu GameState = "mainMenu"
 	InGame   GameState = "inGame"
+	Profile  GameState = "profile"
 )
 
 type EnemyType struct {
@@ -83,6 +86,7 @@ type WeaponType struct {
 	Sprite                        *ebiten.Image
 	IntercectAnimationSpriteSheet *ebiten.Image
 	Velocity                      float64
+	StartVelocity                 float64
 	Damage                        int
 	Target                        Vector
 	TargetType                    string

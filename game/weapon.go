@@ -62,7 +62,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		lightRType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.MissileSprite, 0.7),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
-			Velocity:                      400 * p.params.LightRocketVelocityMultiplier,
+			Velocity:                      400 + p.params.LightRocketVelocityMultiplier*10,
 			Damage:                        3,
 			TargetType:                    "straight",
 			WeaponName:                    config.LightRocket,
@@ -97,7 +97,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		boubleRType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.DoubleMissileSprite, 0.7),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
-			Velocity:                      400 * p.params.DoubleLightRocketVelocityMultiplier,
+			Velocity:                      400 + p.params.DoubleLightRocketVelocityMultiplier,
 			Damage:                        3,
 			TargetType:                    "straight",
 			WeaponName:                    config.DoubleLightRocket,
@@ -176,7 +176,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		clusterMType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.ClusterMines, 0.5),
 			IntercectAnimationSpriteSheet: assets.ClusterMinesBlowSpriteSheet,
-			Velocity:                      240 * p.params.ClusterMinesVelocityMultiplier,
+			Velocity:                      240 + p.params.ClusterMinesVelocityMultiplier,
 			Damage:                        3,
 			TargetType:                    "straight",
 			WeaponName:                    config.ClusterMines,
@@ -213,7 +213,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	case config.BigBomb:
 		bigBType := &config.WeaponType{
 			Sprite:     objects.ScaleImg(assets.BigBomb, 0.8),
-			Velocity:   200 * p.params.BigBombVelocityMultiplier,
+			Velocity:   200 + p.params.BigBombVelocityMultiplier,
 			Damage:     10,
 			TargetType: "straight",
 			WeaponName: config.BigBomb,
@@ -248,7 +248,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		machineGType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.MachineGun, 0.3),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
-			Velocity:                      600 * p.params.MachineGunVelocityMultiplier,
+			Velocity:                      600 + p.params.MachineGunVelocityMultiplier,
 			Damage:                        1,
 			TargetType:                    "straight",
 			WeaponName:                    config.MachineGun,
@@ -364,7 +364,33 @@ func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wT
 	return p
 }
 
+func (p *Projectile) VelocityUpdate(player *Player) {
+	switch p.wType.WeaponName {
+	case config.LightRocket:
+		p.wType.Velocity = 400 + player.params.LightRocketVelocityMultiplier*10
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.LightRocketSpeedUpscale*10))
+	case config.DoubleLightRocket:
+		p.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier*10
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale*10))
+	case config.LaserCannon:
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (300 - player.params.LaserCannonSpeedUpscale*10))
+	case config.MachineGun:
+		p.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier*10
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale*10))
+	case config.ClusterMines:
+		p.wType.Velocity = 240 + player.params.ClusterMinesVelocityMultiplier*10
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (400 - player.params.ClusterMinesSpeedUpscale*10))
+	case config.BigBomb:
+		p.wType.Velocity = 200 + player.params.BigBombVelocityMultiplier*10
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale*10))
+	}
+}
 func (p *Projectile) Update() {
+	speed := p.wType.Velocity / float64(ebiten.TPS())
+	quant := speed
+	if p.owner == "player" {
+		quant = -speed
+	}
 	if p.wType.TargetType == "auto" {
 		p.position.X += p.movement.X
 		p.position.Y += p.movement.Y
@@ -383,11 +409,6 @@ func (p *Projectile) Update() {
 		p.rotation = math.Atan2(float64(p.target.Y-p.position.Y), float64(p.target.X-p.position.X))
 		p.rotation -= (90 * math.Pi) / 180
 	} else {
-		speed := p.wType.Velocity / float64(ebiten.TPS())
-		quant := speed
-		if p.owner == "player" {
-			quant = -speed
-		}
 		p.position.X += math.Sin(p.rotation) * speed
 		p.position.Y += math.Cos(p.rotation) * quant
 	}

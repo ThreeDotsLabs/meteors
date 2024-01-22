@@ -31,3 +31,8 @@ func (t *Timer) IsReady() bool {
 func (t *Timer) Reset() {
 	t.currentTicks = 0
 }
+
+func (t *Timer) Restart(d time.Duration) {
+	t.targetTicks = int(d.Milliseconds()) * ebiten.TPS() / 1000
+	t.currentTicks = 0
+}

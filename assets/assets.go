@@ -49,6 +49,8 @@ var ClusterMinesBlowSpriteSheet = mustLoadImage("img/Effects/cluster_mines_blow.
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
 var InfoFont = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
 var SmallFont = mustLoadFont("fonts/Kenney Mini.ttf", 18)
+var ProfileFont = mustLoadFont("fonts/Kenney Future.ttf", 12)
+var ProfileBigFont = mustLoadFont("fonts/Kenney Future.ttf", 24)
 
 func mustLoadImage(name string) *ebiten.Image {
 	f, err := assets.Open(name)

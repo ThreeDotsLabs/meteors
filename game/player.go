@@ -114,6 +114,7 @@ func NewPlayer(curgame *Game) *Player {
 }
 
 func (p *Player) Update() {
+
 	x, y := ebiten.CursorPosition()
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
 		p.position.X -= p.params.speed

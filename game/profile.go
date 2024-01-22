@@ -1,0 +1,551 @@
+package game
+
+import (
+	"astrogame/assets"
+	"astrogame/config"
+	"fmt"
+	"image"
+	"image/color"
+	"log"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text"
+)
+
+type ProfileScreen struct {
+	Game     *Game
+	credits  int
+	LeftBar  *Bar
+	RightBar *Bar
+}
+
+type Bar struct {
+	Items []*ProfileItem
+}
+
+type ProfileItem struct {
+	Label           string
+	ValueInt        int
+	PrevValue       int
+	UpdateValue     func(g *Game)
+	UpdatePrevValue func(g *Game)
+	LabelPos        image.Rectangle
+	ValuePos        image.Rectangle
+	Buttons         []*MenuItem
+}
+
+func NewPlayerProfile(g *Game) *ProfileScreen {
+	barStroke := 16
+	barWidth := (config.ScreenWidth - (config.Screen1024X768XProfileShift*2 + barStroke*2)) / 2
+	section := barWidth / 10
+	lineHeight := 25
+	return &ProfileScreen{
+		Game:    g,
+		credits: 50,
+		LeftBar: &Bar{
+			Items: []*ProfileItem{
+				{
+					Label:     "Health points",
+					ValueInt:  g.player.params.HP,
+					PrevValue: g.player.params.HP,
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[0].ValueInt = g.player.params.HP
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[0].PrevValue = g.player.params.HP
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: true,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight),
+							Action: func(g *Game) error {
+								if g.player.params.HP > g.profile.LeftBar.Items[0].PrevValue {
+									g.player.params.HP--
+									g.profile.credits += 10
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 10 {
+									g.player.params.HP++
+									g.profile.credits -= 10
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Ship's speed",
+					ValueInt: int(g.player.params.speed),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[1].ValueInt = int(g.player.params.speed)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[1].PrevValue = int(g.player.params.speed)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*2),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*2),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*2),
+							Action: func(g *Game) error {
+								if int(g.player.params.speed) > g.profile.LeftBar.Items[1].PrevValue {
+									g.player.params.speed--
+									g.profile.credits += 50
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*2),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 50 {
+									g.player.params.speed++
+									g.profile.credits -= 50
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Light missile fire rate X",
+					ValueInt: int(g.player.params.LightRocketSpeedUpscale),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[2].ValueInt = int(g.player.params.LightRocketSpeedUpscale)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[2].PrevValue = int(g.player.params.LightRocketSpeedUpscale)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*2, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*2+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*2, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*2+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*2, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*2+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.LightRocketSpeedUpscale) > g.profile.LeftBar.Items[2].PrevValue {
+									g.player.params.LightRocketSpeedUpscale--
+									g.profile.credits += 2
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*2, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*2+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 2 {
+									g.player.params.LightRocketSpeedUpscale++
+									g.profile.credits -= 2
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Light missile velocity X",
+					ValueInt: int(g.player.params.LightRocketVelocityMultiplier),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[3].ValueInt = int(g.player.params.LightRocketVelocityMultiplier)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[3].PrevValue = int(g.player.params.LightRocketVelocityMultiplier)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*3, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*3+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*3, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*3+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*3, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*3+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.LightRocketVelocityMultiplier) > g.profile.LeftBar.Items[3].PrevValue {
+									g.player.params.LightRocketVelocityMultiplier--
+									g.profile.credits++
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*3, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*3+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 1 {
+									g.player.params.LightRocketVelocityMultiplier++
+									g.profile.credits--
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Double missile fire rate X",
+					ValueInt: int(g.player.params.DoubleLightRocketSpeedUpscale),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[4].ValueInt = int(g.player.params.DoubleLightRocketSpeedUpscale)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[4].PrevValue = int(g.player.params.LightRocketSpeedUpscale)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*4, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*4+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*4, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*4+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*4, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*4+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.DoubleLightRocketSpeedUpscale) > g.profile.LeftBar.Items[4].PrevValue {
+									g.player.params.DoubleLightRocketSpeedUpscale--
+									g.profile.credits += 4
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*4, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*4+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 4 {
+									g.player.params.DoubleLightRocketSpeedUpscale++
+									g.profile.credits -= 4
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Double missile velocity X",
+					ValueInt: int(g.player.params.DoubleLightRocketVelocityMultiplier),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[5].ValueInt = int(g.player.params.DoubleLightRocketVelocityMultiplier)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[5].PrevValue = int(g.player.params.DoubleLightRocketVelocityMultiplier)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*5, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*5+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*5, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*5+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*5, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*5+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.DoubleLightRocketVelocityMultiplier) > g.profile.LeftBar.Items[5].PrevValue {
+									g.player.params.DoubleLightRocketVelocityMultiplier--
+									g.profile.credits += 4
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*5, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*5+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 4 {
+									g.player.params.DoubleLightRocketVelocityMultiplier++
+									g.profile.credits -= 4
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Cluster mines fire rate X",
+					ValueInt: int(g.player.params.ClusterMinesSpeedUpscale),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[6].ValueInt = int(g.player.params.ClusterMinesSpeedUpscale)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[6].PrevValue = int(g.player.params.ClusterMinesSpeedUpscale)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*6, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*6+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*6, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*6+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*6, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*6+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.ClusterMinesSpeedUpscale) > g.profile.LeftBar.Items[6].PrevValue {
+									g.player.params.ClusterMinesSpeedUpscale--
+									g.profile.credits += 10
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*6, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*6+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 10 {
+									g.player.params.ClusterMinesSpeedUpscale++
+									g.profile.credits -= 10
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Cluster mines velocity X",
+					ValueInt: int(g.player.params.ClusterMinesVelocityMultiplier),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[7].ValueInt = int(g.player.params.ClusterMinesVelocityMultiplier)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[7].PrevValue = int(g.player.params.ClusterMinesVelocityMultiplier)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*7, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*7+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*7, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*7+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*7, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*7+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.ClusterMinesVelocityMultiplier) > g.profile.LeftBar.Items[7].PrevValue {
+									g.player.params.ClusterMinesVelocityMultiplier--
+									g.profile.credits += 12
+								}
+								g.player.params.ClusterMinesVelocityMultiplier--
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*7, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*7+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 12 {
+									g.player.params.ClusterMinesVelocityMultiplier++
+									g.profile.credits -= 12
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Big bomb fire rate X",
+					ValueInt: int(g.player.params.BigBombSpeedUpscale),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[8].ValueInt = int(g.player.params.BigBombSpeedUpscale)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[8].PrevValue = int(g.player.params.BigBombSpeedUpscale)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*8, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*8+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*8, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*8+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*8, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*8+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.BigBombSpeedUpscale) > g.profile.LeftBar.Items[8].PrevValue {
+									g.player.params.BigBombSpeedUpscale--
+									g.profile.credits += 16
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*8, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*8+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 16 {
+									g.player.params.BigBombSpeedUpscale++
+									g.profile.credits -= 16
+								}
+								return nil
+							},
+						},
+					},
+				},
+				{
+					Label:    "Big bomb velocity X",
+					ValueInt: int(g.player.params.BigBombVelocityMultiplier),
+					UpdateValue: func(g *Game) {
+						g.profile.LeftBar.Items[9].ValueInt = int(g.player.params.BigBombVelocityMultiplier)
+					},
+					UpdatePrevValue: func(g *Game) {
+						g.profile.LeftBar.Items[9].PrevValue = int(g.player.params.BigBombVelocityMultiplier)
+					},
+					LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*9, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*9+lineHeight),
+					ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*9, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*9+lineHeight),
+					Buttons: []*MenuItem{
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     0,
+							Label:   "-",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*9, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*9+lineHeight),
+							Action: func(g *Game) error {
+								if int(g.player.params.BigBombVelocityMultiplier) > g.profile.LeftBar.Items[8].PrevValue {
+									g.player.params.BigBombVelocityMultiplier--
+									g.profile.credits += 20
+								}
+								return nil
+							},
+						},
+						{
+							Active:  true,
+							Choosen: false,
+							Pos:     1,
+							Label:   "+",
+							vector:  image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*9, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*9+lineHeight),
+							Action: func(g *Game) error {
+								if g.profile.credits >= 20 {
+									g.player.params.BigBombVelocityMultiplier++
+									g.profile.credits -= 20
+								}
+								return nil
+							},
+						},
+					},
+				},
+			},
+		},
+		RightBar: &Bar{},
+	}
+}
+func (p *ProfileScreen) Update() {
+	for _, w := range p.Game.player.weapons {
+		w.projectile.VelocityUpdate(p.Game.player)
+	}
+	// Mouse hover on menu items
+	mouseX, mouseY := ebiten.CursorPosition()
+	for _, profileItem := range p.LeftBar.Items {
+		profileItem.UpdateValue(p.Game)
+		for i, menuItem := range profileItem.Buttons {
+			profileItem.Buttons[i].Choosen = false
+			if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && profileItem.Buttons[i].Active {
+				if profileItem.Buttons[i].Active {
+					profileItem.Buttons[i].Choosen = true
+					break
+				}
+			}
+		}
+	}
+
+	// Mouse click on menu items
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		for _, profileItem := range p.LeftBar.Items {
+			for i, menuItem := range profileItem.Buttons {
+				if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && profileItem.Buttons[i].Active {
+					_ = profileItem.Buttons[i].Action(p.Game)
+					break
+				}
+			}
+		}
+	}
+
+	// Return to game if started
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && p.Game.started {
+		err := ContinueGame(p.Game)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func (p *ProfileScreen) Draw(screen *ebiten.Image) {
+	_, y16 := p.Game.BgPosition()
+	offsetY := float64(-y16) / 64
+	// Draw bgImage on the screen repeatedly.
+	const repeat = 3
+	h := p.Game.bgImage.Bounds().Dy()
+	for j := 0; j < repeat; j++ {
+		for i := 0; i < repeat; i++ {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, -float64(h*j))
+			op.GeoM.Translate(0, -offsetY)
+			screen.DrawImage(p.Game.bgImage, op)
+		}
+	}
+	barStroke := 16
+	barWidth := (config.ScreenWidth - (config.Screen1024X768XProfileShift*2 + barStroke*2)) / 2
+	section := barWidth / 10
+	text.Draw(screen, fmt.Sprintf("Available credits: %v", p.credits), assets.ProfileBigFont, config.ScreenWidth/2-200, barStroke+50-2, color.RGBA{0, 0, 0, 255})
+	text.Draw(screen, fmt.Sprintf("Available credits: %v", p.credits), assets.ProfileBigFont, config.ScreenWidth/2-200, barStroke+50, color.RGBA{255, 255, 255, 255})
+	for _, i := range p.LeftBar.Items {
+		text.Draw(screen, fmt.Sprintf("%v", i.Label), assets.ProfileFont, i.LabelPos.Min.X+(section*2)-2, i.LabelPos.Min.Y+barStroke-2, color.RGBA{0, 0, 0, 255})
+		text.Draw(screen, fmt.Sprintf("%v", i.Label), assets.ProfileFont, i.LabelPos.Min.X+(section*2), i.LabelPos.Min.Y+barStroke, color.RGBA{255, 255, 255, 255})
+		text.Draw(screen, fmt.Sprintf("%v", i.ValueInt), assets.ProfileFont, i.ValuePos.Min.X+section/2-8, i.ValuePos.Min.Y+barStroke, color.RGBA{255, 255, 255, 255})
+		for _, menuItem := range i.Buttons {
+			//vector.StrokeRect(screen, float32(menuItem.vector.Min.X), float32(menuItem.vector.Min.Y), float32(section), 25, 1, color.RGBA{255, 255, 255, 255}, false)
+			colorr := color.RGBA{255, 255, 255, 255}
+			if menuItem.Choosen {
+				colorr = color.RGBA{179, 14, 14, 255}
+			} else if !menuItem.Active {
+				colorr = color.RGBA{100, 100, 100, 255}
+			}
+			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), assets.SmallFont, menuItem.vector.Min.X+(section/2-4)-2, menuItem.vector.Min.Y+16-2, color.RGBA{0, 0, 0, 255})
+			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), assets.SmallFont, menuItem.vector.Min.X+(section/2-4), menuItem.vector.Min.Y+16, colorr)
+		}
+	}
+
+}
