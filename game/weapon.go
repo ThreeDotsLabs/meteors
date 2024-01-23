@@ -438,6 +438,38 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			},
 		}
 		return &doublePlasmaG
+	case config.PentaLaser:
+		pentaLaserType := &config.WeaponType{
+			Sprite:     objects.ScaleImg(assets.PentaLaser, 0.8),
+			Damage:     8,
+			TargetType: "straight",
+			WeaponName: config.PentaLaser,
+		}
+		pentaLaser := Weapon{
+			projectile: Projectile{
+				wType: pentaLaserType,
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * (1000 - p.params.PentaLaserSpeedUpscale)),
+			ammo:          50,
+			Shoot: func(p *Player) {
+				bounds := p.sprite.Bounds()
+				halfW := float64(bounds.Dx()) / 2
+				halfH := float64(bounds.Dy()) / 2
+				for i := 0; i < 5; i++ {
+					angle := p.rotation - (math.Pi/180)*float64(i*24) + (math.Pi/180)*float64(45)
+					spawnPos := config.Vector{
+						X: p.position.X + halfW,
+						Y: p.position.Y + halfH - halfW/2,
+					}
+					beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, angle, spawnPos, pentaLaserType)
+					beam.owner = "player"
+					p.game.AddBeam(beam)
+					ba := beam.NewBeamAnimation()
+					p.game.AddBeamAnimation(ba)
+				}
+			},
+		}
+		return &pentaLaser
 	}
 	return nil
 }
@@ -555,6 +587,8 @@ func (p *Projectile) VelocityUpdate(player *Player) {
 	case config.BigBomb:
 		p.wType.Velocity = 200 + player.params.BigBombVelocityMultiplier
 		player.curWeapon.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale))
+	case config.PentaLaser:
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (1000 - player.params.PentaLaserSpeedUpscale))
 	}
 }
 func (p *Projectile) Update() {
@@ -658,14 +692,14 @@ func (b *Beam) NewBeamAnimation() *BeamAnimation {
 	return &BeamAnimation{
 		curRect:  rect,
 		Steps:    5,
-		Step:     1,
+		Step:     0,
 		rotation: b.rotation + math.Pi,
 	}
 }
 
 func (b *BeamAnimation) Update() {
 	b.curRect.Width += float64(b.Step)
-	b.curRect.X -= 1
+	b.curRect.X += 1
 	b.Step++
 }
 
@@ -675,6 +709,8 @@ func (b *BeamAnimation) Draw(screen *ebiten.Image) {
 	rotationOpts := &ebiten.DrawImageOptions{}
 	rotationOpts.GeoM.Rotate(b.rotation)
 	rotationOpts.GeoM.Translate(b.curRect.X, b.curRect.Y)
+	color := color.RGBA{255 - uint8(b.Step)*10, 255, 0, 0 - uint8(b.Step)*25}
+	rotationOpts.ColorScale.ScaleWithColor(color)
 	screen.DrawImage(rectImage, rotationOpts)
 }
 

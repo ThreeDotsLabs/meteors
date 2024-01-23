@@ -34,6 +34,7 @@ const (
 	DoubleMachineGun    = "doubleMachineGun"
 	PlasmaGun           = "plasmaGun"
 	DoublePlasmaGun     = "doublePlasmaGun"
+	PentaLaser          = "pentaLaser"
 )
 
 type GameState string

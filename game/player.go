@@ -34,6 +34,7 @@ type PlayerParams struct {
 	DoubleMachineGunSpeedUpscale  time.Duration
 	PlasmaGunSpeedUpscale         time.Duration
 	DoublePlasmaGunSpeedUpscale   time.Duration
+	PentaLaserSpeedUpscale        time.Duration
 
 	LightRocketVelocityMultiplier       float64
 	AutoLightRocketVelocityMultiplier   float64
