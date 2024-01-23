@@ -298,8 +298,10 @@ func (g *Game) Update() error {
 
 		for i, p := range g.projectiles {
 			p.Update()
-			if p.position.Y <= 0 && i < len(g.projectiles) {
-				g.projectiles = slices.Delete(g.projectiles, i, i+1)
+			if i < len(g.projectiles) && (p.position.Y < 0 || p.position.Y >= config.ScreenHeight+float64(p.wType.Sprite.Bounds().Dy())) {
+				g.projectiles[i].Destroy(g, i)
+			} else if i < len(g.projectiles) && (p.position.X < 0 || p.position.X > config.ScreenWidth+float64(p.wType.Sprite.Bounds().Dx())) {
+				g.projectiles[i].Destroy(g, i)
 			}
 		}
 
@@ -328,9 +330,14 @@ func (g *Game) Update() error {
 		for i, m := range g.meteors {
 			for j, b := range g.projectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
-					if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
+					if (i < len(g.meteors)) && (j < len(g.projectiles)) {
 						g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
-						g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+						g.projectiles[j].intercectAnimation.position = b.position
+						g.AddAnimation(g.projectiles[j].intercectAnimation)
+						g.projectiles[j].HP--
+						if g.projectiles[j].HP <= 0 {
+							g.projectiles[j].Destroy(g, j)
+						}
 						g.score++
 					}
 				}
@@ -339,8 +346,12 @@ func (g *Game) Update() error {
 			for j, b := range g.enemyProjectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
 					if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
-						g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
-						g.enemyProjectiles = append(g.enemyProjectiles[:j], g.enemyProjectiles[j+1:]...)
+						g.enemyProjectiles[j].intercectAnimation.position = b.position
+						g.AddAnimation(g.enemyProjectiles[j].intercectAnimation)
+						g.enemyProjectiles[j].HP--
+						if g.enemyProjectiles[j].HP <= 0 {
+							g.enemyProjectiles[j].Destroy(g, j)
+						}
 					}
 				}
 			}
@@ -358,7 +369,7 @@ func (g *Game) Update() error {
 				}
 			}
 			m.Update()
-			if m.position.Y >= config.ScreenHeight && i < len(g.enemies) {
+			if m.position.Y >= config.ScreenHeight+float64(m.Collider().Dy()) && i < len(g.enemies) {
 				g.enemies = slices.Delete(g.enemies, i, i+1)
 			}
 
@@ -381,8 +392,11 @@ func (g *Game) Update() error {
 
 					if j < len(g.projectiles) {
 						g.projectiles[j].intercectAnimation.position = b.position
-						g.AddAnimation(g.projectiles[j].intercectAnimation)
-						g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+						g.projectiles[j].AddAnimation(g)
+						g.projectiles[j].HP--
+						if g.projectiles[j].HP <= 0 {
+							g.projectiles[j].Destroy(g, j)
+						}
 					}
 				}
 			}
@@ -426,10 +440,17 @@ func (g *Game) Update() error {
 					if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)) {
 						g.enemyProjectiles[i].intercectAnimation.position = m.position
 						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
-						g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+						g.enemyProjectiles[i].HP--
+						if g.enemyProjectiles[i].HP <= 0 {
+							g.enemyProjectiles[i].Destroy(g, i)
+						}
+
 						g.projectiles[j].intercectAnimation.position = b.position
 						g.AddAnimation(g.projectiles[j].intercectAnimation)
-						g.projectiles = append(g.projectiles[:j], g.projectiles[j+1:]...)
+						g.projectiles[j].HP--
+						if g.projectiles[j].HP <= 0 {
+							g.projectiles[j].Destroy(g, j)
+						}
 					}
 				}
 			}
@@ -438,7 +459,10 @@ func (g *Game) Update() error {
 					if i < len(g.enemyProjectiles) {
 						g.enemyProjectiles[i].intercectAnimation.position = m.position
 						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
-						g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+						g.enemyProjectiles[i].HP--
+						if g.enemyProjectiles[i].HP <= 0 {
+							g.enemyProjectiles[i].Destroy(g, i)
+						}
 					}
 				}
 			}
@@ -458,7 +482,10 @@ func (g *Game) Update() error {
 				if i < len(g.enemyProjectiles) {
 					g.enemyProjectiles[i].intercectAnimation.position = p.position
 					g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
-					g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
+					g.enemyProjectiles[i].HP--
+					if g.enemyProjectiles[i].HP <= 0 {
+						g.enemyProjectiles[i].Destroy(g, i)
+					}
 				}
 				if g.player.params.HP <= 0 {
 					g.Reset()
@@ -678,6 +705,15 @@ func (g *Game) KillEnemy(i int) {
 	g.enemies = append(g.enemies[:i], g.enemies[i+1:]...)
 	g.score++
 	g.profile.credits += 10
+}
+
+func (g *Game) IntersectProjectile(i int) {
+	g.projectiles[i].intercectAnimation.position = g.projectiles[i].position
+	g.projectiles[i].AddAnimation(g)
+	g.projectiles[i].HP--
+	if g.projectiles[i].HP <= 0 {
+		g.projectiles[i].Destroy(g, i)
+	}
 }
 
 func (g *Game) Reset() {

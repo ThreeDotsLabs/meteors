@@ -17,18 +17,27 @@ func NewLevels() []*Level {
 				Items: []Item{
 					{
 						RotationSpeed: 0,
-						Sprite:        assets.DoubleLaserCannon,
-						Velocity:      1.2,
+						Sprite:        assets.PlasmaGun,
+						Velocity:      1.5,
 						WeaponType: &WeaponType{
-							WeaponName: DoubleLaserCannon,
+							WeaponName: DoublePlasmaGun,
 						},
 						ItemSpawnTime: 1 * time.Second,
 					},
 					{
 						RotationSpeed: 0,
+						Sprite:        assets.DoubleLaserCannon,
+						Velocity:      1.2,
+						WeaponType: &WeaponType{
+							WeaponName: DoubleLaserCannon,
+						},
+						ItemSpawnTime: 2 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
 						Sprite:        assets.ClusterMines,
 						Velocity:      1.5,
-						WeaponType: &WeaponType{
+						SecondWeaponType: &WeaponType{
 							WeaponName: ClusterMines,
 						},
 						ItemSpawnTime: 1 * time.Second,
@@ -56,7 +65,7 @@ func NewLevels() []*Level {
 						RotationSpeed: 0,
 						Sprite:        assets.BigBomb,
 						Velocity:      2,
-						WeaponType: &WeaponType{
+						SecondWeaponType: &WeaponType{
 							WeaponName: BigBomb,
 						},
 						ItemSpawnTime: 20 * time.Second,

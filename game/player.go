@@ -31,6 +31,9 @@ type PlayerParams struct {
 	ClusterMinesSpeedUpscale      time.Duration
 	BigBombSpeedUpscale           time.Duration
 	MachineGunSpeedUpscale        time.Duration
+	DoubleMachineGunSpeedUpscale  time.Duration
+	PlasmaGunSpeedUpscale         time.Duration
+	DoublePlasmaGunSpeedUpscale   time.Duration
 
 	LightRocketVelocityMultiplier       float64
 	AutoLightRocketVelocityMultiplier   float64
@@ -38,6 +41,9 @@ type PlayerParams struct {
 	ClusterMinesVelocityMultiplier      float64
 	BigBombVelocityMultiplier           float64
 	MachineGunVelocityMultiplier        float64
+	DoubleMachineGunVelocityMultiplier  float64
+	PlasmaGunVelocityMultiplier         float64
+	DoublePlasmaGunVelocityMultiplier   float64
 }
 
 type Player struct {
@@ -84,21 +90,14 @@ func NewPlayer(curgame *Game) *Player {
 			HP:    10,
 			speed: 10,
 
-			LightRocketSpeedUpscale:       0,
-			AutoLightRocketSpeedUpscale:   0,
-			DoubleLightRocketSpeedUpscale: 0,
-			LaserCannonSpeedUpscale:       0,
-			DoubleLaserCannonSpeedUpscale: 0,
-			ClusterMinesSpeedUpscale:      0,
-			BigBombSpeedUpscale:           0,
-			MachineGunSpeedUpscale:        0,
-
 			LightRocketVelocityMultiplier:       1,
 			AutoLightRocketVelocityMultiplier:   1,
 			DoubleLightRocketVelocityMultiplier: 1,
 			ClusterMinesVelocityMultiplier:      1,
 			BigBombVelocityMultiplier:           1,
 			MachineGunVelocityMultiplier:        1,
+			PlasmaGunVelocityMultiplier:         1,
+			DoublePlasmaGunVelocityMultiplier:   1,
 		},
 		game:                curgame,
 		position:            pos,

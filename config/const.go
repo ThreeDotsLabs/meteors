@@ -31,6 +31,9 @@ const (
 	ClusterMines        = "clusterMines"
 	BigBomb             = "bigBomb"
 	MachineGun          = "machineGun"
+	DoubleMachineGun    = "doubleMachineGun"
+	PlasmaGun           = "plasmaGun"
+	DoublePlasmaGun     = "doublePlasmaGun"
 )
 
 type GameState string
@@ -86,6 +89,8 @@ type EnemyBatch struct {
 type WeaponType struct {
 	Sprite                        *ebiten.Image
 	IntercectAnimationSpriteSheet *ebiten.Image
+	InstantAnimationSpiteSheet    *ebiten.Image
+	AnimationOnly                 bool
 	Velocity                      float64
 	StartVelocity                 float64
 	Damage                        int
@@ -95,7 +100,7 @@ type WeaponType struct {
 }
 
 type AmmoType struct {
-	WeaponType string
+	WeaponName string
 	Amount     int
 }
 
@@ -109,13 +114,14 @@ type ShieldType struct {
 }
 
 type Item struct {
-	AmmoType      *AmmoType
-	WeaponType    *WeaponType
-	HealType      *HealType
-	ShieldType    *ShieldType
-	RotationSpeed float64
-	Sprite        *ebiten.Image
-	Velocity      float64
-	Target        Vector
-	ItemSpawnTime time.Duration
+	AmmoType         *AmmoType
+	WeaponType       *WeaponType
+	SecondWeaponType *WeaponType
+	HealType         *HealType
+	ShieldType       *ShieldType
+	RotationSpeed    float64
+	Sprite           *ebiten.Image
+	Velocity         float64
+	Target           Vector
+	ItemSpawnTime    time.Duration
 }

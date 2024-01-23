@@ -33,6 +33,8 @@ var LaserBeam = mustLoadImage("img/Effects/spaceEffects_006.png")
 var ClusterMines = mustLoadImage("img/Building/spaceBuilding_008.png")
 var BigBomb = mustLoadImage("img/Building/spaceBuilding_004.png")
 var MachineGun = mustLoadImage("img/Missiles/spaceMissiles_038.png")
+var DoubleMachineGun = mustLoadImage("img/Missiles/spaceMissiles_025.png")
+var PlasmaGun = mustLoadImage("img/Effects/plasma_gun2.png")
 
 // backgrounds
 var FirstLevelBg = mustLoadImage("img/bg1.png")
@@ -45,6 +47,7 @@ var ShieldSpriteSheet = mustLoadImage("img/Ships/shieldSpriteSheet1.png")
 var ProjectileBlowSpriteSheet = mustLoadImage("img/Effects/projectile_blow.png")
 var LightMissileBlowSpriteSheet = mustLoadImage("img/Effects/light_missile_blow2.png")
 var ClusterMinesBlowSpriteSheet = mustLoadImage("img/Effects/cluster_mines_blow.png")
+var PlasmaGunProjectileSpriteSheet = mustLoadImage("img/Effects/plasma_gun1.png")
 
 // fonts
 var ScoreFont = mustLoadFont("fonts/Kenney Pixel.ttf", 48)

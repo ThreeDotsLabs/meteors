@@ -46,101 +46,38 @@ func NewItem(g *Game, target config.Vector, pos config.Vector, itemType *config.
 
 func (i *Item) CollideWithPlayer(p *Player) {
 	if i.itemType.AmmoType != nil {
-		switch i.itemType.AmmoType.WeaponType {
-		case config.LightRocket:
-			for _, w := range p.weapons {
-				if w.projectile.wType.WeaponName == config.LightRocket {
-					w.ammo += i.itemType.AmmoType.Amount
-				}
+		for _, w := range p.weapons {
+			if w.projectile.wType.WeaponName == i.itemType.AmmoType.WeaponName {
+				w.ammo += i.itemType.AmmoType.Amount
 			}
 		}
 	} else if i.itemType.WeaponType != nil {
-		switch i.itemType.WeaponType.WeaponName {
-		case config.LightRocket:
-			for _, w := range p.weapons {
-				if w.projectile.wType.WeaponName == config.LightRocket {
-					lightRocket := NewWeapon(config.LightRocket, p)
-					w.ammo += lightRocket.ammo
-				}
+		persist := false
+		for _, w := range p.weapons {
+			if w.projectile.wType.WeaponName == i.itemType.WeaponType.WeaponName {
+				weapon := NewWeapon(i.itemType.WeaponType.WeaponName, p)
+				w.ammo += weapon.ammo
+				persist = true
 			}
-		case config.DoubleLightRocket:
-			persist := false
-			for _, w := range p.weapons {
-				if w.projectile.wType.WeaponName == config.DoubleLightRocket {
-					doubleLightRocket := NewWeapon(config.DoubleLightRocket, p)
-					w.ammo += doubleLightRocket.ammo
-					persist = true
-				}
+
+		}
+		if !persist {
+			p.weapons = append(p.weapons, NewWeapon(i.itemType.WeaponType.WeaponName, p))
+		}
+	} else if i.itemType.SecondWeaponType != nil {
+		persist := false
+		for _, w := range p.secondaryWeapons {
+			if w.projectile.wType.WeaponName == i.itemType.SecondWeaponType.WeaponName {
+				weapon := NewWeapon(i.itemType.SecondWeaponType.WeaponName, p)
+				w.ammo += weapon.ammo
+				persist = true
 			}
-			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.DoubleLightRocket, p))
-			}
-		case config.LaserCannon:
-			persist := false
-			for _, w := range p.weapons {
-				if w.projectile.wType.WeaponName == config.LaserCannon {
-					laserCannon := NewWeapon(config.LaserCannon, p)
-					w.ammo += laserCannon.ammo
-					persist = true
-				}
-			}
-			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.LaserCannon, p))
-			}
-		case config.DoubleLaserCannon:
-			persist := false
-			for _, w := range p.weapons {
-				if w.projectile.wType.WeaponName == config.DoubleLaserCannon {
-					doubleLaserCannon := NewWeapon(config.DoubleLaserCannon, p)
-					w.ammo += doubleLaserCannon.ammo
-					persist = true
-				}
-			}
-			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.DoubleLaserCannon, p))
-			}
-		case config.MachineGun:
-			persist := false
-			for _, w := range p.weapons {
-				if w.projectile.wType.WeaponName == config.MachineGun {
-					machineGun := NewWeapon(config.MachineGun, p)
-					w.ammo += machineGun.ammo
-					persist = true
-				}
-			}
-			if !persist {
-				p.weapons = append(p.weapons, NewWeapon(config.MachineGun, p))
-			}
-		// Secondary weapons
-		case config.ClusterMines:
-			persist := false
-			for _, w := range p.secondaryWeapons {
-				if w.projectile.wType.WeaponName == config.ClusterMines {
-					clusterMines := NewWeapon(config.ClusterMines, p)
-					w.ammo += clusterMines.ammo
-					persist = true
-				}
-			}
-			if !persist {
-				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.ClusterMines, p))
-				if p.curSecondaryWeapon == nil {
-					p.curSecondaryWeapon = p.secondaryWeapons[0]
-				}
-			}
-		case config.BigBomb:
-			persist := false
-			for _, w := range p.secondaryWeapons {
-				if w.projectile.wType.WeaponName == config.ClusterMines {
-					bigBomb := NewWeapon(config.BigBomb, p)
-					w.ammo += bigBomb.ammo
-					persist = true
-				}
-			}
-			if !persist {
-				p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(config.BigBomb, p))
-				if p.curSecondaryWeapon == nil {
-					p.curSecondaryWeapon = p.secondaryWeapons[0]
-				}
+
+		}
+		if !persist {
+			p.secondaryWeapons = append(p.secondaryWeapons, NewWeapon(i.itemType.SecondWeaponType.WeaponName, p))
+			if p.curSecondaryWeapon == nil {
+				p.curSecondaryWeapon = p.secondaryWeapons[0]
 			}
 		}
 	} else if i.itemType.HealType != nil {

@@ -50,7 +50,7 @@ func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.En
 	case config.LightRocket:
 		startWeapon := enemyLightRocket
 		e.weapon = startWeapon
-		e.weapon.shootCooldown = config.NewTimer(time.Millisecond * 2000)
+		e.weapon.shootCooldown = config.NewTimer(time.Millisecond * 1600)
 	case config.AutoLightRocket:
 		startWeapon := enemyAutoLightRocket
 		e.weapon = startWeapon

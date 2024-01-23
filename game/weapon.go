@@ -7,12 +7,14 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"slices"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Projectile struct {
+	HP                 int
 	position           config.Vector
 	movement           config.Vector
 	target             config.Vector
@@ -20,6 +22,7 @@ type Projectile struct {
 	owner              string
 	wType              *config.WeaponType
 	intercectAnimation *Animation
+	instantAnimation   *Animation
 }
 
 type Beam struct {
@@ -64,32 +67,29 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		lightRType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.MissileSprite, 0.7),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
-			Velocity:                      400 + p.params.LightRocketVelocityMultiplier*10,
+			Velocity:                      400 + p.params.LightRocketVelocityMultiplier,
 			Damage:                        3,
 			TargetType:                    "straight",
 			WeaponName:                    config.LightRocket,
 		}
 		lightR := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    lightRType,
+				wType: lightRType,
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * (250 - p.params.LightRocketSpeedUpscale)),
+			shootCooldown: config.NewTimer(time.Millisecond * (300 - p.params.LightRocketSpeedUpscale)),
 			ammo:          100,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
 				halfW := float64(bounds.Dx()) / 2
-				halfH := float64(bounds.Dy()) / 2
-
+				w := p.sprite.Bounds().Dx()
+				h := p.sprite.Bounds().Dy()
+				px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
 				spawnPos := config.Vector{
-					X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+					X: px + ((p.position.X+halfW-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfW-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
 				animation := NewAnimation(config.Vector{}, lightRType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, lightRType, animation)
+				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, lightRType, animation, 0)
 				projectile.owner = "player"
 				p.game.AddProjectile(projectile)
 			},
@@ -106,11 +106,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		}
 		doubleR := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    boubleRType,
+				wType: boubleRType,
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (250 - p.params.DoubleLightRocketSpeedUpscale)),
 			ammo:          50,
@@ -118,21 +114,21 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				bounds := p.sprite.Bounds()
 				halfWleft := float64(bounds.Dx()) / 4
 				halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
-				halfH := float64(bounds.Dy()) / 2
-
+				w := p.sprite.Bounds().Dx()
+				h := p.sprite.Bounds().Dy()
+				px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
 				spawnPosLeft := config.Vector{
-					X: p.position.X + halfWleft + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+					X: px + ((p.position.X+halfWleft-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWleft-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
+				}
+				spawnPosRight := config.Vector{
+					X: px + ((p.position.X+halfWright-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
 				animationLeft := NewAnimation(config.Vector{}, boubleRType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, boubleRType, animationLeft)
-
-				spawnPosRight := config.Vector{
-					X: p.position.X + halfWright + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
-				}
+				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, boubleRType, animationLeft, 0)
 				animationRight := NewAnimation(config.Vector{}, boubleRType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, boubleRType, animationRight)
+				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, boubleRType, animationRight, 0)
 
 				projectileLeft.owner = "player"
 				projectileRight.owner = "player"
@@ -151,22 +147,19 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		}
 		laserC := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    laserCType,
+				wType: laserCType,
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (500 - p.params.LaserCannonSpeedUpscale)),
 			ammo:          30,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
 				halfW := float64(bounds.Dx()) / 2
-				halfH := float64(bounds.Dy()) / 2
-
+				w := p.sprite.Bounds().Dx()
+				h := p.sprite.Bounds().Dy()
+				px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
 				spawnPos := config.Vector{
-					X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+					X: px + ((p.position.X+halfW-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfW-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
 				beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPos, laserCType)
 				beam.owner = "player"
@@ -186,30 +179,26 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		}
 		doubleLaserC := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    doubleLaserCType,
+				wType: doubleLaserCType,
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * (360 - p.params.DoubleLaserCannonSpeedUpscale)),
+			shootCooldown: config.NewTimer(time.Millisecond * (460 - p.params.DoubleLaserCannonSpeedUpscale)),
 			ammo:          30,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
 				halfWleft := float64(bounds.Dx()) / 4
 				halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
-				halfH := float64(bounds.Dy()) / 2
-
+				heightShift := float64(bounds.Dy()) / 10
+				w := p.sprite.Bounds().Dx()
+				h := p.sprite.Bounds().Dy()
+				px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
 				spawnPosLeft := config.Vector{
-					X: p.position.X + halfWleft + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH - math.Cos(p.rotation)*bulletSpawnOffset,
+					X: px + ((p.position.X+halfWleft-px)*math.Cos(-p.rotation) - (py-heightShift-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWleft-px)*math.Sin(-p.rotation) + (py-heightShift-p.position.Y)*math.Cos(-p.rotation)),
 				}
-
 				spawnPosRight := config.Vector{
-					X: p.position.X + halfWright + math.Sin(p.rotation)*bulletSpawnOffset,
-					Y: p.position.Y + halfH - math.Cos(p.rotation)*bulletSpawnOffset,
+					X: px + ((p.position.X+halfWright-px)*math.Cos(-p.rotation) - (py-heightShift-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-heightShift-p.position.Y)*math.Cos(-p.rotation)),
 				}
-
 				beamLeft := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosLeft, doubleLaserCType)
 				beamLeft.owner = "player"
 				p.game.AddBeam(beamLeft)
@@ -234,11 +223,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		}
 		clusterM := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    clusterMType,
+				wType: clusterMType,
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (400 - p.params.ClusterMinesSpeedUpscale)),
 			ammo:          5,
@@ -254,7 +239,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 						Y: p.position.Y + halfH + math.Cos(angle),
 					}
 					animation := NewAnimation(config.Vector{}, clusterMType.IntercectAnimationSpriteSheet, 1, 50, 50, false, "projectileBlow", 0)
-					projectile := NewProjectile(config.Vector{}, spawnPos, angle, clusterMType, animation)
+					projectile := NewProjectile(config.Vector{}, spawnPos, angle, clusterMType, animation, 0)
 					projectile.owner = "player"
 					p.game.AddProjectile(projectile)
 				}
@@ -271,11 +256,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		}
 		bigB := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    bigBType,
+				wType: bigBType,
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (600 - p.params.BigBombSpeedUpscale)),
 			ammo:          20,
@@ -289,7 +270,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 				}
 				animation := NewAnimation(config.Vector{}, bigBType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, bigBType, animation)
+				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, bigBType, animation, 0)
 				projectile.owner = "player"
 				p.game.AddProjectile(projectile)
 			},
@@ -306,11 +287,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		}
 		machineG := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    machineGType,
+				wType: machineGType,
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (160 - p.params.MachineGunSpeedUpscale)),
 			ammo:          99,
@@ -324,12 +301,143 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 				}
 				animation := NewAnimation(config.Vector{}, machineGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, machineGType, animation)
+				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, machineGType, animation, 0)
 				projectile.owner = "player"
 				p.game.AddProjectile(projectile)
 			},
 		}
 		return &machineG
+	case config.DoubleMachineGun:
+		doubleMachineGType := &config.WeaponType{
+			Sprite:                        objects.ScaleImg(assets.DoubleMachineGun, 0.28),
+			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
+			Velocity:                      600 + p.params.DoubleMachineGunVelocityMultiplier,
+			Damage:                        1,
+			TargetType:                    "straight",
+			WeaponName:                    config.MachineGun,
+		}
+		doubleMachineG := Weapon{
+			projectile: Projectile{
+				wType: doubleMachineGType,
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * (260 - p.params.DoubleMachineGunSpeedUpscale)),
+			ammo:          99,
+			Shoot: func(p *Player) {
+				bounds := p.sprite.Bounds()
+				halfWleft := float64(bounds.Dx()) / 4
+				halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
+				w := p.sprite.Bounds().Dx()
+				h := p.sprite.Bounds().Dy()
+				px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
+				spawnPosLeft := config.Vector{
+					X: px + ((p.position.X+halfWleft-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWleft-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
+				}
+				spawnPosRight := config.Vector{
+					X: px + ((p.position.X+halfWright-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
+				}
+				animationLeft := NewAnimation(config.Vector{}, doubleMachineGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
+				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, doubleMachineGType, animationLeft, 0)
+				animationRight := NewAnimation(config.Vector{}, doubleMachineGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
+				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, doubleMachineGType, animationRight, 0)
+				projectileLeft.owner = "player"
+				projectileRight.owner = "player"
+				p.game.AddProjectile(projectileLeft)
+				p.game.AddProjectile(projectileRight)
+			},
+		}
+		return &doubleMachineG
+	case config.PlasmaGun:
+		plasmaGType := &config.WeaponType{
+			Sprite:                        objects.ScaleImg(assets.PlasmaGun, 0.8),
+			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
+			InstantAnimationSpiteSheet:    assets.PlasmaGunProjectileSpriteSheet,
+			Velocity:                      500 + p.params.PlasmaGunVelocityMultiplier,
+			AnimationOnly:                 true,
+			Damage:                        1,
+			TargetType:                    "straight",
+			WeaponName:                    config.PlasmaGun,
+		}
+
+		plasmaG := Weapon{
+			projectile: Projectile{
+				wType: plasmaGType,
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * (760 - p.params.PlasmaGunSpeedUpscale)),
+			ammo:          99,
+			Shoot: func(p *Player) {
+				bounds := p.sprite.Bounds()
+				halfW := float64(bounds.Dx()) / 2
+				halfH := float64(bounds.Dy()) / 2
+
+				spawnPos := config.Vector{
+					X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
+					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+				}
+				plasmaAnimation := NewAnimation(config.Vector{}, plasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
+				animation := NewAnimation(config.Vector{}, plasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
+				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, plasmaGType, animation, 6)
+				projectile.owner = "player"
+				projectile.instantAnimation = plasmaAnimation
+				p.game.AddProjectile(projectile)
+				p.game.AddAnimation(plasmaAnimation)
+			},
+		}
+		return &plasmaG
+	case config.DoublePlasmaGun:
+		doublePlasmaGType := &config.WeaponType{
+			Sprite:                        objects.ScaleImg(assets.PlasmaGun, 1.2),
+			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
+			InstantAnimationSpiteSheet:    assets.PlasmaGunProjectileSpriteSheet,
+			Velocity:                      500 + p.params.DoublePlasmaGunVelocityMultiplier,
+			AnimationOnly:                 true,
+			Damage:                        1,
+			TargetType:                    "straight",
+			WeaponName:                    config.DoublePlasmaGun,
+		}
+		doublePlasmaG := Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType:    doublePlasmaGType,
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * (880 - p.params.DoublePlasmaGunSpeedUpscale)),
+			ammo:          99,
+			Shoot: func(p *Player) {
+				bounds := p.sprite.Bounds()
+				halfWleft := float64(bounds.Dx()) / 4
+				halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
+				w := p.sprite.Bounds().Dx()
+				h := p.sprite.Bounds().Dy()
+				px, py := p.position.X+float64(w)/2, p.position.Y+float64(h)/2
+				spawnPosLeft := config.Vector{
+					X: px + ((p.position.X+halfWleft-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWleft-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
+				}
+				spawnPosRight := config.Vector{
+					X: px + ((p.position.X+halfWright-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
+					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
+				}
+				plasmaAnimationLeft := NewAnimation(config.Vector{}, doublePlasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
+				animationLeft := NewAnimation(config.Vector{}, doublePlasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
+				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, doublePlasmaGType, animationLeft, 4)
+				plasmaAnimationRight := NewAnimation(config.Vector{}, doublePlasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
+				animationRight := NewAnimation(config.Vector{}, doublePlasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
+				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, doublePlasmaGType, animationRight, 4)
+				projectileLeft.owner = "player"
+				projectileRight.owner = "player"
+				projectileLeft.instantAnimation = plasmaAnimationLeft
+				projectileRight.instantAnimation = plasmaAnimationRight
+				p.game.AddProjectile(projectileLeft)
+				p.game.AddProjectile(projectileRight)
+				p.game.AddAnimation(plasmaAnimationLeft)
+				p.game.AddAnimation(plasmaAnimationRight)
+			},
+		}
+		return &doublePlasmaG
 	}
 	return nil
 }
@@ -359,7 +467,7 @@ var enemyLightRocket = Weapon{
 			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
 		}
 		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation)
+		projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
 		projectile.owner = "enemy"
 		e.game.AddProjectile(projectile)
 	},
@@ -367,10 +475,6 @@ var enemyLightRocket = Weapon{
 
 var enemyAutoLightRocket = Weapon{
 	projectile: Projectile{
-		position: config.Vector{},
-		target:   config.Vector{},
-		movement: config.Vector{},
-		rotation: 0,
 		wType: &config.WeaponType{
 			Sprite:                        assets.EnemyAutoLightMissile,
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
@@ -390,13 +494,13 @@ var enemyAutoLightRocket = Weapon{
 			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
 		}
 		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation)
+		projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
 		projectile.owner = "enemy"
 		e.game.AddProjectile(projectile)
 	},
 }
 
-func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wType *config.WeaponType, animation *Animation) *Projectile {
+func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wType *config.WeaponType, animation *Animation, hp int) *Projectile {
 	bounds := wType.Sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
 	halfH := float64(bounds.Dy()) / 2
@@ -410,32 +514,47 @@ func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wT
 		target:             target,
 		wType:              wType,
 		intercectAnimation: animation,
+		HP:                 hp,
 	}
 
 	return p
 }
 
+func (p *Projectile) AddAnimation(g *Game) {
+	animation := NewAnimation(p.intercectAnimation.position, p.wType.IntercectAnimationSpriteSheet, p.intercectAnimation.speed, p.intercectAnimation.frameHeight, p.intercectAnimation.frameWidth, false, "projectileBlow", 0)
+	g.animations = append(g.animations, animation)
+}
+
 func (p *Projectile) VelocityUpdate(player *Player) {
 	switch p.wType.WeaponName {
 	case config.LightRocket:
-		p.wType.Velocity = 400 + player.params.LightRocketVelocityMultiplier*10
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.LightRocketSpeedUpscale*10))
+		p.wType.Velocity = 400 + player.params.LightRocketVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (300 - player.params.LightRocketSpeedUpscale))
 	case config.DoubleLightRocket:
-		p.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier*10
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale*10))
+		p.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale))
 	case config.LaserCannon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCannonSpeedUpscale*10))
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCannonSpeedUpscale))
 	case config.DoubleLaserCannon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (360 - player.params.DoubleLaserCannonSpeedUpscale*10))
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (460 - player.params.DoubleLaserCannonSpeedUpscale))
 	case config.MachineGun:
-		p.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier*10
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale*10))
+		p.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale))
+	case config.DoubleMachineGun:
+		p.wType.Velocity = 600 + player.params.DoubleMachineGunVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (260 - player.params.DoubleMachineGunSpeedUpscale))
+	case config.PlasmaGun:
+		p.wType.Velocity = 500 + player.params.PlasmaGunVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (760 - player.params.PlasmaGunSpeedUpscale))
+	case config.DoublePlasmaGun:
+		p.wType.Velocity = 500 + player.params.DoublePlasmaGunVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (880 - player.params.DoublePlasmaGunSpeedUpscale))
 	case config.ClusterMines:
-		p.wType.Velocity = 240 + player.params.ClusterMinesVelocityMultiplier*10
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (400 - player.params.ClusterMinesSpeedUpscale*10))
+		p.wType.Velocity = 240 + player.params.ClusterMinesVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (400 - player.params.ClusterMinesSpeedUpscale))
 	case config.BigBomb:
-		p.wType.Velocity = 200 + player.params.BigBombVelocityMultiplier*10
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale*10))
+		p.wType.Velocity = 200 + player.params.BigBombVelocityMultiplier
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale))
 	}
 }
 func (p *Projectile) Update() {
@@ -465,10 +584,30 @@ func (p *Projectile) Update() {
 		p.position.X += math.Sin(p.rotation) * speed
 		p.position.Y += math.Cos(p.rotation) * quant
 	}
+	if p.instantAnimation != nil {
+		p.instantAnimation.position.X = p.position.X
+		p.instantAnimation.position.Y = p.position.Y
+		p.instantAnimation.rotation = p.rotation
+	}
 }
 
 func (p *Projectile) Draw(screen *ebiten.Image) {
-	objects.RotateAndTranslateObject(p.rotation, p.wType.Sprite, screen, p.position.X, p.position.Y)
+	if !p.wType.AnimationOnly {
+		objects.RotateAndTranslateObject(p.rotation, p.wType.Sprite, screen, p.position.X, p.position.Y)
+	}
+}
+
+func (p *Projectile) Destroy(g *Game, i int) {
+	if p.owner == "player" {
+		g.projectiles = slices.Delete(g.projectiles, i, i+1)
+	} else {
+		g.enemyProjectiles = slices.Delete(g.enemyProjectiles, i, i+1)
+	}
+	if p.instantAnimation != nil {
+		p.instantAnimation.looping = false
+		p.instantAnimation.curTick = p.instantAnimation.speed - 1
+		p.instantAnimation.currF = p.instantAnimation.numFrames - 1
+	}
 }
 
 func (p *Projectile) Collider() image.Rectangle {
