@@ -128,6 +128,9 @@ func (g *Game) Update() error {
 			for _, i := range g.profile.LeftBar.Items {
 				i.UpdatePrevValue(g)
 			}
+			for _, i := range g.profile.RightBar.Items {
+				i.UpdatePrevValue(g)
+			}
 			g.state = config.Profile
 		}
 
