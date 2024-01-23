@@ -24,7 +24,7 @@ type Game struct {
 	meteors           []*objects.Meteor
 	projectiles       []*Projectile
 	blows             []*Blow
-	beam              *Beam
+	beams             []*Beam
 	beamAnimations    []*BeamAnimation
 	enemyBeams        []*Beam
 	enemyProjectiles  []*Projectile
@@ -407,9 +407,9 @@ func (g *Game) Update() error {
 				}
 			}
 
-			if g.beam != nil {
-				if config.IntersectLine(g.beam.Line, m.Collider()) {
-					m.HP -= g.beam.Damage
+			for _, beam := range g.beams {
+				if config.IntersectLine(beam.Line, m.Collider()) {
+					m.HP -= beam.Damage
 					if m.HP <= 0 {
 						if i < len(g.enemies) {
 							g.KillEnemy(i)
@@ -423,7 +423,7 @@ func (g *Game) Update() error {
 		for i, m := range g.enemyProjectiles {
 			for j, b := range g.projectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
-					if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)-1) {
+					if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)) {
 						g.enemyProjectiles[i].intercectAnimation.position = m.position
 						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
 						g.enemyProjectiles = append(g.enemyProjectiles[:i], g.enemyProjectiles[i+1:]...)
@@ -433,8 +433,8 @@ func (g *Game) Update() error {
 					}
 				}
 			}
-			if g.beam != nil {
-				if config.IntersectLine(g.beam.Line, m.Collider()) {
+			for _, beam := range g.beams {
+				if config.IntersectLine(beam.Line, m.Collider()) {
 					if i < len(g.enemyProjectiles) {
 						g.enemyProjectiles[i].intercectAnimation.position = m.position
 						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
@@ -485,11 +485,6 @@ func (g *Game) Update() error {
 			}
 		}
 
-		if g.beam != nil {
-			g.AddBeamAnimation(g.beam.NewBeamAnimation())
-			g.beam = nil
-		}
-
 		for i, ba := range g.beamAnimations {
 			ba.Update()
 			if ba.Step >= ba.Steps && i < len(g.beamAnimations) {
@@ -512,6 +507,14 @@ func (g *Game) Update() error {
 			b.Update()
 			if b.Step >= b.Steps && k < len(g.blows) {
 				g.blows = slices.Delete(g.blows, k, k+1)
+			}
+		}
+
+		// Remove beams
+		for k, b := range g.beams {
+			b.Update()
+			if b.Step >= b.Steps && k < len(g.beams) {
+				g.beams = slices.Delete(g.beams, k, k+1)
 			}
 		}
 	}
@@ -649,7 +652,7 @@ func (g *Game) AddProjectile(p *Projectile) {
 
 func (g *Game) AddBeam(b *Beam) {
 	if b.owner == "player" {
-		g.beam = b
+		g.beams = append(g.beams, b)
 	} else {
 		g.enemyBeams = append(g.enemyBeams, b)
 	}
@@ -683,6 +686,7 @@ func (g *Game) Reset() {
 	g.enemyProjectiles = nil
 	g.enemies = nil
 	g.items = nil
+	g.beams = nil
 	g.beamAnimations = nil
 	g.animations = nil
 	g.score = 0
@@ -699,6 +703,7 @@ func (g *Game) Reset() {
 	g.velocityTimer.Reset()
 	g.started = false
 	g.menu = NewMainMenu(g)
+	g.profile = NewPlayerProfile(g)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

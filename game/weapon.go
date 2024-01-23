@@ -29,6 +29,8 @@ type Beam struct {
 	owner    string
 	Damage   int
 	Line     config.Line
+	Steps    int
+	Step     int
 }
 
 type BeamAnimation struct {
@@ -155,7 +157,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				rotation: 0,
 				wType:    laserCType,
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * (300 - p.params.LaserCannonSpeedUpscale)),
+			shootCooldown: config.NewTimer(time.Millisecond * (500 - p.params.LaserCannonSpeedUpscale)),
 			ammo:          30,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
@@ -169,9 +171,58 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPos, laserCType)
 				beam.owner = "player"
 				p.game.AddBeam(beam)
+				ba := beam.NewBeamAnimation()
+				p.game.AddBeamAnimation(ba)
 			},
 		}
 		return &laserC
+	case config.DoubleLaserCannon:
+		doubleLaserCType := &config.WeaponType{
+			Sprite:                        objects.ScaleImg(assets.LaserCannon, 0.5),
+			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
+			Damage:                        2,
+			TargetType:                    "straight",
+			WeaponName:                    config.DoubleLaserCannon,
+		}
+		doubleLaserC := Weapon{
+			projectile: Projectile{
+				position: config.Vector{},
+				target:   config.Vector{},
+				movement: config.Vector{},
+				rotation: 0,
+				wType:    doubleLaserCType,
+			},
+			shootCooldown: config.NewTimer(time.Millisecond * (360 - p.params.DoubleLaserCannonSpeedUpscale)),
+			ammo:          30,
+			Shoot: func(p *Player) {
+				bounds := p.sprite.Bounds()
+				halfWleft := float64(bounds.Dx()) / 4
+				halfWright := float64(bounds.Dx()) - float64(bounds.Dx())/4
+				halfH := float64(bounds.Dy()) / 2
+
+				spawnPosLeft := config.Vector{
+					X: p.position.X + halfWleft + math.Sin(p.rotation)*bulletSpawnOffset,
+					Y: p.position.Y + halfH - math.Cos(p.rotation)*bulletSpawnOffset,
+				}
+
+				spawnPosRight := config.Vector{
+					X: p.position.X + halfWright + math.Sin(p.rotation)*bulletSpawnOffset,
+					Y: p.position.Y + halfH - math.Cos(p.rotation)*bulletSpawnOffset,
+				}
+
+				beamLeft := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosLeft, doubleLaserCType)
+				beamLeft.owner = "player"
+				p.game.AddBeam(beamLeft)
+				baL := beamLeft.NewBeamAnimation()
+				p.game.AddBeamAnimation(baL)
+				beamRight := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosRight, doubleLaserCType)
+				beamRight.owner = "player"
+				p.game.AddBeam(beamRight)
+				baR := beamRight.NewBeamAnimation()
+				p.game.AddBeamAnimation(baR)
+			},
+		}
+		return &doubleLaserC
 	case config.ClusterMines:
 		clusterMType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.ClusterMines, 0.5),
@@ -373,7 +424,9 @@ func (p *Projectile) VelocityUpdate(player *Player) {
 		p.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier*10
 		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale*10))
 	case config.LaserCannon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (300 - player.params.LaserCannonSpeedUpscale*10))
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCannonSpeedUpscale*10))
+	case config.DoubleLaserCannon:
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (360 - player.params.DoubleLaserCannonSpeedUpscale*10))
 	case config.MachineGun:
 		p.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier*10
 		player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale*10))
@@ -451,8 +504,8 @@ func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *c
 		rotation: rotation,
 		Damage:   wType.Damage,
 		Line:     line,
+		Steps:    5,
 	}
-
 	return b
 }
 
@@ -498,6 +551,12 @@ func NewBlow(x, y, radius float64, damage int) *Blow {
 }
 
 func (b *Blow) Update() {
+	if b.Step < b.Steps {
+		b.Step++
+	}
+}
+
+func (b *Beam) Update() {
 	if b.Step < b.Steps {
 		b.Step++
 	}

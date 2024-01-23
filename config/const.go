@@ -27,6 +27,7 @@ const (
 	AutoLightRocket     = "autoLightRocket"
 	DoubleLightRocket   = "doubleLightRocket"
 	LaserCannon         = "lightCannon"
+	DoubleLaserCannon   = "doubleLaserCannon"
 	ClusterMines        = "clusterMines"
 	BigBomb             = "bigBomb"
 	MachineGun          = "machineGun"

@@ -27,6 +27,7 @@ type PlayerParams struct {
 	AutoLightRocketSpeedUpscale   time.Duration
 	DoubleLightRocketSpeedUpscale time.Duration
 	LaserCannonSpeedUpscale       time.Duration
+	DoubleLaserCannonSpeedUpscale time.Duration
 	ClusterMinesSpeedUpscale      time.Duration
 	BigBombSpeedUpscale           time.Duration
 	MachineGunSpeedUpscale        time.Duration
@@ -87,6 +88,7 @@ func NewPlayer(curgame *Game) *Player {
 			AutoLightRocketSpeedUpscale:   0,
 			DoubleLightRocketSpeedUpscale: 0,
 			LaserCannonSpeedUpscale:       0,
+			DoubleLaserCannonSpeedUpscale: 0,
 			ClusterMinesSpeedUpscale:      0,
 			BigBombSpeedUpscale:           0,
 			MachineGunSpeedUpscale:        0,
