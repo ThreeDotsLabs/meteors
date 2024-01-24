@@ -31,7 +31,7 @@ func NewLevels() []*Level {
 						WeaponType: &WeaponType{
 							WeaponName: DoubleLaserCannon,
 						},
-						ItemSpawnTime: 2 * time.Second,
+						ItemSpawnTime: 5 * time.Second,
 					},
 					{
 						RotationSpeed: 0,
@@ -40,7 +40,7 @@ func NewLevels() []*Level {
 						SecondWeaponType: &WeaponType{
 							WeaponName: ClusterMines,
 						},
-						ItemSpawnTime: 1 * time.Second,
+						ItemSpawnTime: 5 * time.Second,
 					},
 					{
 						RotationSpeed: 0,
@@ -50,7 +50,7 @@ func NewLevels() []*Level {
 							HP:     5,
 							Sprite: assets.ShieldSprite,
 						},
-						ItemSpawnTime: 1 * time.Second,
+						ItemSpawnTime: 5 * time.Second,
 					},
 					// {
 					// 	RotationSpeed: 0,

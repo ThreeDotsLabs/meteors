@@ -77,11 +77,11 @@ type viewport struct {
 
 func (g *Game) BgMove() {
 	s := g.bgImage.Bounds().Size()
-	maxX := s.X * 16
-	maxY := s.Y * 16
+	maxX := s.X * 50
+	maxY := s.Y * 50
 
-	g.viewport.X += s.X / 32
-	g.viewport.Y += s.Y / 32
+	g.viewport.X += s.X / 100
+	g.viewport.Y += s.Y / 100
 	g.viewport.X %= maxX
 	g.viewport.Y %= maxY
 }
@@ -157,9 +157,9 @@ func (g *Game) Update() error {
 				itemParam := g.CurStage.Items[0]
 				item := NewItem(g, target, startPos, &itemParam)
 				if len(g.CurStage.Items) > 1 {
-					g.itemSpawnTimer = config.NewTimer(g.CurStage.Items[1].ItemSpawnTime)
+					g.itemSpawnTimer.Restart(g.CurStage.Items[1].ItemSpawnTime)
 				}
-				g.itemSpawnTimer.Reset()
+				//g.itemSpawnTimer.Restart(g.CurStage.Items[1].ItemSpawnTime)
 				itemWidth := item.itemType.Sprite.Bounds().Dx()
 				itemHight := item.itemType.Sprite.Bounds().Dy()
 				r := rand.New(rand.NewSource(99))
@@ -332,12 +332,7 @@ func (g *Game) Update() error {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
 					if (i < len(g.meteors)) && (j < len(g.projectiles)) {
 						g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
-						g.projectiles[j].intercectAnimation.position = b.position
-						g.AddAnimation(g.projectiles[j].intercectAnimation)
-						g.projectiles[j].HP--
-						if g.projectiles[j].HP <= 0 {
-							g.projectiles[j].Destroy(g, j)
-						}
+						g.IntersectProjectile(b, j)
 						g.score++
 					}
 				}
@@ -346,12 +341,7 @@ func (g *Game) Update() error {
 			for j, b := range g.enemyProjectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
 					if (i < len(g.meteors)-1) && (j < len(g.projectiles)-1) {
-						g.enemyProjectiles[j].intercectAnimation.position = b.position
-						g.AddAnimation(g.enemyProjectiles[j].intercectAnimation)
-						g.enemyProjectiles[j].HP--
-						if g.enemyProjectiles[j].HP <= 0 {
-							g.enemyProjectiles[j].Destroy(g, j)
-						}
+						g.IntersectProjectile(b, j)
 					}
 				}
 			}
@@ -438,31 +428,15 @@ func (g *Game) Update() error {
 			for j, b := range g.projectiles {
 				if config.IntersectRect(m.Collider(), b.Collider()) {
 					if (i < len(g.enemyProjectiles)) && (j < len(g.projectiles)) {
-						g.enemyProjectiles[i].intercectAnimation.position = m.position
-						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
-						g.enemyProjectiles[i].HP--
-						if g.enemyProjectiles[i].HP <= 0 {
-							g.enemyProjectiles[i].Destroy(g, i)
-						}
-
-						g.projectiles[j].intercectAnimation.position = b.position
-						g.AddAnimation(g.projectiles[j].intercectAnimation)
-						g.projectiles[j].HP--
-						if g.projectiles[j].HP <= 0 {
-							g.projectiles[j].Destroy(g, j)
-						}
+						g.IntersectProjectile(m, i)
+						g.IntersectProjectile(b, j)
 					}
 				}
 			}
 			for _, beam := range g.beams {
 				if config.IntersectLine(beam.Line, m.Collider()) {
 					if i < len(g.enemyProjectiles) {
-						g.enemyProjectiles[i].intercectAnimation.position = m.position
-						g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
-						g.enemyProjectiles[i].HP--
-						if g.enemyProjectiles[i].HP <= 0 {
-							g.enemyProjectiles[i].Destroy(g, i)
-						}
+						g.IntersectProjectile(m, i)
 					}
 				}
 			}
@@ -480,12 +454,7 @@ func (g *Game) Update() error {
 					g.player.params.HP -= p.wType.Damage
 				}
 				if i < len(g.enemyProjectiles) {
-					g.enemyProjectiles[i].intercectAnimation.position = p.position
-					g.AddAnimation(g.enemyProjectiles[i].intercectAnimation)
-					g.enemyProjectiles[i].HP--
-					if g.enemyProjectiles[i].HP <= 0 {
-						g.enemyProjectiles[i].Destroy(g, i)
-					}
+					g.IntersectProjectile(p, i)
 				}
 				if g.player.params.HP <= 0 {
 					g.Reset()
@@ -556,20 +525,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	case config.MainMenu:
 		g.menu.Draw(screen)
 	case config.InGame:
-		_, y16 := g.BgPosition()
-		offsetY := float64(-y16) / 64
-
-		// Draw bgImage on the screen repeatedly.
-		const repeat = 3
-		h := g.bgImage.Bounds().Dy()
-		for j := 0; j < repeat; j++ {
-			for i := 0; i < repeat; i++ {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(0, -float64(h*j))
-				op.GeoM.Translate(0, -offsetY)
-				screen.DrawImage(g.bgImage, op)
-			}
-		}
+		g.DrawBg(screen)
 
 		g.player.Draw(screen)
 
@@ -707,12 +663,12 @@ func (g *Game) KillEnemy(i int) {
 	g.profile.credits += 10
 }
 
-func (g *Game) IntersectProjectile(i int) {
-	g.projectiles[i].intercectAnimation.position = g.projectiles[i].position
-	g.projectiles[i].AddAnimation(g)
-	g.projectiles[i].HP--
-	if g.projectiles[i].HP <= 0 {
-		g.projectiles[i].Destroy(g, i)
+func (g *Game) IntersectProjectile(curPr *Projectile, i int) {
+	curPr.intercectAnimation.position = curPr.position
+	curPr.AddAnimation(g)
+	curPr.HP--
+	if curPr.HP <= 0 {
+		curPr.Destroy(g, i)
 	}
 }
 
@@ -744,4 +700,21 @@ func (g *Game) Reset() {
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return config.ScreenWidth, config.ScreenHeight
+}
+
+func (g *Game) DrawBg(screen *ebiten.Image) {
+	_, y16 := g.BgPosition()
+	offsetY := float64(-y16) / 10
+
+	// Draw bgImage on the screen repeatedly.
+	const repeat = 10
+	h := g.bgImage.Bounds().Dy()
+	for j := 0; j < repeat; j++ {
+		for i := 0; i < repeat; i++ {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, -float64(h*j))
+			op.GeoM.Translate(0, -offsetY)
+			screen.DrawImage(g.bgImage, op)
+		}
+	}
 }

@@ -47,6 +47,33 @@ type PlayerParams struct {
 	DoublePlasmaGunVelocityMultiplier   float64
 }
 
+func (p *PlayerParams) SetLightRocketSpeedUpscale(t int) {
+	p.LightRocketSpeedUpscale = time.Duration(t)
+}
+
+func (p *PlayerParams) GetLightRocketSpeedUpscale() int {
+	return int(p.LightRocketSpeedUpscale)
+}
+
+func (p *PlayerParams) SetLightRocketVelocityMultiplier(t int) {
+	p.LightRocketVelocityMultiplier = float64(t)
+}
+
+func (p *PlayerParams) GetLightRocketVelocityMultiplier() int {
+	return int(p.LightRocketVelocityMultiplier)
+}
+
+func (p *PlayerParams) SetHealthPoints(points int) {
+	p.HP = points
+}
+
+func (p *PlayerParams) IncreaseHP(i int) {
+	p.HP += i
+}
+func (p *PlayerParams) GetHealthPoints() int {
+	return p.HP
+}
+
 type Player struct {
 	game                *Game
 	params              *PlayerParams

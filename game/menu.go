@@ -176,19 +176,7 @@ func (m *MainMenu) Update() error {
 }
 
 func (m *MainMenu) Draw(screen *ebiten.Image) {
-	_, y16 := m.Game.BgPosition()
-	offsetY := float64(-y16) / 64
-	// Draw bgImage on the screen repeatedly.
-	const repeat = 3
-	h := m.Game.bgImage.Bounds().Dy()
-	for j := 0; j < repeat; j++ {
-		for i := 0; i < repeat; i++ {
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(0, -float64(h*j))
-			op.GeoM.Translate(0, -offsetY)
-			screen.DrawImage(m.Game.bgImage, op)
-		}
-	}
+	m.Game.DrawBg(screen)
 
 	// for _, i := range m.Items {
 	// 	chars := len([]rune(i.Label))
