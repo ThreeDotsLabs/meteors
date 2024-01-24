@@ -23,6 +23,7 @@ type ProfileScreen struct {
 }
 
 type Bar struct {
+	Side  string
 	Items []*ProfileItem
 }
 
@@ -45,8 +46,6 @@ type profileItemTemplate struct {
 	icon        *ebiten.Image
 	getter      func() int
 	increase    func(int)
-	upd         func(g *Game)
-	updPrev     func(g *Game)
 }
 
 type profileItemsType []profileItemTemplate
@@ -70,8 +69,12 @@ func NewPlayerProfile(g *Game) *ProfileScreen {
 				return nil
 			},
 		},
-		LeftBar:  &Bar{},
-		RightBar: &Bar{},
+		LeftBar: &Bar{
+			Side: "left",
+		},
+		RightBar: &Bar{
+			Side: "right",
+		},
 	}
 	var profileItems = profileItemsType{
 		{
@@ -81,26 +84,46 @@ func NewPlayerProfile(g *Game) *ProfileScreen {
 			icon:        nil,
 			getter:      g.player.params.GetHealthPoints,
 			increase:    g.player.params.IncreaseHP,
-			upd: func(g *Game) {
-				g.profile.LeftBar.Items[0].ValueInt = g.player.params.HP
-			},
-			updPrev: func(g *Game) {
-				g.profile.LeftBar.Items[0].PrevValue = g.player.params.HP
-			},
+		},
+		{
+			label:       "Speed",
+			barType:     profileScreen.LeftBar,
+			creditsCost: 10,
+			icon:        nil,
+			getter:      g.player.params.GetSpeed,
+			increase:    g.player.params.IncreaseSpeed,
 		},
 		{
 			label:       "Light missile fire rate X",
 			barType:     profileScreen.LeftBar,
-			creditsCost: 2,
+			creditsCost: 20,
 			icon:        objects.ScaleImg(assets.MissileSprite, 0.6),
 			getter:      g.player.params.GetLightRocketSpeedUpscale,
-			increase:    g.player.params.SetLightRocketSpeedUpscale,
-			upd: func(g *Game) {
-				g.profile.LeftBar.Items[1].ValueInt = int(g.player.params.LightRocketSpeedUpscale)
-			},
-			updPrev: func(g *Game) {
-				g.profile.LeftBar.Items[1].PrevValue = int(g.player.params.LightRocketSpeedUpscale)
-			},
+			increase:    g.player.params.IncreaseLightRocketSpeedUpscale,
+		},
+		{
+			label:       "Light missile velocity X",
+			barType:     profileScreen.LeftBar,
+			creditsCost: 10,
+			icon:        objects.ScaleImg(assets.MissileSprite, 0.6),
+			getter:      g.player.params.GetLightRocketVelocityMultiplier,
+			increase:    g.player.params.IncreaseLightRocketVelocityMultiplier,
+		},
+		{
+			label:       "Double missile fire rate X",
+			barType:     profileScreen.LeftBar,
+			creditsCost: 30,
+			icon:        objects.ScaleImg(assets.DoubleMissileSprite, 0.6),
+			getter:      g.player.params.GetDoubleLightRocketSpeedUpscale,
+			increase:    g.player.params.IncreaseDoubleLightRocketSpeedUpscale,
+		},
+		{
+			label:       "Double missile velocity X",
+			barType:     profileScreen.LeftBar,
+			creditsCost: 15,
+			icon:        objects.ScaleImg(assets.DoubleMissileSprite, 0.6),
+			getter:      g.player.params.GetDoubleLightRocketVelocityMultiplier,
+			increase:    g.player.params.IncreaseDoubleLightRocketVelocityMultiplier,
 		},
 	}
 	for i, profItem := range profileItems {
@@ -110,30 +133,21 @@ func NewPlayerProfile(g *Game) *ProfileScreen {
 			Label:    profItem.label,
 			LabelPos: image.Rect(barStroke, barStroke+config.Screen1024X768YProfileShift+lineHeight*i, config.Screen1024X768XProfileShift+barStroke+barWidth, barStroke+config.Screen1024X768YProfileShift+lineHeight*i+lineHeight),
 			ValuePos: image.Rect(config.Screen1024X768XProfileShift+barStroke+section*8, barStroke+config.Screen1024X768YProfileShift+lineHeight*i, config.Screen1024X768XProfileShift+barStroke+section*8+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*i+lineHeight),
-			// UpdateValue: func(g *Game) {
-			// 	i := i
-			// 	g.profile.LeftBar.Items[i].ValueInt = profileItems[i].getter()
-			// },
-			// UpdatePrevValue: func(g *Game) {
-			// 	g.profile.LeftBar.Items[i].ValueInt = profileItems[i].getter()
-			// },
-			UpdateValue:     profItem.upd,
-			UpdatePrevValue: profItem.updPrev,
 		}
 		minusFunc := newItem.MakeMinusAction(i, profItem.barType, profItem.creditsCost, profItem.getter, profItem.increase)
 		plusFunc := newItem.MakePlusAction(profItem.creditsCost, profItem.getter, profItem.increase)
 		newItem.Buttons = append(newItem.Buttons, newItem.MakeButton(image.Rect(config.Screen1024X768XProfileShift+barStroke+section*7, barStroke+config.Screen1024X768YProfileShift+lineHeight*i, config.Screen1024X768XProfileShift+barStroke+section*7+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*i+lineHeight), "-", minusFunc))
 		newItem.Buttons = append(newItem.Buttons, newItem.MakeButton(image.Rect(config.Screen1024X768XProfileShift+barStroke+section*9, barStroke+config.Screen1024X768YProfileShift+lineHeight*i, config.Screen1024X768XProfileShift+barStroke+section*9+section, barStroke+config.Screen1024X768YProfileShift+lineHeight*i+lineHeight), "+", plusFunc))
-		if profItem.barType == profileScreen.LeftBar {
+		updValue := newItem.MakeUpdateValueFunc(i, profItem.getter, profItem.barType)
+		updPrevValue := newItem.MakeUpdatePrevValueFunc(i, profItem.getter, profItem.barType)
+		newItem.UpdateValue = updValue
+		newItem.UpdatePrevValue = updPrevValue
+		if profItem.barType.Side == profileScreen.LeftBar.Side {
 			profileScreen.LeftBar.Items = append(profileScreen.LeftBar.Items, &newItem)
+		} else {
+			profileScreen.RightBar.Items = append(profileScreen.RightBar.Items, &newItem)
 		}
-		profileScreen.RightBar.Items = append(profileScreen.RightBar.Items, &newItem)
 	}
-	// for i, itm := range profileScreen.LeftBar.Items {
-	// 	itm.UpdateValue = func(g *Game) {
-	// 		g.profile.LeftBar.Items[i].ValueInt = profileItems[i].getter()
-	// 	}
-	// }
 	return &profileScreen
 	// return &ProfileScreen{
 	// 	Game:    g,
@@ -843,5 +857,17 @@ func (i *ProfileItem) MakePlusAction(creditsCost int, getter func() int, increas
 			g.profile.credits -= creditsCost
 		}
 		return nil
+	}
+}
+
+func (i *ProfileItem) MakeUpdateValueFunc(idx int, getter func() int, barType *Bar) func(g *Game) {
+	return func(g *Game) {
+		barType.Items[idx].ValueInt = getter()
+	}
+}
+
+func (i *ProfileItem) MakeUpdatePrevValueFunc(idx int, getter func() int, barType *Bar) func(g *Game) {
+	return func(g *Game) {
+		barType.Items[idx].PrevValue = getter()
 	}
 }

@@ -47,31 +47,234 @@ type PlayerParams struct {
 	DoublePlasmaGunVelocityMultiplier   float64
 }
 
-func (p *PlayerParams) SetLightRocketSpeedUpscale(t int) {
-	p.LightRocketSpeedUpscale = time.Duration(t)
+func (p *PlayerParams) GetHealthPoints() int {
+	return p.HP
+}
+func (p *PlayerParams) IncreaseHP(i int) {
+	p.HP += i
+}
+
+func (p *PlayerParams) GetSpeed() int {
+	return int(p.speed)
+}
+func (p *PlayerParams) IncreaseSpeed(i int) {
+	p.speed += float64(i)
 }
 
 func (p *PlayerParams) GetLightRocketSpeedUpscale() int {
 	return int(p.LightRocketSpeedUpscale)
 }
 
-func (p *PlayerParams) SetLightRocketVelocityMultiplier(t int) {
-	p.LightRocketVelocityMultiplier = float64(t)
+func (p *PlayerParams) IncreaseLightRocketSpeedUpscale(t int) {
+	if t > 0 {
+		p.LightRocketSpeedUpscale++
+	} else {
+		p.LightRocketSpeedUpscale--
+	}
 }
 
 func (p *PlayerParams) GetLightRocketVelocityMultiplier() int {
 	return int(p.LightRocketVelocityMultiplier)
 }
 
-func (p *PlayerParams) SetHealthPoints(points int) {
-	p.HP = points
+func (p *PlayerParams) IncreaseLightRocketVelocityMultiplier(t int) {
+	p.LightRocketVelocityMultiplier += float64(t)
 }
 
-func (p *PlayerParams) IncreaseHP(i int) {
-	p.HP += i
+func (p *PlayerParams) GetAutoLightRocketSpeedUpscale() int {
+	return int(p.AutoLightRocketSpeedUpscale)
 }
-func (p *PlayerParams) GetHealthPoints() int {
-	return p.HP
+
+func (p *PlayerParams) IncreaseAutoLightRocketSpeedUpscale(t int) {
+	if t > 0 {
+		p.AutoLightRocketSpeedUpscale++
+	} else {
+		p.AutoLightRocketSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetAutoLightRocketVelocityMultiplier() int {
+	return int(p.AutoLightRocketVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseAutoLightRocketVelocityMultiplier(t int) {
+	p.AutoLightRocketVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetDoubleLightRocketSpeedUpscale() int {
+	return int(p.DoubleLightRocketSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseDoubleLightRocketSpeedUpscale(t int) {
+	if t > 0 {
+		p.DoubleLightRocketSpeedUpscale++
+	} else {
+		p.DoubleLightRocketSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetDoubleLightRocketVelocityMultiplier() int {
+	return int(p.DoubleLightRocketVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseDoubleLightRocketVelocityMultiplier(t int) {
+	p.DoubleLightRocketVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetClusterMinesSpeedUpscale() int {
+	return int(p.ClusterMinesSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseClusterMinesSpeedUpscale(t int) {
+	if t > 0 {
+		p.ClusterMinesSpeedUpscale++
+	} else {
+		p.ClusterMinesSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetClusterMinesVelocityMultiplier() int {
+	return int(p.ClusterMinesVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseClusterMinesVelocityMultiplier(t int) {
+	p.ClusterMinesVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetPentaLaserSpeedUpscale() int {
+	return int(p.PentaLaserSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreasePentaLaserSpeedUpscale(t int) {
+	if t > 0 {
+		p.PentaLaserSpeedUpscale++
+	} else {
+		p.PentaLaserSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetLaserCannonSpeedUpscale() int {
+	return int(p.LaserCannonSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseLaserCannonSpeedUpscale(t int) {
+	if t > 0 {
+		p.LaserCannonSpeedUpscale++
+	} else {
+		p.LaserCannonSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetDoubleLaserCannonSpeedUpscale() int {
+	return int(p.DoubleLaserCannonSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseDoubleLaserCannonSpeedUpscale(t int) {
+	if t > 0 {
+		p.DoubleLaserCannonSpeedUpscale++
+	} else {
+		p.DoubleLaserCannonSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetBigBombSpeedUpscale() int {
+	return int(p.BigBombSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseBigBombSpeedUpscale(t int) {
+	if t > 0 {
+		p.BigBombSpeedUpscale++
+	} else {
+		p.BigBombSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetBigBombVelocityMultiplier() int {
+	return int(p.BigBombVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseBigBombVelocityMultiplier(t int) {
+	p.BigBombVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetMachineGunSpeedUpscale() int {
+	return int(p.MachineGunSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseMachineGunSpeedUpscale(t int) {
+	if t > 0 {
+		p.MachineGunSpeedUpscale++
+	} else {
+		p.MachineGunSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetMachineGunVelocityMultiplier() int {
+	return int(p.MachineGunVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseMachineGunVelocityMultiplier(t int) {
+	p.MachineGunVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetDoubleMachineGunSpeedUpscale() int {
+	return int(p.DoubleMachineGunSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseDoubleMachineGunSpeedUpscale(t int) {
+	if t > 0 {
+		p.DoubleMachineGunSpeedUpscale++
+	} else {
+		p.DoubleMachineGunSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetDoubleMachineGunVelocityMultiplier() int {
+	return int(p.DoubleMachineGunVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseDoubleMachineGunVelocityMultiplier(t int) {
+	p.DoubleMachineGunVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetPlasmaGunVelocityMultiplier() int {
+	return int(p.PlasmaGunVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreasePlasmaGunVelocityMultiplier(t int) {
+	p.PlasmaGunVelocityMultiplier += float64(t)
+}
+
+func (p *PlayerParams) GetPlasmaGunSpeedUpscale() int {
+	return int(p.PlasmaGunSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreasePlasmaGunSpeedUpscale(t int) {
+	if t > 0 {
+		p.PlasmaGunSpeedUpscale++
+	} else {
+		p.PlasmaGunSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetDoublePlasmaGunSpeedUpscale() int {
+	return int(p.DoublePlasmaGunSpeedUpscale)
+}
+
+func (p *PlayerParams) IncreaseDoublePlasmaGunSpeedUpscale(t int) {
+	if t > 0 {
+		p.DoublePlasmaGunSpeedUpscale++
+	} else {
+		p.DoublePlasmaGunSpeedUpscale--
+	}
+}
+
+func (p *PlayerParams) GetDoublePlasmaGunVelocityMultiplier() int {
+	return int(p.DoublePlasmaGunVelocityMultiplier)
+}
+
+func (p *PlayerParams) IncreaseDoublePlasmaGunVelocityMultiplier(t int) {
+	p.DoublePlasmaGunVelocityMultiplier += float64(t)
 }
 
 type Player struct {
