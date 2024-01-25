@@ -305,12 +305,12 @@ func NewPlayer(curgame *Game) *Player {
 	halfH := float64(bounds.Dy()) / 2
 
 	pos := config.Vector{
-		X: config.ScreenWidth/2 - halfW,
-		Y: config.ScreenHeight/2 - halfH,
+		X: curgame.Options.ScreenWidth/2 - halfW,
+		Y: curgame.Options.ScreenHeight/2 - halfH,
 	}
 	posFireburst := config.Vector{
-		X: config.ScreenWidth/2 - halfW,
-		Y: config.ScreenHeight/2 + float64(bounds.Dy()/2),
+		X: curgame.Options.ScreenWidth/2 - halfW,
+		Y: curgame.Options.ScreenHeight/2 + float64(bounds.Dy()/2),
 	}
 
 	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 1, 192, 96, true, "engineFireburst", 0)
@@ -356,8 +356,8 @@ func (p *Player) Update() {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
 		p.position.X += p.params.speed
-		if p.position.X > config.ScreenWidth {
-			p.position.X = config.ScreenWidth
+		if p.position.X > p.game.Options.ScreenWidth {
+			p.position.X = p.game.Options.ScreenWidth
 		}
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
@@ -368,8 +368,8 @@ func (p *Player) Update() {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		p.position.Y += p.params.speed
-		if p.position.Y > config.ScreenHeight {
-			p.position.Y = config.ScreenHeight
+		if p.position.Y > p.game.Options.ScreenHeight {
+			p.position.Y = p.game.Options.ScreenHeight
 		}
 	}
 
@@ -458,10 +458,6 @@ func (p *Player) Update() {
 func (p *Player) Draw(screen *ebiten.Image) {
 	objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 }
-
-// func (s *Shield) Draw(screen *ebiten.Image) {
-// 	objects.RotateAndTranslateObject(0, s.sprite, screen, s.position.X, s.position.Y)
-// }
 
 func (p *Player) Collider() image.Rectangle {
 	bounds := p.sprite.Bounds()

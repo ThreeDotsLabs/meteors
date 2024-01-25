@@ -15,6 +15,7 @@ import (
 
 type Projectile struct {
 	HP                 int
+	sprite             *ebiten.Image
 	position           config.Vector
 	movement           config.Vector
 	target             config.Vector
@@ -26,6 +27,7 @@ type Projectile struct {
 }
 
 type Beam struct {
+	game     *Game
 	position config.Vector
 	target   config.Vector
 	rotation float64
@@ -59,19 +61,18 @@ type Blow struct {
 	Step   int
 }
 
-var screenDiag = math.Sqrt(config.ScreenWidth*config.ScreenWidth + config.ScreenHeight*config.ScreenHeight)
-
 func NewWeapon(wType string, p *Player) *Weapon {
 	x, y := ebiten.CursorPosition()
 	switch wType {
 	case config.LightRocket:
 		lightRType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.MissileSprite, 0.7),
+			Sprite:                        assets.MissileSprite,
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
 			Velocity:                      400 + p.params.LightRocketVelocityMultiplier,
 			Damage:                        3,
 			TargetType:                    "straight",
 			WeaponName:                    config.LightRocket,
+			Scale:                         0.7 * p.game.Options.ResolutionMultipler,
 		}
 		lightR := Weapon{
 			projectile: Projectile{
@@ -95,7 +96,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: py - ((p.position.X+halfW-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
 				animation := NewAnimation(config.Vector{}, lightRType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, lightRType, animation, 0)
+				projectile := NewProjectile(p.game, spawnPos, p.rotation, lightRType, animation, 0)
 				projectile.owner = "player"
 				p.game.AddProjectile(projectile)
 			},
@@ -103,7 +104,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &lightR
 	case config.DoubleLightRocket:
 		boubleRType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.DoubleMissileSprite, 0.7),
+			Sprite:                        objects.ScaleImg(assets.DoubleMissileSprite, 0.7*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
 			Velocity:                      400 + p.params.DoubleLightRocketVelocityMultiplier,
 			Damage:                        3,
@@ -137,9 +138,9 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
 				animationLeft := NewAnimation(config.Vector{}, boubleRType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, boubleRType, animationLeft, 0)
+				projectileLeft := NewProjectile(p.game, spawnPosLeft, p.rotation, boubleRType, animationLeft, 0)
 				animationRight := NewAnimation(config.Vector{}, boubleRType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, boubleRType, animationRight, 0)
+				projectileRight := NewProjectile(p.game, spawnPosRight, p.rotation, boubleRType, animationRight, 0)
 
 				projectileLeft.owner = "player"
 				projectileRight.owner = "player"
@@ -150,7 +151,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &doubleR
 	case config.LaserCanon:
 		laserCType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5),
+			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Damage:                        3,
 			TargetType:                    "straight",
@@ -176,7 +177,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					X: px + ((p.position.X+halfW-px)*math.Cos(-p.rotation) - (py-p.position.Y)*math.Sin(-p.rotation)),
 					Y: py - ((p.position.X+halfW-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
-				beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPos, laserCType)
+				beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPos, laserCType, p.game)
 				beam.owner = "player"
 				p.game.AddBeam(beam)
 				ba := beam.NewBeamAnimation()
@@ -186,7 +187,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &laserC
 	case config.DoubleLaserCanon:
 		doubleLaserCType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5),
+			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Damage:                        2,
 			TargetType:                    "straight",
@@ -218,12 +219,12 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					X: px + ((p.position.X+halfWright-px)*math.Cos(-p.rotation) - (py-heightShift-p.position.Y)*math.Sin(-p.rotation)),
 					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-heightShift-p.position.Y)*math.Cos(-p.rotation)),
 				}
-				beamLeft := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosLeft, doubleLaserCType)
+				beamLeft := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosLeft, doubleLaserCType, p.game)
 				beamLeft.owner = "player"
 				p.game.AddBeam(beamLeft)
 				baL := beamLeft.NewBeamAnimation()
 				p.game.AddBeamAnimation(baL)
-				beamRight := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosRight, doubleLaserCType)
+				beamRight := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, p.rotation, spawnPosRight, doubleLaserCType, p.game)
 				beamRight.owner = "player"
 				p.game.AddBeam(beamRight)
 				baR := beamRight.NewBeamAnimation()
@@ -233,7 +234,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &doubleLaserC
 	case config.ClusterMines:
 		clusterMType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.ClusterMines, 0.5),
+			Sprite:                        objects.ScaleImg(assets.ClusterMines, 0.5*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ClusterMinesBlowSpriteSheet,
 			Velocity:                      240 + p.params.ClusterMinesVelocityMultiplier,
 			Damage:                        3,
@@ -264,7 +265,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 						Y: p.position.Y + halfH + math.Cos(angle),
 					}
 					animation := NewAnimation(config.Vector{}, clusterMType.IntercectAnimationSpriteSheet, 1, 50, 50, false, "projectileBlow", 0)
-					projectile := NewProjectile(config.Vector{}, spawnPos, angle, clusterMType, animation, 0)
+					projectile := NewProjectile(p.game, spawnPos, angle, clusterMType, animation, 0)
 					projectile.owner = "player"
 					p.game.AddProjectile(projectile)
 				}
@@ -273,7 +274,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &clusterM
 	case config.BigBomb:
 		bigBType := &config.WeaponType{
-			Sprite:     objects.ScaleImg(assets.BigBomb, 0.8),
+			Sprite:     objects.ScaleImg(assets.BigBomb, 0.8*p.game.Options.ResolutionMultipler),
 			Velocity:   200 + p.params.BigBombVelocityMultiplier,
 			Damage:     10,
 			TargetType: "straight",
@@ -300,7 +301,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 				}
 				animation := NewAnimation(config.Vector{}, bigBType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, bigBType, animation, 0)
+				projectile := NewProjectile(p.game, spawnPos, p.rotation, bigBType, animation, 0)
 				projectile.owner = "player"
 				p.game.AddProjectile(projectile)
 			},
@@ -308,7 +309,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &bigB
 	case config.MachineGun:
 		machineGType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.MachineGun, 0.3),
+			Sprite:                        objects.ScaleImg(assets.MachineGun, 0.3*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Velocity:                      600 + p.params.MachineGunVelocityMultiplier,
 			Damage:                        1,
@@ -336,7 +337,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
 				}
 				animation := NewAnimation(config.Vector{}, machineGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, machineGType, animation, 0)
+				projectile := NewProjectile(p.game, spawnPos, p.rotation, machineGType, animation, 0)
 				projectile.owner = "player"
 				p.game.AddProjectile(projectile)
 			},
@@ -344,7 +345,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &machineG
 	case config.DoubleMachineGun:
 		doubleMachineGType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.DoubleMachineGun, 0.28),
+			Sprite:                        objects.ScaleImg(assets.DoubleMachineGun, 0.28*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Velocity:                      600 + p.params.DoubleMachineGunVelocityMultiplier,
 			Damage:                        1,
@@ -378,9 +379,9 @@ func NewWeapon(wType string, p *Player) *Weapon {
 					Y: py - ((p.position.X+halfWright-px)*math.Sin(-p.rotation) + (py-p.position.Y)*math.Cos(-p.rotation)),
 				}
 				animationLeft := NewAnimation(config.Vector{}, doubleMachineGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, doubleMachineGType, animationLeft, 0)
+				projectileLeft := NewProjectile(p.game, spawnPosLeft, p.rotation, doubleMachineGType, animationLeft, 0)
 				animationRight := NewAnimation(config.Vector{}, doubleMachineGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, doubleMachineGType, animationRight, 0)
+				projectileRight := NewProjectile(p.game, spawnPosRight, p.rotation, doubleMachineGType, animationRight, 0)
 				projectileLeft.owner = "player"
 				projectileRight.owner = "player"
 				p.game.AddProjectile(projectileLeft)
@@ -390,7 +391,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &doubleMachineG
 	case config.PlasmaGun:
 		plasmaGType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.PlasmaGun, 0.8),
+			Sprite:                        objects.ScaleImg(assets.PlasmaGun, 0.8*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			InstantAnimationSpiteSheet:    assets.PlasmaGunProjectileSpriteSheet,
 			Velocity:                      500 + p.params.PlasmaGunVelocityMultiplier,
@@ -422,7 +423,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				}
 				plasmaAnimation := NewAnimation(config.Vector{}, plasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
 				animation := NewAnimation(config.Vector{}, plasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectile := NewProjectile(config.Vector{}, spawnPos, p.rotation, plasmaGType, animation, 6)
+				projectile := NewProjectile(p.game, spawnPos, p.rotation, plasmaGType, animation, 6)
 				projectile.owner = "player"
 				projectile.instantAnimation = plasmaAnimation
 				p.game.AddProjectile(projectile)
@@ -432,7 +433,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &plasmaG
 	case config.DoublePlasmaGun:
 		doublePlasmaGType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.PlasmaGun, 1.2),
+			Sprite:                        objects.ScaleImg(assets.PlasmaGun, 1.2*p.game.Options.ResolutionMultipler),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			InstantAnimationSpiteSheet:    assets.PlasmaGunProjectileSpriteSheet,
 			Velocity:                      500 + p.params.DoublePlasmaGunVelocityMultiplier,
@@ -473,10 +474,10 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				}
 				plasmaAnimationLeft := NewAnimation(config.Vector{}, doublePlasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
 				animationLeft := NewAnimation(config.Vector{}, doublePlasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileLeft := NewProjectile(config.Vector{}, spawnPosLeft, p.rotation, doublePlasmaGType, animationLeft, 4)
+				projectileLeft := NewProjectile(p.game, spawnPosLeft, p.rotation, doublePlasmaGType, animationLeft, 4)
 				plasmaAnimationRight := NewAnimation(config.Vector{}, doublePlasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
 				animationRight := NewAnimation(config.Vector{}, doublePlasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectileRight := NewProjectile(config.Vector{}, spawnPosRight, p.rotation, doublePlasmaGType, animationRight, 4)
+				projectileRight := NewProjectile(p.game, spawnPosRight, p.rotation, doublePlasmaGType, animationRight, 4)
 				projectileLeft.owner = "player"
 				projectileRight.owner = "player"
 				projectileLeft.instantAnimation = plasmaAnimationLeft
@@ -490,7 +491,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		return &doublePlasmaG
 	case config.PentaLaser:
 		pentaLaserType := &config.WeaponType{
-			Sprite:     objects.ScaleImg(assets.PentaLaser, 0.8),
+			Sprite:     objects.ScaleImg(assets.PentaLaser, 0.8*p.game.Options.ResolutionMultipler),
 			Damage:     8,
 			TargetType: "straight",
 			WeaponName: config.PentaLaser,
@@ -515,7 +516,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 						X: p.position.X + halfW,
 						Y: p.position.Y + halfH - halfW/2,
 					}
-					beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, angle, spawnPos, pentaLaserType)
+					beam := NewBeam(config.Vector{X: float64(x), Y: float64(y)}, angle, spawnPos, pentaLaserType, p.game)
 					beam.owner = "player"
 					p.game.AddBeam(beam)
 					ba := beam.NewBeamAnimation()
@@ -530,10 +531,6 @@ func NewWeapon(wType string, p *Player) *Weapon {
 
 var enemyLightRocket = Weapon{
 	projectile: Projectile{
-		position: config.Vector{},
-		target:   config.Vector{},
-		movement: config.Vector{},
-		rotation: 0,
 		wType: &config.WeaponType{
 			Sprite:                        assets.EnemyLightMissile,
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
@@ -553,7 +550,7 @@ var enemyLightRocket = Weapon{
 			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
 		}
 		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
+		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
 		projectile.owner = "enemy"
 		e.game.AddProjectile(projectile)
 	},
@@ -580,24 +577,31 @@ var enemyAutoLightRocket = Weapon{
 			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
 		}
 		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(config.Vector{}, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
+		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
 		projectile.owner = "enemy"
 		e.game.AddProjectile(projectile)
 	},
 }
 
-func NewProjectile(target config.Vector, pos config.Vector, rotation float64, wType *config.WeaponType, animation *Animation, hp int) *Projectile {
+func NewProjectile(g *Game, pos config.Vector, rotation float64, wType *config.WeaponType, animation *Animation, hp int) *Projectile {
 	bounds := wType.Sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
 	halfH := float64(bounds.Dy()) / 2
 
 	pos.X -= halfW
 	pos.Y -= halfH
-
+	var sprite *ebiten.Image
+	if wType.Scale > 0 {
+		spriteImg := ebiten.NewImageFromImage(wType.Sprite)
+		sprite = objects.ScaleImg(spriteImg, g.Options.ResolutionMultipler)
+	} else {
+		spriteCopy := *wType.Sprite
+		sprite = objects.ScaleImg(&spriteCopy, g.Options.ResolutionMultipler)
+	}
 	p := &Projectile{
+		sprite:             sprite,
 		position:           pos,
 		rotation:           rotation,
-		target:             target,
 		wType:              wType,
 		intercectAnimation: animation,
 		HP:                 hp,
@@ -647,7 +651,7 @@ func (p *Projectile) Update() {
 
 func (p *Projectile) Draw(screen *ebiten.Image) {
 	if !p.wType.AnimationOnly {
-		objects.RotateAndTranslateObject(p.rotation, p.wType.Sprite, screen, p.position.X, p.position.Y)
+		objects.RotateAndTranslateObject(p.rotation, p.sprite, screen, p.position.X, p.position.Y)
 	}
 }
 
@@ -678,7 +682,8 @@ func (p *Projectile) Collider() image.Rectangle {
 	}
 }
 
-func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *config.WeaponType) *Beam {
+func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *config.WeaponType, g *Game) *Beam {
+	screenDiag := math.Sqrt(g.Options.ScreenWidth*g.Options.ScreenWidth + g.Options.ScreenHeight*g.Options.ScreenHeight)
 	bounds := wType.Sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
 	halfH := float64(bounds.Dy()) / 2
@@ -692,6 +697,7 @@ func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *c
 		math.Sin(rotation-math.Pi/2)*(screenDiag)+pos.Y,
 	)
 	b := &Beam{
+		game:     g,
 		position: pos,
 		target:   target,
 		rotation: rotation,
@@ -703,6 +709,7 @@ func NewBeam(target config.Vector, rotation float64, pos config.Vector, wType *c
 }
 
 func (b *Beam) NewBeamAnimation() *BeamAnimation {
+	screenDiag := math.Sqrt(b.game.Options.ScreenWidth*b.game.Options.ScreenWidth + b.game.Options.ScreenHeight*b.game.Options.ScreenHeight)
 	rect := config.NewRectangle(
 		b.position.X,
 		b.position.Y,

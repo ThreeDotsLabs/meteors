@@ -38,7 +38,7 @@ func ScaleImg(img *ebiten.Image, scale float64) *ebiten.Image {
 		return scaledImage
 	}
 
-	return img
+	return nil
 }
 
 func RandInt(min, max int) int {

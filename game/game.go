@@ -13,15 +13,36 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"golang.org/x/image/font"
 )
 
+type options struct {
+	fullscreen          bool
+	ResolutionMultipler float64
+	ScreenWidth         float64
+	ScreenHeight        float64
+	ScreenXMenuShift    int
+	ScreenYMenuShift    int
+	ScreenXProfileShift int
+	ScreenYProfileShift int
+	ScreenYMenuHeight   int
+	ScreenFontHeight    int
+	ScreenFontWidth     int
+	ScoreFont           font.Face
+	InfoFont            font.Face
+	SmallFont           font.Face
+	ProfileFont         font.Face
+	ProfileBigFont      font.Face
+}
 type Game struct {
+	Options           *options
 	menu              *MainMenu
+	optionsMenu       *OptionsMenu
 	profile           *ProfileScreen
 	state             config.GameState
 	player            *Player
 	meteorSpawnTimer  *config.Timer
-	meteors           []*objects.Meteor
+	meteors           []*Meteor
 	projectiles       []*Projectile
 	blows             []*Blow
 	beams             []*Beam
@@ -48,6 +69,24 @@ type Game struct {
 
 func NewGame() *Game {
 	g := &Game{
+		Options: &options{
+			fullscreen:          false,
+			ResolutionMultipler: 1,
+			ScreenWidth:         config.ScreenWidth1024X768,
+			ScreenHeight:        config.ScreenHeight1024X768,
+			ScreenXMenuShift:    config.Screen1024X768XMenuShift,
+			ScreenYMenuShift:    config.Screen1024X768YMenuShift,
+			ScreenXProfileShift: config.Screen1024X768XProfileShift,
+			ScreenYProfileShift: config.Screen1024X768YProfileShift,
+			ScreenYMenuHeight:   config.Screen1024X768YMenuHeight,
+			ScreenFontHeight:    config.Screen1024X768FontHeight,
+			ScreenFontWidth:     config.Screen1024X768FontWidth,
+			ScoreFont:           assets.ScoreFont1024x768,
+			InfoFont:            assets.InfoFont1024x768,
+			SmallFont:           assets.SmallFont1024x768,
+			ProfileFont:         assets.ProfileFont1024x768,
+			ProfileBigFont:      assets.ProfileBigFont1024x768,
+		},
 		state:             config.MainMenu,
 		meteorSpawnTimer:  config.NewTimer(config.MeteorSpawnTime),
 		baseVelocity:      config.BaseMeteorVelocity,
@@ -65,6 +104,7 @@ func NewGame() *Game {
 
 	g.player = NewPlayer(g)
 	g.menu = NewMainMenu(g)
+	g.optionsMenu = NewOptionsMenu(g)
 	g.profile = NewPlayerProfile(g)
 
 	return g
@@ -101,6 +141,11 @@ func (g *Game) MoveBgPosition() {
 func (g *Game) Update() error {
 	g.MoveBgPosition()
 	switch g.state {
+	case config.Options:
+		err := g.optionsMenu.Update()
+		if err != nil {
+			return err
+		}
 	case config.Profile:
 		g.profile.Update()
 	case config.MainMenu:
@@ -142,7 +187,7 @@ func (g *Game) Update() error {
 		if g.meteorSpawnTimer.IsReady() {
 			g.meteorSpawnTimer.Reset()
 			if g.CurStage.MeteorsCount > 0 {
-				m := objects.NewMeteor(g.baseVelocity)
+				m := NewMeteor(g.baseVelocity, g)
 				g.meteors = append(g.meteors, m)
 				g.CurStage.MeteorsCount--
 			}
@@ -163,14 +208,14 @@ func (g *Game) Update() error {
 				itemWidth := item.itemType.Sprite.Bounds().Dx()
 				itemHight := item.itemType.Sprite.Bounds().Dy()
 				r := rand.New(rand.NewSource(99))
-				posX := r.Intn(config.ScreenWidth - (itemWidth + itemWidth/2))
+				posX := r.Intn(int(g.Options.ScreenWidth) - (itemWidth + itemWidth/2))
 				startPos = config.Vector{
 					X: float64(posX + itemWidth),
 					Y: -(float64(itemHight)),
 				}
 				target = config.Vector{
 					X: startPos.X,
-					Y: config.ScreenHeight + 10,
+					Y: g.Options.ScreenHeight + 10,
 				}
 				item.SetDirection(target, startPos, &itemParam)
 				item.target = target
@@ -194,19 +239,20 @@ func (g *Game) Update() error {
 				if batch.StartPositionType == "centered" {
 					eTst := NewEnemy(g, config.Vector{}, config.Vector{}, *batch.Type)
 					enemyWidthTst := eTst.enemyType.Sprite.Bounds().Dx()
-					xOffsetMod = (config.ScreenWidth - float64(batch.Count*(enemyWidthTst+int(batch.StartPosOffset))-int(batch.StartPosOffset))) / 2
+					xOffsetMod = (g.Options.ScreenWidth - float64(batch.Count*(enemyWidthTst+int(batch.StartPosOffset))-int(batch.StartPosOffset))) / 2
 				}
 				for i := 0; i < batch.Count; i++ {
 					var target config.Vector
 					var startPos config.Vector
 					e := NewEnemy(g, target, startPos, *batch.Type)
+					e.enemyType.Sprite = objects.ScaleImg(e.enemyType.Sprite, g.Options.ResolutionMultipler)
 					e.TargetType = batch.TargetType
 					enemyWidth := e.enemyType.Sprite.Bounds().Dx()
 					enemyHight := e.enemyType.Sprite.Bounds().Dy()
 					switch batch.StartPositionType {
 					case "centered":
 						xOffset := batch.StartPosOffset
-						elemInLine := config.ScreenWidth / (enemyWidth + int(xOffset))
+						elemInLine := int(g.Options.ScreenWidth) / (enemyWidth + int(xOffset))
 						if elemInLineCount == 0 {
 							xOffset = 0.0
 						}
@@ -220,7 +266,7 @@ func (g *Game) Update() error {
 						}
 					case "lines":
 						xOffset := batch.StartPosOffset
-						elemInLine := config.ScreenWidth / (enemyWidth + int(xOffset))
+						elemInLine := int(g.Options.ScreenWidth) / (enemyWidth + int(xOffset))
 						if elemInLineCount == 0 {
 							xOffset = 0.0
 						}
@@ -233,7 +279,7 @@ func (g *Game) Update() error {
 							Y: -(float64(enemyHight)*linesCount + 10),
 						}
 					case "checkmate":
-						elemInLine := config.ScreenWidth / (enemyWidth * 2)
+						elemInLine := int(g.Options.ScreenWidth) / (enemyWidth * 2)
 						if elemInLineCount >= elemInLine {
 							elemInLineCount = 0
 							linesCount++
@@ -258,7 +304,7 @@ func (g *Game) Update() error {
 					case "straight":
 						target = config.Vector{
 							X: startPos.X,
-							Y: config.ScreenHeight + 10,
+							Y: g.Options.ScreenHeight + 10,
 						}
 					}
 					elemInLineCount++
@@ -291,16 +337,16 @@ func (g *Game) Update() error {
 
 		for i, m := range g.meteors {
 			m.Update()
-			if m.Collider().Min.Y >= config.ScreenHeight && i < len(g.meteors) {
+			if m.Collider().Min.Y >= int(g.Options.ScreenHeight) && i < len(g.meteors) {
 				g.meteors = slices.Delete(g.meteors, i, i+1)
 			}
 		}
 
 		for i, p := range g.projectiles {
 			p.Update()
-			if i < len(g.projectiles) && (p.position.Y < 0 || p.position.Y >= config.ScreenHeight+float64(p.wType.Sprite.Bounds().Dy())) {
+			if i < len(g.projectiles) && (p.position.Y < 0 || p.position.Y >= g.Options.ScreenHeight+float64(p.wType.Sprite.Bounds().Dy())) {
 				g.projectiles[i].Destroy(g, i)
-			} else if i < len(g.projectiles) && (p.position.X < 0 || p.position.X > config.ScreenWidth+float64(p.wType.Sprite.Bounds().Dx())) {
+			} else if i < len(g.projectiles) && (p.position.X < 0 || p.position.X > g.Options.ScreenWidth+float64(p.wType.Sprite.Bounds().Dx())) {
 				g.projectiles[i].Destroy(g, i)
 			}
 		}
@@ -313,14 +359,14 @@ func (g *Game) Update() error {
 				}
 			}
 			p.Update()
-			if p.position.Y >= config.ScreenHeight && i < len(g.enemyProjectiles) {
+			if p.position.Y >= g.Options.ScreenHeight && i < len(g.enemyProjectiles) {
 				g.enemyProjectiles = slices.Delete(g.enemyProjectiles, i, i+1)
 			}
 		}
 
 		for i, item := range g.items {
 			item.Update()
-			if item.position.Y >= config.ScreenHeight && i < len(g.items) {
+			if item.position.Y >= g.Options.ScreenHeight && i < len(g.items) {
 				g.items = slices.Delete(g.items, i, i+1)
 			}
 		}
@@ -359,7 +405,7 @@ func (g *Game) Update() error {
 				}
 			}
 			m.Update()
-			if m.position.Y >= config.ScreenHeight+float64(m.Collider().Dy()) && i < len(g.enemies) {
+			if m.position.Y >= g.Options.ScreenHeight+float64(m.Collider().Dy()) && i < len(g.enemies) {
 				g.enemies = slices.Delete(g.enemies, i, i+1)
 			}
 
@@ -520,6 +566,8 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.state {
+	case config.Options:
+		g.optionsMenu.Draw(screen)
 	case config.Profile:
 		g.profile.Draw(screen)
 	case config.MainMenu:
@@ -560,14 +608,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 
 		// Draw the hit points bar
-		barX := config.ScreenWidth - 120
+		barX := g.Options.ScreenWidth - 120*g.Options.ResolutionMultipler
 		backWidth := float32(g.player.params.HP)*10 + 4
-		if backWidth < 104 {
+		if backWidth < 104*float32(g.Options.ResolutionMultipler) {
 			backWidth = 104
 		}
 
 		vector.DrawFilledRect(screen, float32(barX-2), 38, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
-		vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.params.HP)*10, 20, color.RGBA{179, 14, 14, 255}, false)
+		vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultipler), 20, color.RGBA{179, 14, 14, 255}, false)
 
 		// Draw shield bar
 		if g.player.shield != nil {
@@ -575,44 +623,38 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			if backWidth < 104 {
 				backWidth = 104
 			}
-			shiftX := int(backWidth) - 104
+			shiftX := float64(backWidth) - 104
 			vector.DrawFilledRect(screen, float32(barX-shiftX-2), 82, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
-			vector.DrawFilledRect(screen, float32(barX-shiftX), 84, float32(g.player.shield.HP)*10, 20, color.RGBA{26, 14, 189, 255}, false)
+			vector.DrawFilledRect(screen, float32(barX-shiftX), 84, float32(g.player.shield.HP)*10*float32(g.Options.ResolutionMultipler), 20, color.RGBA{26, 14, 189, 255}, false)
 		}
 
 		// Draw weapons
 		for i, w := range g.player.weapons {
-			offset := 20
+			offset := 20 * int(g.Options.ResolutionMultipler)
 			object := w.projectile.wType.Sprite
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(i*offset+offset), config.ScreenHeight-float64(60))
+			op.GeoM.Translate(float64(i*offset+offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultipler)))
 			if w.projectile.wType.WeaponName == g.player.curWeapon.projectile.wType.WeaponName {
-				vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(config.ScreenHeight-float64(30)), float32(object.Bounds().Dx()+4), 3, color.RGBA{255, 255, 255, 255}, false)
+				vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(g.Options.ScreenHeight-float64(30*int(g.Options.ResolutionMultipler))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultipler)), 3*float32(g.Options.ResolutionMultipler), color.RGBA{255, 255, 255, 255}, false)
 			}
-			text.Draw(screen, fmt.Sprintf("%v", w.ammo), assets.SmallFont, i*offset+offset, config.ScreenHeight-80, color.White)
+			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, i*offset+offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultipler), color.White)
 			screen.DrawImage(object, op)
 		}
 
 		// Draw secondary weapons
 		for i, w := range g.player.secondaryWeapons {
-			startOffset := config.ScreenWidth - 40
-			offset := 20
+			startOffset := int(g.Options.ScreenWidth) - 40*int(g.Options.ResolutionMultipler)
+			offset := 20 * int(g.Options.ResolutionMultipler)
 			object := w.projectile.wType.Sprite
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(startOffset-i*offset), config.ScreenHeight-float64(60))
+			op.GeoM.Translate(float64(startOffset-i*offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultipler)))
 			if g.player.curSecondaryWeapon != nil && w.projectile.wType.WeaponName == g.player.curSecondaryWeapon.projectile.wType.WeaponName {
-				vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(config.ScreenHeight-float64(30)), float32(object.Bounds().Dx()+4), 3, color.RGBA{255, 255, 255, 255}, false)
+				vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(g.Options.ScreenHeight-float64(30*float32(g.Options.ResolutionMultipler))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultipler)), 3*float32(g.Options.ResolutionMultipler), color.RGBA{255, 255, 255, 255}, false)
 			}
-			text.Draw(screen, fmt.Sprintf("%v", w.ammo), assets.SmallFont, startOffset-i*offset, config.ScreenHeight-80, color.White)
+			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, startOffset-i*offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultipler), color.White)
 			screen.DrawImage(object, op)
 		}
 
-		// if g.beam != nil {
-		// 	gradRot := float64(180) / math.Pi * g.beam.rotation
-		// 	gradRotPl := float64(180) / math.Pi * g.player.rotation
-		// 	msg := fmt.Sprintf("Beams: %v, Rotation: %v, PlayerRotation: %v", g.beam.Line, gradRot, gradRotPl)
-		// 	ebitenutil.DebugPrint(screen, msg)
-		// }
 		// for _, a := range g.animations {
 		// 	if a.name == "engineFireburst" {
 		// 		msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v, Step: %v, Frame: %v", a.position.X, a.position.Y, a.rotation, a.currF, a.curTick)
@@ -620,8 +662,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		// 	}
 		// }
 
-		text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId), assets.InfoFont, 20, 50, color.White)
-		text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, config.ScreenWidth/2-100, 50, color.White)
+		text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId), g.Options.InfoFont, 20, 50, color.White)
+		text.Draw(screen, fmt.Sprintf("%06d", g.score), g.Options.ScoreFont, int(g.Options.ScreenWidth)/2-100, 50, color.White)
 	}
 }
 
@@ -699,7 +741,7 @@ func (g *Game) Reset() {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return config.ScreenWidth, config.ScreenHeight
+	return int(g.Options.ScreenWidth), int(g.Options.ScreenHeight)
 }
 
 func (g *Game) DrawBg(screen *ebiten.Image) {

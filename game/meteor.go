@@ -1,4 +1,4 @@
-package objects
+package game
 
 import (
 	"image"
@@ -8,6 +8,7 @@ import (
 
 	"astrogame/assets"
 	"astrogame/config"
+	"astrogame/objects"
 )
 
 const (
@@ -23,14 +24,14 @@ type Meteor struct {
 	sprite        *ebiten.Image
 }
 
-func NewMeteor(baseVelocity float64) *Meteor {
+func NewMeteor(baseVelocity float64, g *Game) *Meteor {
 	target := config.Vector{
-		X: config.ScreenWidth / 2,
-		Y: config.ScreenHeight / 2,
+		X: g.Options.ScreenWidth / 2,
+		Y: g.Options.ScreenHeight / 2,
 	}
 
 	pos := config.Vector{
-		X: config.ScreenWidth * rand.Float64(),
+		X: g.Options.ScreenWidth * rand.Float64(),
 		Y: -10,
 	}
 
@@ -47,7 +48,7 @@ func NewMeteor(baseVelocity float64) *Meteor {
 		Y: normalizedDirection.Y * velocity,
 	}
 
-	modSprite := ScaleImg(assets.MeteorSprites[rand.Intn(len(assets.MeteorSprites))], float64(RandInt(5, 8))/10)
+	modSprite := objects.ScaleImg(assets.MeteorSprites[rand.Intn(len(assets.MeteorSprites))], float64(objects.RandInt(5, 8))/10)
 
 	m := &Meteor{
 		position:      pos,
@@ -65,7 +66,7 @@ func (m *Meteor) Update() {
 }
 
 func (m *Meteor) Draw(screen *ebiten.Image) {
-	RotateAndTranslateObject(m.rotation, m.sprite, screen, m.position.X, m.position.Y)
+	objects.RotateAndTranslateObject(m.rotation, m.sprite, screen, m.position.X, m.position.Y)
 }
 
 func (m *Meteor) Collider() image.Rectangle {

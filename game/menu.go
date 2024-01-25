@@ -1,7 +1,6 @@
 package game
 
 import (
-	"astrogame/assets"
 	"astrogame/config"
 	"fmt"
 	"image"
@@ -13,6 +12,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text"
 )
 
+type Menu interface {
+	Update(g *Game, Items []*MenuItem) error
+	Draw(g *Game, Items []*MenuItem, screen *ebiten.Image)
+}
 type MainMenu struct {
 	Game  *Game
 	Items []*MenuItem
@@ -63,9 +66,12 @@ func NewMainMenu(g *Game) *MainMenu {
 				Pos:     1,
 			},
 			{
-				Label:   "Options",
-				Action:  StartGame,
-				Active:  false,
+				Label: "Options",
+				Action: func(g *Game) error {
+					g.state = config.Options
+					return nil
+				},
+				Active:  true,
 				Choosen: false,
 				Pos:     2,
 			},
@@ -82,40 +88,69 @@ func NewMainMenu(g *Game) *MainMenu {
 	for idx, i := range MainMenu.Items {
 		chars := len([]rune(i.Label))
 		i.vector = image.Rectangle{
-			Min: image.Point{X: config.ScreenWidth/2 - config.Screen1024X768XMenuShift, Y: config.ScreenHeight/2 - config.Screen1024X768YMenuShift + config.Screen1024X768YMenuHeight*idx - config.Screen1024X768FontHeight},
-			Max: image.Point{X: config.ScreenWidth/2 - config.Screen1024X768XMenuShift + chars*config.Screen1024X768FontWidth, Y: config.ScreenHeight/2 - config.Screen1024X768YMenuShift + config.Screen1024X768YMenuHeight*idx + config.Screen1024X768FontHeight},
+			Min: image.Point{X: int(g.Options.ScreenWidth/2) - g.Options.ScreenXMenuShift, Y: int(g.Options.ScreenHeight/2) - g.Options.ScreenYMenuShift + g.Options.ScreenYMenuHeight*idx - g.Options.ScreenFontHeight},
+			Max: image.Point{X: int(g.Options.ScreenWidth/2) - g.Options.ScreenXMenuShift + chars*g.Options.ScreenFontWidth, Y: int(g.Options.ScreenHeight/2) - g.Options.ScreenYMenuShift + g.Options.ScreenYMenuHeight*idx + g.Options.ScreenFontHeight},
 		}
 	}
 	return &MainMenu
 }
 
 func (m *MainMenu) Update() error {
+	return MenuUpdate(m.Game, m.Items)
+}
+
+func (m *MainMenu) Draw(screen *ebiten.Image) {
+	m.Game.DrawBg(screen)
+	MenuDraw(m.Game, m.Items, screen)
+}
+
+func MenuDraw(g *Game, Items []*MenuItem, screen *ebiten.Image) {
+	g.DrawBg(screen)
+
+	// for _, i := range m.Items {
+	// 	chars := len([]rune(i.Label))
+	// 	vector.StrokeRect(screen, float32(i.vector.Min.X), float32(i.vector.Min.Y), float32(chars*config.Screen1024X768FontWidth), config.Screen1024X768FontHeight, 1, color.RGBA{255, 255, 255, 255}, false)
+	// }
+
+	for index, i := range Items {
+		colorr := color.RGBA{255, 255, 255, 255}
+		if i.Choosen {
+			colorr = color.RGBA{179, 14, 14, 255}
+		} else if !i.Active {
+			colorr = color.RGBA{100, 100, 100, 255}
+		}
+		text.Draw(screen, fmt.Sprintf("%v", i.Label), g.Options.ScoreFont, int(g.Options.ScreenWidth/2)-g.Options.ScreenXMenuShift-2, int(g.Options.ScreenHeight/2)-g.Options.ScreenYMenuShift+g.Options.ScreenYMenuHeight*index-2, color.RGBA{0, 0, 0, 255})
+		text.Draw(screen, fmt.Sprintf("%v", i.Label), g.Options.ScoreFont, int(g.Options.ScreenWidth/2)-g.Options.ScreenXMenuShift, int(g.Options.ScreenHeight/2)-g.Options.ScreenYMenuShift+g.Options.ScreenYMenuHeight*index, colorr)
+	}
+}
+
+func MenuUpdate(g *Game, Items []*MenuItem) error {
 	// Keyboard arrows input handling
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		for i := 0; i < len(m.Items); i++ {
-			if m.Items[i].Choosen && i < len(m.Items)-1 {
-				if m.Items[i+1].Active {
-					m.Items[i].Choosen = false
-					m.Items[i+1].Choosen = true
+		for i := 0; i < len(Items); i++ {
+			if Items[i].Choosen && i < len(Items)-1 {
+				if Items[i+1].Active {
+					Items[i].Choosen = false
+					Items[i+1].Choosen = true
 					break
 				} else {
-					m.Items[i].Choosen = false
-					m.Items[i+1].Choosen = true
+					Items[i].Choosen = false
+					Items[i+1].Choosen = true
 				}
 			}
 			continue
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		for i := len(m.Items) - 1; i >= 0; i-- {
-			if m.Items[i].Choosen && i > 0 {
-				if m.Items[i-1].Active {
-					m.Items[i].Choosen = false
-					m.Items[i-1].Choosen = true
+		for i := len(Items) - 1; i >= 0; i-- {
+			if Items[i].Choosen && i > 0 {
+				if Items[i-1].Active {
+					Items[i].Choosen = false
+					Items[i-1].Choosen = true
 					break
 				} else {
-					m.Items[i].Choosen = false
-					m.Items[i-1].Choosen = true
+					Items[i].Choosen = false
+					Items[i-1].Choosen = true
 				}
 			}
 			continue
@@ -123,10 +158,10 @@ func (m *MainMenu) Update() error {
 	}
 
 	// Choose menu item
-	if ebiten.IsKeyPressed(ebiten.KeyEnter) {
-		for i := 0; i < len(m.Items); i++ {
-			if m.Items[i].Choosen {
-				err := m.Items[i].Action(m.Game)
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		for i := 0; i < len(Items); i++ {
+			if Items[i].Choosen {
+				err := Items[i].Action(g)
 				if err != nil {
 					return err
 				}
@@ -137,12 +172,12 @@ func (m *MainMenu) Update() error {
 
 	// Mouse hover on menu items
 	mouseX, mouseY := ebiten.CursorPosition()
-	for i, menuItem := range m.Items {
-		if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && m.Items[i].Active {
-			m.Items[i].Choosen = false
-			if m.Items[i].Active {
-				m.Items[i].Choosen = true
-				for idx, menuItemInner := range m.Items {
+	for i, menuItem := range Items {
+		if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && Items[i].Active {
+			Items[i].Choosen = false
+			if Items[i].Active {
+				Items[i].Choosen = true
+				for idx, menuItemInner := range Items {
 					if idx != i {
 						menuItemInner.Choosen = false
 					}
@@ -153,10 +188,10 @@ func (m *MainMenu) Update() error {
 	}
 
 	// Mouse click on menu items
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		for i, menuItem := range m.Items {
-			if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && m.Items[i].Active {
-				err := m.Items[i].Action(m.Game)
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		for i, menuItem := range Items {
+			if mouseX >= menuItem.vector.Min.X && mouseX <= menuItem.vector.Max.X && mouseY >= menuItem.vector.Min.Y && mouseY <= menuItem.vector.Max.Y && Items[i].Active {
+				err := Items[i].Action(g)
 				if err != nil {
 					return err
 				}
@@ -166,31 +201,11 @@ func (m *MainMenu) Update() error {
 	}
 
 	// Return to game if started
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && m.Game.started {
-		err := ContinueGame(m.Game)
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && g.started {
+		err := ContinueGame(g)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (m *MainMenu) Draw(screen *ebiten.Image) {
-	m.Game.DrawBg(screen)
-
-	// for _, i := range m.Items {
-	// 	chars := len([]rune(i.Label))
-	// 	vector.StrokeRect(screen, float32(i.vector.Min.X), float32(i.vector.Min.Y), float32(chars*config.Screen1024X768FontWidth), config.Screen1024X768FontHeight, 1, color.RGBA{255, 255, 255, 255}, false)
-	// }
-
-	for index, i := range m.Items {
-		colorr := color.RGBA{255, 255, 255, 255}
-		if i.Choosen {
-			colorr = color.RGBA{179, 14, 14, 255}
-		} else if !i.Active {
-			colorr = color.RGBA{100, 100, 100, 255}
-		}
-		text.Draw(screen, fmt.Sprintf("%v", i.Label), assets.ScoreFont, config.ScreenWidth/2-config.Screen1024X768XMenuShift-2, config.ScreenHeight/2-config.Screen1024X768YMenuShift+config.Screen1024X768YMenuHeight*index-2, color.RGBA{0, 0, 0, 255})
-		text.Draw(screen, fmt.Sprintf("%v", i.Label), assets.ScoreFont, config.ScreenWidth/2-config.Screen1024X768XMenuShift, config.ScreenHeight/2-config.Screen1024X768YMenuShift+config.Screen1024X768YMenuHeight*index, colorr)
-	}
 }
