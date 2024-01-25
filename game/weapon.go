@@ -137,19 +137,19 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			},
 		}
 		return &doubleR
-	case config.LaserCannon:
+	case config.LaserCanon:
 		laserCType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.LaserCannon, 0.5),
+			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Damage:                        3,
 			TargetType:                    "straight",
-			WeaponName:                    config.LaserCannon,
+			WeaponName:                    config.LaserCanon,
 		}
 		laserC := Weapon{
 			projectile: Projectile{
 				wType: laserCType,
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * (500 - p.params.LaserCannonSpeedUpscale)),
+			shootCooldown: config.NewTimer(time.Millisecond * (500 - p.params.LaserCanonSpeedUpscale)),
 			ammo:          30,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
@@ -169,19 +169,19 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			},
 		}
 		return &laserC
-	case config.DoubleLaserCannon:
+	case config.DoubleLaserCanon:
 		doubleLaserCType := &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.LaserCannon, 0.5),
+			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Damage:                        2,
 			TargetType:                    "straight",
-			WeaponName:                    config.DoubleLaserCannon,
+			WeaponName:                    config.DoubleLaserCanon,
 		}
 		doubleLaserC := Weapon{
 			projectile: Projectile{
 				wType: doubleLaserCType,
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * (460 - p.params.DoubleLaserCannonSpeedUpscale)),
+			shootCooldown: config.NewTimer(time.Millisecond * (460 - p.params.DoubleLaserCanonSpeedUpscale)),
 			ammo:          30,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
@@ -565,10 +565,10 @@ func (p *Projectile) VelocityUpdate(player *Player) {
 	case config.DoubleLightRocket:
 		p.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier
 		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale))
-	case config.LaserCannon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCannonSpeedUpscale))
-	case config.DoubleLaserCannon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (460 - player.params.DoubleLaserCannonSpeedUpscale))
+	case config.LaserCanon:
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCanonSpeedUpscale))
+	case config.DoubleLaserCanon:
+		player.curWeapon.shootCooldown.Restart(time.Millisecond * (460 - player.params.DoubleLaserCanonSpeedUpscale))
 	case config.MachineGun:
 		p.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier
 		player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale))

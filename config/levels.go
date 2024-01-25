@@ -26,10 +26,10 @@ func NewLevels() []*Level {
 					},
 					{
 						RotationSpeed: 0,
-						Sprite:        assets.DoubleLaserCannon,
+						Sprite:        assets.DoubleLaserCanon,
 						Velocity:      1.2,
 						WeaponType: &WeaponType{
-							WeaponName: DoubleLaserCannon,
+							WeaponName: DoubleLaserCanon,
 						},
 						ItemSpawnTime: 5 * time.Second,
 					},

@@ -26,8 +26,8 @@ type PlayerParams struct {
 	LightRocketSpeedUpscale       time.Duration
 	AutoLightRocketSpeedUpscale   time.Duration
 	DoubleLightRocketSpeedUpscale time.Duration
-	LaserCannonSpeedUpscale       time.Duration
-	DoubleLaserCannonSpeedUpscale time.Duration
+	LaserCanonSpeedUpscale        time.Duration
+	DoubleLaserCanonSpeedUpscale  time.Duration
 	ClusterMinesSpeedUpscale      time.Duration
 	BigBombSpeedUpscale           time.Duration
 	MachineGunSpeedUpscale        time.Duration
@@ -153,27 +153,27 @@ func (p *PlayerParams) IncreasePentaLaserSpeedUpscale(t int) {
 	}
 }
 
-func (p *PlayerParams) GetLaserCannonSpeedUpscale() int {
-	return int(p.LaserCannonSpeedUpscale)
+func (p *PlayerParams) GetLaserCanonSpeedUpscale() int {
+	return int(p.LaserCanonSpeedUpscale)
 }
 
-func (p *PlayerParams) IncreaseLaserCannonSpeedUpscale(t int) {
+func (p *PlayerParams) IncreaseLaserCanonSpeedUpscale(t int) {
 	if t > 0 {
-		p.LaserCannonSpeedUpscale++
+		p.LaserCanonSpeedUpscale++
 	} else {
-		p.LaserCannonSpeedUpscale--
+		p.LaserCanonSpeedUpscale--
 	}
 }
 
-func (p *PlayerParams) GetDoubleLaserCannonSpeedUpscale() int {
-	return int(p.DoubleLaserCannonSpeedUpscale)
+func (p *PlayerParams) GetDoubleLaserCanonSpeedUpscale() int {
+	return int(p.DoubleLaserCanonSpeedUpscale)
 }
 
-func (p *PlayerParams) IncreaseDoubleLaserCannonSpeedUpscale(t int) {
+func (p *PlayerParams) IncreaseDoubleLaserCanonSpeedUpscale(t int) {
 	if t > 0 {
-		p.DoubleLaserCannonSpeedUpscale++
+		p.DoubleLaserCanonSpeedUpscale++
 	} else {
-		p.DoubleLaserCannonSpeedUpscale--
+		p.DoubleLaserCanonSpeedUpscale--
 	}
 }
 
