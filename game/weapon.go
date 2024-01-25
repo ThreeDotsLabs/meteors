@@ -47,6 +47,7 @@ type Weapon struct {
 	projectile    Projectile
 	ammo          int
 	shootCooldown *config.Timer
+	UpdateParams  func(player *Player, w *Weapon)
 	Shoot         func(p *Player)
 	EnemyShoot    func(e *Enemy)
 }
@@ -75,6 +76,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		lightR := Weapon{
 			projectile: Projectile{
 				wType: lightRType,
+			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 400 + player.params.LightRocketVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (300 - player.params.LightRocketSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (300 - player.params.LightRocketSpeedUpscale))
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (300 - p.params.LightRocketSpeedUpscale)),
 			ammo:          100,
@@ -107,6 +113,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		doubleR := Weapon{
 			projectile: Projectile{
 				wType: boubleRType,
+			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale))
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (250 - p.params.DoubleLightRocketSpeedUpscale)),
 			ammo:          50,
@@ -149,6 +160,10 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			projectile: Projectile{
 				wType: laserCType,
 			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCanonSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCanonSpeedUpscale))
+			},
 			shootCooldown: config.NewTimer(time.Millisecond * (500 - p.params.LaserCanonSpeedUpscale)),
 			ammo:          30,
 			Shoot: func(p *Player) {
@@ -180,6 +195,10 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		doubleLaserC := Weapon{
 			projectile: Projectile{
 				wType: doubleLaserCType,
+			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.shootCooldown.Restart(time.Millisecond * (460 - player.params.DoubleLaserCanonSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (460 - player.params.DoubleLaserCanonSpeedUpscale))
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (460 - p.params.DoubleLaserCanonSpeedUpscale)),
 			ammo:          30,
@@ -225,6 +244,12 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			projectile: Projectile{
 				wType: clusterMType,
 			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 400 + player.params.ClusterMinesVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (400 - player.params.ClusterMinesSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (400 - player.params.ClusterMinesSpeedUpscale))
+
+			},
 			shootCooldown: config.NewTimer(time.Millisecond * (400 - p.params.ClusterMinesSpeedUpscale)),
 			ammo:          5,
 			Shoot: func(p *Player) {
@@ -258,6 +283,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			projectile: Projectile{
 				wType: bigBType,
 			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 200 + player.params.BigBombVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale))
+			},
 			shootCooldown: config.NewTimer(time.Millisecond * (600 - p.params.BigBombSpeedUpscale)),
 			ammo:          20,
 			Shoot: func(p *Player) {
@@ -289,6 +319,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			projectile: Projectile{
 				wType: machineGType,
 			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale))
+			},
 			shootCooldown: config.NewTimer(time.Millisecond * (160 - p.params.MachineGunSpeedUpscale)),
 			ammo:          99,
 			Shoot: func(p *Player) {
@@ -319,6 +354,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		doubleMachineG := Weapon{
 			projectile: Projectile{
 				wType: doubleMachineGType,
+			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 600 + player.params.DoubleMachineGunVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (260 - player.params.DoubleMachineGunSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (260 - player.params.DoubleMachineGunSpeedUpscale))
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (260 - p.params.DoubleMachineGunSpeedUpscale)),
 			ammo:          99,
@@ -364,6 +404,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			projectile: Projectile{
 				wType: plasmaGType,
 			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 500 + player.params.PlasmaGunVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (760 - player.params.PlasmaGunSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (760 - player.params.PlasmaGunSpeedUpscale))
+			},
 			shootCooldown: config.NewTimer(time.Millisecond * (760 - p.params.PlasmaGunSpeedUpscale)),
 			ammo:          99,
 			Shoot: func(p *Player) {
@@ -403,6 +448,11 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				movement: config.Vector{},
 				rotation: 0,
 				wType:    doublePlasmaGType,
+			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.projectile.wType.Velocity = 500 + player.params.DoublePlasmaGunVelocityMultiplier
+				w.shootCooldown.Restart(time.Millisecond * (880 - player.params.DoublePlasmaGunSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (760 - player.params.DoublePlasmaGunSpeedUpscale))
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (880 - p.params.DoublePlasmaGunSpeedUpscale)),
 			ammo:          99,
@@ -448,6 +498,10 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		pentaLaser := Weapon{
 			projectile: Projectile{
 				wType: pentaLaserType,
+			},
+			UpdateParams: func(player *Player, w *Weapon) {
+				w.shootCooldown.Restart(time.Millisecond * (1000 - player.params.PentaLaserSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (1000 - player.params.PentaLaserSpeedUpscale))
 			},
 			shootCooldown: config.NewTimer(time.Millisecond * (1000 - p.params.PentaLaserSpeedUpscale)),
 			ammo:          50,
@@ -557,40 +611,6 @@ func (p *Projectile) AddAnimation(g *Game) {
 	g.animations = append(g.animations, animation)
 }
 
-func (p *Projectile) VelocityUpdate(player *Player) {
-	switch p.wType.WeaponName {
-	case config.LightRocket:
-		p.wType.Velocity = 400 + player.params.LightRocketVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (300 - player.params.LightRocketSpeedUpscale))
-	case config.DoubleLightRocket:
-		p.wType.Velocity = 400 + player.params.DoubleLightRocketVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (250 - player.params.DoubleLightRocketSpeedUpscale))
-	case config.LaserCanon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (500 - player.params.LaserCanonSpeedUpscale))
-	case config.DoubleLaserCanon:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (460 - player.params.DoubleLaserCanonSpeedUpscale))
-	case config.MachineGun:
-		p.wType.Velocity = 600 + player.params.MachineGunVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (160 - player.params.MachineGunSpeedUpscale))
-	case config.DoubleMachineGun:
-		p.wType.Velocity = 600 + player.params.DoubleMachineGunVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (260 - player.params.DoubleMachineGunSpeedUpscale))
-	case config.PlasmaGun:
-		p.wType.Velocity = 500 + player.params.PlasmaGunVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (760 - player.params.PlasmaGunSpeedUpscale))
-	case config.DoublePlasmaGun:
-		p.wType.Velocity = 500 + player.params.DoublePlasmaGunVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (880 - player.params.DoublePlasmaGunSpeedUpscale))
-	case config.ClusterMines:
-		p.wType.Velocity = 240 + player.params.ClusterMinesVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (400 - player.params.ClusterMinesSpeedUpscale))
-	case config.BigBomb:
-		p.wType.Velocity = 200 + player.params.BigBombVelocityMultiplier
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (600 - player.params.BigBombSpeedUpscale))
-	case config.PentaLaser:
-		player.curWeapon.shootCooldown.Restart(time.Millisecond * (1000 - player.params.PentaLaserSpeedUpscale))
-	}
-}
 func (p *Projectile) Update() {
 	speed := p.wType.Velocity / float64(ebiten.TPS())
 	quant := speed

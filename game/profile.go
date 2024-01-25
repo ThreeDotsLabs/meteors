@@ -56,7 +56,7 @@ func NewPlayerProfile(g *Game) *ProfileScreen {
 	section := barWidth / 10
 	profileScreen := ProfileScreen{
 		Game:    g,
-		credits: 50,
+		credits: 5000,
 		returnButton: &MenuItem{
 			Active:  true,
 			Choosen: false,
@@ -241,7 +241,7 @@ func NewPlayerProfile(g *Game) *ProfileScreen {
 }
 func (p *ProfileScreen) Update() {
 	for _, w := range p.Game.player.weapons {
-		w.projectile.VelocityUpdate(p.Game.player)
+		w.UpdateParams(p.Game.player, w)
 	}
 	// Mouse hover on menu items
 	mouseX, mouseY := ebiten.CursorPosition()
