@@ -74,6 +74,8 @@ type Game struct {
 }
 
 func NewGame() *Game {
+	l := GenerateLevelsStructure()
+	_ = l
 	scale := ebiten.DeviceScaleFactor()
 	g := &Game{
 		Options: &options{

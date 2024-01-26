@@ -67,6 +67,43 @@ type EnemyType struct {
 	StartHP         int
 }
 
+type LevelTemplate struct {
+	Stages []*StageTemplate
+	BgImg  *ebiten.Image
+	Name   string
+}
+
+type StageTemplate struct {
+	Waves []*WaveTemplate
+}
+type WaveTemplate struct {
+	Batches []*BatchTemplate
+}
+
+type BatchTemplate struct {
+	Enemies []*EnemyTemplate
+}
+
+type EnemyTemplate struct {
+	Sprite         *ebiten.Image
+	Velocity       float64
+	EnemySpawnTime time.Duration
+	WeaponTypeStr  string
+	StartHP        int
+	StartPosOffset float64
+}
+
+type ItemTemplate struct {
+	Sprite           *ebiten.Image
+	Velocity         float64
+	ItemSpawnTime    time.Duration
+	AmmoType         *AmmoType
+	WeaponType       *WeaponType
+	SecondWeaponType *WeaponType
+	HealType         *HealType
+	ShieldType       *ShieldType
+}
+
 type Level struct {
 	Stages   []Stage
 	CurStage *Stage
@@ -84,10 +121,8 @@ type Stage struct {
 }
 
 type Wave struct {
-	WaveId       int
-	EnemiesCount int
-	EnemyType    *EnemyType
-	Batches      []EnemyBatch
+	WaveId  int
+	Batches []EnemyBatch
 }
 
 type EnemyBatch struct {
