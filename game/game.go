@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"math/rand"
 	"slices"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -17,22 +18,26 @@ import (
 )
 
 type options struct {
-	fullscreen          bool
-	ResolutionMultipler float64
-	ScreenWidth         float64
-	ScreenHeight        float64
-	ScreenXMenuShift    int
-	ScreenYMenuShift    int
-	ScreenXProfileShift int
-	ScreenYProfileShift int
-	ScreenYMenuHeight   int
-	ScreenFontHeight    int
-	ScreenFontWidth     int
-	ScoreFont           font.Face
-	InfoFont            font.Face
-	SmallFont           font.Face
-	ProfileFont         font.Face
-	ProfileBigFont      font.Face
+	Fullscreen              bool
+	ResolutionMultipler     float64
+	ProjectileResMulti      float64
+	ResolutionMultiplerX    float64
+	ResolutionMultiplerY    float64
+	ScreenWidth             float64
+	ScreenHeight            float64
+	ScreenXMenuShift        int
+	ScreenYMenuShift        int
+	ScreenXProfileShift     int
+	ScreenYProfileShift     int
+	ScreenYMenuHeight       int
+	ScreenYProfileMenuShift int
+	ScreenFontHeight        int
+	ScreenFontWidth         int
+	ScoreFont               font.Face
+	InfoFont                font.Face
+	SmallFont               font.Face
+	ProfileFont             font.Face
+	ProfileBigFont          font.Face
 }
 type Game struct {
 	Options           *options
@@ -65,27 +70,33 @@ type Game struct {
 	itemSpawnTimer    *config.Timer
 	CurWave           *config.Wave
 	started           bool
+	ResolutionChange  bool
 }
 
 func NewGame() *Game {
+	scale := ebiten.DeviceScaleFactor()
 	g := &Game{
 		Options: &options{
-			fullscreen:          false,
-			ResolutionMultipler: 1,
-			ScreenWidth:         config.ScreenWidth1024X768,
-			ScreenHeight:        config.ScreenHeight1024X768,
-			ScreenXMenuShift:    config.Screen1024X768XMenuShift,
-			ScreenYMenuShift:    config.Screen1024X768YMenuShift,
-			ScreenXProfileShift: config.Screen1024X768XProfileShift,
-			ScreenYProfileShift: config.Screen1024X768YProfileShift,
-			ScreenYMenuHeight:   config.Screen1024X768YMenuHeight,
-			ScreenFontHeight:    config.Screen1024X768FontHeight,
-			ScreenFontWidth:     config.Screen1024X768FontWidth,
-			ScoreFont:           assets.ScoreFont1024x768,
-			InfoFont:            assets.InfoFont1024x768,
-			SmallFont:           assets.SmallFont1024x768,
-			ProfileFont:         assets.ProfileFont1024x768,
-			ProfileBigFont:      assets.ProfileBigFont1024x768,
+			Fullscreen:              false,
+			ResolutionMultipler:     0.5,
+			ProjectileResMulti:      1,
+			ResolutionMultiplerX:    1,
+			ResolutionMultiplerY:    1,
+			ScreenWidth:             config.ScreenWidth1024X768 * scale,
+			ScreenHeight:            config.ScreenHeight1024X768 * scale,
+			ScreenXMenuShift:        int(config.Screen1024X768XMenuShift * scale),
+			ScreenYMenuShift:        int(config.Screen1024X768YMenuShift * scale),
+			ScreenXProfileShift:     int(config.Screen1024X768XProfileShift * scale),
+			ScreenYProfileShift:     int(config.Screen1024X768YProfileShift * scale),
+			ScreenYMenuHeight:       int(config.Screen1024X768YMenuHeight * scale),
+			ScreenFontHeight:        int(config.Screen1024X768FontHeight * scale),
+			ScreenFontWidth:         int(config.Screen1024X768FontWidth * scale),
+			ScreenYProfileMenuShift: int(config.Screen1024X768YProfileMenuShift * scale),
+			ScoreFont:               assets.ScoreFont1024x768,
+			InfoFont:                assets.InfoFont1024x768,
+			SmallFont:               assets.SmallFont1024x768,
+			ProfileFont:             assets.ProfileFont1024x768,
+			ProfileBigFont:          assets.ProfileBigFont1024x768,
 		},
 		state:             config.MainMenu,
 		meteorSpawnTimer:  config.NewTimer(config.MeteorSpawnTime),
@@ -100,6 +111,7 @@ func NewGame() *Game {
 		CurStage:          &config.Levels[0].Stages[0],
 		CurWave:           &config.Levels[0].Stages[0].Waves[0],
 		started:           false,
+		ResolutionChange:  false,
 	}
 
 	g.player = NewPlayer(g)
@@ -207,7 +219,7 @@ func (g *Game) Update() error {
 				//g.itemSpawnTimer.Restart(g.CurStage.Items[1].ItemSpawnTime)
 				itemWidth := item.itemType.Sprite.Bounds().Dx()
 				itemHight := item.itemType.Sprite.Bounds().Dy()
-				r := rand.New(rand.NewSource(99))
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
 				posX := r.Intn(int(g.Options.ScreenWidth) - (itemWidth + itemWidth/2))
 				startPos = config.Vector{
 					X: float64(posX + itemWidth),
@@ -245,7 +257,6 @@ func (g *Game) Update() error {
 					var target config.Vector
 					var startPos config.Vector
 					e := NewEnemy(g, target, startPos, *batch.Type)
-					e.enemyType.Sprite = objects.ScaleImg(e.enemyType.Sprite, g.Options.ResolutionMultipler)
 					e.TargetType = batch.TargetType
 					enemyWidth := e.enemyType.Sprite.Bounds().Dx()
 					enemyHight := e.enemyType.Sprite.Bounds().Dy()
@@ -398,6 +409,9 @@ func (g *Game) Update() error {
 		// Check for enemy/beam collisions
 		// Check for enemy/blow collisions
 		for i, m := range g.enemies {
+			if g.ResolutionChange {
+				m.enemyType.Sprite = objects.ScaleImg(m.enemyType.Sprite, g.Options.ResolutionMultipler)
+			}
 			if m.TargetType == config.TargetTypePlayer {
 				m.target = config.Vector{
 					X: g.player.position.X,
@@ -468,7 +482,9 @@ func (g *Game) Update() error {
 				}
 			}
 		}
-
+		if g.ResolutionChange {
+			g.ResolutionChange = false
+		}
 		// Check for enemy projectile/player projectile collisions
 		for i, m := range g.enemyProjectiles {
 			for j, b := range g.projectiles {
@@ -608,14 +624,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 
 		// Draw the hit points bar
-		barX := g.Options.ScreenWidth - 120*g.Options.ResolutionMultipler
-		backWidth := float32(g.player.params.HP)*10 + 4
-		if backWidth < 104*float32(g.Options.ResolutionMultipler) {
+		barX := g.Options.ScreenWidth - 120*g.Options.ResolutionMultiplerX
+		backWidth := float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultiplerX) + 4
+		if backWidth < 104*float32(g.Options.ResolutionMultiplerX) {
 			backWidth = 104
 		}
 
-		vector.DrawFilledRect(screen, float32(barX-2), 38, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
-		vector.DrawFilledRect(screen, float32(barX), 40, float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultipler), 20, color.RGBA{179, 14, 14, 255}, false)
+		vector.DrawFilledRect(screen, float32(barX-2), 38*float32(g.Options.ResolutionMultiplerY), backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
+		vector.DrawFilledRect(screen, float32(barX), 40*float32(g.Options.ResolutionMultiplerY), float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultiplerX), 20*float32(g.Options.ResolutionMultiplerY), color.RGBA{179, 14, 14, 255}, false)
 
 		// Draw shield bar
 		if g.player.shield != nil {
@@ -624,34 +640,34 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				backWidth = 104
 			}
 			shiftX := float64(backWidth) - 104
-			vector.DrawFilledRect(screen, float32(barX-shiftX-2), 82, backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
-			vector.DrawFilledRect(screen, float32(barX-shiftX), 84, float32(g.player.shield.HP)*10*float32(g.Options.ResolutionMultipler), 20, color.RGBA{26, 14, 189, 255}, false)
+			vector.DrawFilledRect(screen, float32(barX-shiftX-2), 82*float32(g.Options.ResolutionMultiplerY), backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
+			vector.DrawFilledRect(screen, float32(barX-shiftX), 84*float32(g.Options.ResolutionMultiplerY), float32(g.player.shield.HP)*10*float32(g.Options.ResolutionMultiplerX), 20, color.RGBA{26, 14, 189, 255}, false)
 		}
 
 		// Draw weapons
 		for i, w := range g.player.weapons {
-			offset := 20 * int(g.Options.ResolutionMultipler)
+			offset := 20 * int(g.Options.ResolutionMultiplerX)
 			object := w.projectile.wType.Sprite
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(i*offset+offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultipler)))
+			op.GeoM.Translate(float64(i*offset+offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultiplerY)))
 			if w.projectile.wType.WeaponName == g.player.curWeapon.projectile.wType.WeaponName {
-				vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(g.Options.ScreenHeight-float64(30*int(g.Options.ResolutionMultipler))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultipler)), 3*float32(g.Options.ResolutionMultipler), color.RGBA{255, 255, 255, 255}, false)
+				vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(g.Options.ScreenHeight-float64(30*int(g.Options.ResolutionMultiplerY))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultiplerX)), 3*float32(g.Options.ResolutionMultiplerY), color.RGBA{255, 255, 255, 255}, false)
 			}
-			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, i*offset+offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultipler), color.White)
+			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, i*offset+offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultiplerY), color.White)
 			screen.DrawImage(object, op)
 		}
 
 		// Draw secondary weapons
 		for i, w := range g.player.secondaryWeapons {
-			startOffset := int(g.Options.ScreenWidth) - 40*int(g.Options.ResolutionMultipler)
-			offset := 20 * int(g.Options.ResolutionMultipler)
+			startOffset := int(g.Options.ScreenWidth) - 40*int(g.Options.ResolutionMultiplerX)
+			offset := 20 * int(g.Options.ResolutionMultiplerX)
 			object := w.projectile.wType.Sprite
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(startOffset-i*offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultipler)))
+			op.GeoM.Translate(float64(startOffset-i*offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultiplerY)))
 			if g.player.curSecondaryWeapon != nil && w.projectile.wType.WeaponName == g.player.curSecondaryWeapon.projectile.wType.WeaponName {
-				vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(g.Options.ScreenHeight-float64(30*float32(g.Options.ResolutionMultipler))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultipler)), 3*float32(g.Options.ResolutionMultipler), color.RGBA{255, 255, 255, 255}, false)
+				vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(g.Options.ScreenHeight-float64(30*float32(g.Options.ResolutionMultiplerY))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultiplerX)), 3*float32(g.Options.ResolutionMultiplerY), color.RGBA{255, 255, 255, 255}, false)
 			}
-			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, startOffset-i*offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultipler), color.White)
+			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, startOffset-i*offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultiplerY), color.White)
 			screen.DrawImage(object, op)
 		}
 
@@ -741,7 +757,8 @@ func (g *Game) Reset() {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return int(g.Options.ScreenWidth), int(g.Options.ScreenHeight)
+	s := ebiten.DeviceScaleFactor()
+	return outsideWidth * int(s), outsideHeight * int(s)
 }
 
 func (g *Game) DrawBg(screen *ebiten.Image) {

@@ -315,7 +315,7 @@ func (p *ProfileScreen) Update() {
 
 func (p *ProfileScreen) Draw(screen *ebiten.Image) {
 	p.Game.DrawBg(screen)
-	barStroke := 16
+	barStroke := 16 * int(p.Game.Options.ProjectileResMulti)
 	barWidth := (int(p.Game.Options.ScreenWidth) - (p.Game.Options.ScreenXProfileShift*2 + barStroke*2)) / 2
 	section := barWidth / 10
 	text.Draw(screen, fmt.Sprintf("Available credits: %v", p.credits), p.Game.Options.ProfileBigFont, int(p.Game.Options.ScreenWidth)/2-200, barStroke+50-2, color.RGBA{0, 0, 0, 255})
@@ -336,8 +336,8 @@ func (p *ProfileScreen) Draw(screen *ebiten.Image) {
 			} else if !menuItem.Active {
 				colorr = color.RGBA{100, 100, 100, 255}
 			}
-			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4)-2, menuItem.vector.Min.Y+16-2, color.RGBA{0, 0, 0, 255})
-			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4), menuItem.vector.Min.Y+16, colorr)
+			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4)-2, menuItem.vector.Min.Y+p.Game.Options.ScreenFontWidth-2, color.RGBA{0, 0, 0, 255})
+			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4), menuItem.vector.Min.Y+p.Game.Options.ScreenFontWidth, colorr)
 		}
 	}
 	for _, i := range p.RightBar.Items {
@@ -356,8 +356,8 @@ func (p *ProfileScreen) Draw(screen *ebiten.Image) {
 			} else if !menuItem.Active {
 				colorr = color.RGBA{100, 100, 100, 255}
 			}
-			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4)-2, menuItem.vector.Min.Y+16-2, color.RGBA{0, 0, 0, 255})
-			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4), menuItem.vector.Min.Y+16, colorr)
+			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4)-2, menuItem.vector.Min.Y+p.Game.Options.ScreenFontWidth-2, color.RGBA{0, 0, 0, 255})
+			text.Draw(screen, fmt.Sprintf("%v", menuItem.Label), p.Game.Options.SmallFont, menuItem.vector.Min.X+(section/2-4), menuItem.vector.Min.Y+p.Game.Options.ScreenFontWidth, colorr)
 		}
 	}
 	colorr := color.RGBA{255, 255, 255, 255}
@@ -367,8 +367,8 @@ func (p *ProfileScreen) Draw(screen *ebiten.Image) {
 		colorr = color.RGBA{100, 100, 100, 255}
 	}
 	//vector.StrokeRect(screen, float32(p.returnButton.vector.Min.X), float32(p.returnButton.vector.Min.Y), float32(p.returnButton.vector.Max.X-p.returnButton.vector.Min.X), float32(p.returnButton.vector.Max.Y-p.returnButton.vector.Min.Y), 1, color.RGBA{255, 255, 255, 255}, false)
-	text.Draw(screen, fmt.Sprintf("%v", p.returnButton.Label), p.Game.Options.ScoreFont, p.returnButton.vector.Min.X+1-2, p.returnButton.vector.Min.Y+22-2, color.RGBA{0, 0, 0, 255})
-	text.Draw(screen, fmt.Sprintf("%v", p.returnButton.Label), p.Game.Options.ScoreFont, p.returnButton.vector.Min.X+1, p.returnButton.vector.Min.Y+22, colorr)
+	text.Draw(screen, fmt.Sprintf("%v", p.returnButton.Label), p.Game.Options.ScoreFont, p.returnButton.vector.Min.X+1-2, p.returnButton.vector.Min.Y+p.Game.Options.ScreenYProfileMenuShift-2, color.RGBA{0, 0, 0, 255})
+	text.Draw(screen, fmt.Sprintf("%v", p.returnButton.Label), p.Game.Options.ScoreFont, p.returnButton.vector.Min.X+1, p.returnButton.vector.Min.Y+p.Game.Options.ScreenYProfileMenuShift, colorr)
 }
 
 func (i *ProfileItem) MakeButton(rect image.Rectangle, label string, action func(g *Game) error) *MenuItem {
@@ -414,17 +414,17 @@ func (i *ProfileItem) MakeUpdatePrevValueFunc(idx int, getter func() int, barTyp
 }
 
 func prepareMenuItem(i int, profItem *profileItemTemplate, profileScreen *ProfileScreen) {
-	barStroke := 16
+	barStroke := 16 * int(profileScreen.Game.Options.ProjectileResMulti)
 	barWidth := (int(profileScreen.Game.Options.ScreenWidth) - (profileScreen.Game.Options.ScreenXProfileShift*2 + barStroke*2)) / 2
 	section := barWidth / 10
-	lineHeight := 25
+	lineHeight := 25 * int(profileScreen.Game.Options.ProjectileResMulti)
 	rightBarXmod := 0
 	if profItem.barType.Side == profileScreen.RightBar.Side {
 		rightBarXmod = barWidth + barStroke*3
 	}
 	newItem := ProfileItem{
 		Icon:     profItem.icon,
-		IconPos:  image.Rect(rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+section*6+20, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i, rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+section*6+section, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i+lineHeight),
+		IconPos:  image.Rect(rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+section*6+20*int(profileScreen.Game.Options.ResolutionMultiplerX), barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i, rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+section*6+section, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i+lineHeight),
 		Label:    profItem.label,
 		LabelPos: image.Rect(rightBarXmod+barStroke, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i, rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+barWidth, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i+lineHeight),
 		ValuePos: image.Rect(rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+section*8, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i, rightBarXmod+profileScreen.Game.Options.ScreenXProfileShift+barStroke+section*8+section, barStroke+profileScreen.Game.Options.ScreenYProfileShift+lineHeight*i+lineHeight),

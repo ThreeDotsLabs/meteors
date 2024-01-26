@@ -299,7 +299,7 @@ type Shield struct {
 }
 
 func NewPlayer(curgame *Game) *Player {
-	sprite := objects.ScaleImg(assets.PlayerSprite, 0.5)
+	sprite := objects.ScaleImg(assets.PlayerSprite, curgame.Options.ResolutionMultipler)
 	bounds := sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
 	halfH := float64(bounds.Dy()) / 2
@@ -346,6 +346,10 @@ func NewPlayer(curgame *Game) *Player {
 }
 
 func (p *Player) Update() {
+	if p.game.ResolutionChange {
+		p.sprite = objects.ScaleImg(assets.PlayerSprite, p.game.Options.ResolutionMultipler)
+		//p.game.ResolutionChange = false
+	}
 
 	x, y := ebiten.CursorPosition()
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
@@ -425,12 +429,22 @@ func (p *Player) Update() {
 		p.curWeapon = p.weapons[1]
 	} else if ebiten.IsKeyPressed(ebiten.Key3) && len(p.weapons) > 2 {
 		p.curWeapon = p.weapons[2]
+	} else if ebiten.IsKeyPressed(ebiten.Key4) && len(p.weapons) > 3 {
+		p.curSecondaryWeapon = p.secondaryWeapons[3]
+	} else if ebiten.IsKeyPressed(ebiten.Key5) && len(p.weapons) > 4 {
+		p.curWeapon = p.weapons[4]
+	} else if ebiten.IsKeyPressed(ebiten.Key6) && len(p.weapons) > 5 {
+		p.curWeapon = p.weapons[5]
 	}
 
 	if ebiten.IsKeyPressed(ebiten.Key7) && len(p.secondaryWeapons) > 0 {
 		p.curSecondaryWeapon = p.secondaryWeapons[0]
 	} else if ebiten.IsKeyPressed(ebiten.Key8) && len(p.secondaryWeapons) > 1 {
 		p.curSecondaryWeapon = p.secondaryWeapons[1]
+	} else if ebiten.IsKeyPressed(ebiten.Key9) && len(p.secondaryWeapons) > 2 {
+		p.curSecondaryWeapon = p.secondaryWeapons[2]
+	} else if ebiten.IsKeyPressed(ebiten.Key0) && len(p.secondaryWeapons) > 3 {
+		p.curSecondaryWeapon = p.secondaryWeapons[3]
 	}
 
 	p.curWeapon.shootCooldown.Update()

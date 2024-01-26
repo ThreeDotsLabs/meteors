@@ -66,13 +66,13 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	switch wType {
 	case config.LightRocket:
 		lightRType := &config.WeaponType{
-			Sprite:                        assets.MissileSprite,
+			Sprite:                        objects.ScaleImg(assets.MissileSprite, 0.7),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
 			Velocity:                      400 + p.params.LightRocketVelocityMultiplier,
 			Damage:                        3,
 			TargetType:                    "straight",
 			WeaponName:                    config.LightRocket,
-			Scale:                         0.7 * p.game.Options.ResolutionMultipler,
+			Scale:                         p.game.Options.ResolutionMultipler,
 		}
 		lightR := Weapon{
 			projectile: Projectile{
@@ -532,7 +532,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 var enemyLightRocket = Weapon{
 	projectile: Projectile{
 		wType: &config.WeaponType{
-			Sprite:                        assets.EnemyLightMissile,
+			Sprite:                        objects.ScaleImg(assets.EnemyLightMissile, 0.7),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
 			Velocity:                      150,
 			Damage:                        1,
@@ -590,14 +590,8 @@ func NewProjectile(g *Game, pos config.Vector, rotation float64, wType *config.W
 
 	pos.X -= halfW
 	pos.Y -= halfH
-	var sprite *ebiten.Image
-	if wType.Scale > 0 {
-		spriteImg := ebiten.NewImageFromImage(wType.Sprite)
-		sprite = objects.ScaleImg(spriteImg, g.Options.ResolutionMultipler)
-	} else {
-		spriteCopy := *wType.Sprite
-		sprite = objects.ScaleImg(&spriteCopy, g.Options.ResolutionMultipler)
-	}
+	spriteImg := ebiten.NewImageFromImage(wType.Sprite)
+	sprite := objects.ScaleImg(spriteImg, g.Options.ProjectileResMulti)
 	p := &Projectile{
 		sprite:             sprite,
 		position:           pos,

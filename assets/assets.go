@@ -61,8 +61,8 @@ var ProfileBigFont1024x768 = mustLoadFont("fonts/Kenney Future.ttf", 24)
 var ScoreFont1920x1080 = mustLoadFont("fonts/Kenney Pixel.ttf", 96)
 var InfoFont1920x1080 = mustLoadFont("fonts/Kenney Pixel.ttf", 64)
 var SmallFont1920x1080 = mustLoadFont("fonts/Kenney Mini.ttf", 36)
-var ProfileFont1920x1080 = mustLoadFont("fonts/Kenney Future.ttf", 24)
-var ProfileBigFont1920x1080 = mustLoadFont("fonts/Kenney Future.ttf", 48)
+var ProfileFont1920x1080 = mustLoadFont("fonts/Kenney Future.ttf", 20)
+var ProfileBigFont1920x1080 = mustLoadFont("fonts/Kenney Future.ttf", 42)
 
 func LoadAsImage(name string) image.Image {
 	f, err := assets.Open(name)

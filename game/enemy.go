@@ -34,9 +34,7 @@ func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.En
 		X: normalizedDirection.X * enType.Velocity,
 		Y: normalizedDirection.Y * enType.Velocity,
 	}
-
-	modSprite := objects.ScaleImg(enType.Sprite, 0.5)
-	enType.Sprite = modSprite
+	enType.Sprite = objects.ScaleImg(enType.Sprite, g.Options.ResolutionMultipler)
 
 	e := &Enemy{
 		game:      g,

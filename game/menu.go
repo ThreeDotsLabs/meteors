@@ -106,7 +106,7 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 
 func MenuDraw(g *Game, Items []*MenuItem, screen *ebiten.Image) {
 	g.DrawBg(screen)
-
+	scale := ebiten.DeviceScaleFactor()
 	// for _, i := range m.Items {
 	// 	chars := len([]rune(i.Label))
 	// 	vector.StrokeRect(screen, float32(i.vector.Min.X), float32(i.vector.Min.Y), float32(chars*config.Screen1024X768FontWidth), config.Screen1024X768FontHeight, 1, color.RGBA{255, 255, 255, 255}, false)
@@ -119,8 +119,8 @@ func MenuDraw(g *Game, Items []*MenuItem, screen *ebiten.Image) {
 		} else if !i.Active {
 			colorr = color.RGBA{100, 100, 100, 255}
 		}
-		text.Draw(screen, fmt.Sprintf("%v", i.Label), g.Options.ScoreFont, int(g.Options.ScreenWidth/2)-g.Options.ScreenXMenuShift-2, int(g.Options.ScreenHeight/2)-g.Options.ScreenYMenuShift+g.Options.ScreenYMenuHeight*index-2, color.RGBA{0, 0, 0, 255})
-		text.Draw(screen, fmt.Sprintf("%v", i.Label), g.Options.ScoreFont, int(g.Options.ScreenWidth/2)-g.Options.ScreenXMenuShift, int(g.Options.ScreenHeight/2)-g.Options.ScreenYMenuShift+g.Options.ScreenYMenuHeight*index, colorr)
+		text.Draw(screen, fmt.Sprintf("%v", i.Label), text.FaceWithLineHeight(g.Options.ScoreFont, 20*scale), int(g.Options.ScreenWidth/2)-g.Options.ScreenXMenuShift-2, int(g.Options.ScreenHeight/2)-g.Options.ScreenYMenuShift+g.Options.ScreenYMenuHeight*index-2, color.RGBA{0, 0, 0, 255})
+		text.Draw(screen, fmt.Sprintf("%v", i.Label), text.FaceWithLineHeight(g.Options.ScoreFont, 20*scale), int(g.Options.ScreenWidth/2)-g.Options.ScreenXMenuShift, int(g.Options.ScreenHeight/2)-g.Options.ScreenYMenuShift+g.Options.ScreenYMenuHeight*index, colorr)
 	}
 }
 

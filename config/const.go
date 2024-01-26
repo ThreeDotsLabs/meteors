@@ -7,24 +7,26 @@ import (
 )
 
 const (
-	ScreenWidth1920x1080         = 1920
-	ScreenHeight1920x1080        = 1080
-	Screen1920x1080XMenuShift    = 120
-	Screen1920x1080YMenuShift    = 120
-	Screen1920x1080XProfileShift = 120
-	Screen1920x1080YProfileShift = 120
-	Screen1920x1080YMenuHeight   = 40
-	Screen1920x1080FontHeight    = 20
-	Screen1920x1080FontWidth     = 16
-	ScreenWidth1024X768          = 1024
-	ScreenHeight1024X768         = 768
-	Screen1024X768XMenuShift     = 120
-	Screen1024X768YMenuShift     = 120
-	Screen1024X768XProfileShift  = 120
-	Screen1024X768YProfileShift  = 120
-	Screen1024X768YMenuHeight    = 40
-	Screen1024X768FontHeight     = 20
-	Screen1024X768FontWidth      = 16
+	ScreenWidth1920x1080             = 1920
+	ScreenHeight1920x1080            = 1080
+	Screen1920x1080XMenuShift        = 225
+	Screen1920x1080YMenuShift        = 169
+	Screen1920x1080XProfileShift     = 225
+	Screen1920x1080YProfileShift     = 169
+	Screen1920x1080YMenuHeight       = 80
+	Screen1920x1080FontHeight        = 36
+	Screen1920x1080FontWidth         = 32
+	Screen1920x1080YProfileMenuShift = 42
+	ScreenWidth1024X768              = 1024
+	ScreenHeight1024X768             = 768
+	Screen1024X768XMenuShift         = 120
+	Screen1024X768YMenuShift         = 120
+	Screen1024X768XProfileShift      = 120
+	Screen1024X768YProfileShift      = 120
+	Screen1024X768YMenuHeight        = 40
+	Screen1024X768FontHeight         = 20
+	Screen1024X768FontWidth          = 16
+	Screen1024X768YProfileMenuShift  = 22
 
 	MeteorSpawnTime     = 2 * time.Second
 	EnemySpawnTime      = 1 * time.Second
