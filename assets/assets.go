@@ -22,12 +22,20 @@ var HighSpeedFollowPlayerEnemySprite = MustLoadImage("img/Ships/spaceShips_006.p
 var LowSpeedEnemyLightMissile = MustLoadImage("img/Ships/spaceShips_005.png")
 var LowSpeedEnemyAutoLightMissile = MustLoadImage("img/Ships/spaceShips_003.png")
 
+// enemies
+var Enemy1 = MustLoadImage("img/Ships/spaceShips_001.png")
+var Enemy2 = MustLoadImage("img/Ships/spaceShips_002.png")
+var Enemy3 = MustLoadImage("img/Ships/spaceShips_003.png")
+var Enemy4 = MustLoadImage("img/Ships/spaceShips_004.png")
+var Enemy5 = MustLoadImage("img/Ships/spaceShips_005.png")
+var Enemy6 = MustLoadImage("img/Ships/spaceShips_006.png")
+var Enemy7 = MustLoadImage("img/Ships/spaceShips_008.png")
+var Enemy8 = MustLoadImage("img/Ships/spaceShips_009.png")
+
 // weapons
 var MissileSprite = MustLoadImage("img/Missiles/spaceMissiles_016.png")
 var MissileSpriteImage = LoadAsImage("img/Missiles/spaceMissiles_016.png")
 var DoubleMissileSprite = MustLoadImage("img/Missiles/spaceMissiles_010.png")
-var EnemyLightMissile = MustLoadImage("img/Missiles/spaceMissiles_015.png")
-var EnemyAutoLightMissile = MustLoadImage("img/Missiles/spaceMissiles_018.png")
 var LaserCanon = MustLoadImage("img/Effects/spaceEffects_004.png")
 var PentaLaser = MustLoadImage("img/Effects/spaceEffects_002.png")
 var DoubleLaserCanon = MustLoadImage("img/Effects/spaceEffects_018.png")
@@ -37,6 +45,14 @@ var BigBomb = MustLoadImage("img/Building/spaceBuilding_004.png")
 var MachineGun = MustLoadImage("img/Missiles/spaceMissiles_038.png")
 var DoubleMachineGun = MustLoadImage("img/Missiles/spaceMissiles_025.png")
 var PlasmaGun = MustLoadImage("img/Effects/plasma_gun2.png")
+
+// enemy weapons
+var EnemyLightMissile = MustLoadImage("img/Missiles/spaceMissiles_015.png")
+var EnemyAutoLightMissile = MustLoadImage("img/Missiles/spaceMissiles_018.png")
+var EnemyHeavyMissile = MustLoadImage("img/Missiles/spaceMissiles_021.png")
+var EnemyGunProjevtile = MustLoadImage("img/Missiles/spaceMissiles_024.png")
+var EnemyBullet = MustLoadImage("img/Missiles/spaceMissiles_037.png")
+var EnemyMidMissile = MustLoadImage("img/Missiles/spaceMissiles_009.png")
 
 // backgrounds
 var FirstLevelBg = MustLoadImage("img/bg1.png")

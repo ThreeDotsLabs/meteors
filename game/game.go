@@ -74,7 +74,8 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	l := GenerateLevelsStructure()
+	l := GenerateLevelStructure()
+	l.DecorateLevels()
 	_ = l
 	scale := ebiten.DeviceScaleFactor()
 	g := &Game{
@@ -365,7 +366,7 @@ func (g *Game) Update() error {
 		}
 
 		for i, p := range g.enemyProjectiles {
-			if p.wType.TargetType == "auto" && p.owner == "enemy" {
+			if p.wType.TargetType == config.TargetTypePlayer && p.owner == "enemy" {
 				p.target = config.Vector{
 					X: g.player.position.X,
 					Y: g.player.position.Y,

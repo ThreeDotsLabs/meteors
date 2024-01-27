@@ -73,6 +73,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			TargetType:                    "straight",
 			WeaponName:                    config.LightRocket,
 			Scale:                         p.game.Options.ResolutionMultipler,
+			StartTime:                     300,
 		}
 		lightR := Weapon{
 			projectile: Projectile{
@@ -80,10 +81,10 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			},
 			UpdateParams: func(player *Player, w *Weapon) {
 				w.projectile.wType.Velocity = 400 + player.params.LightRocketVelocityMultiplier
-				w.shootCooldown.Restart(time.Millisecond * (300 - player.params.LightRocketSpeedUpscale))
-				player.curWeapon.shootCooldown.Restart(time.Millisecond * (300 - player.params.LightRocketSpeedUpscale))
+				w.shootCooldown.Restart(time.Millisecond * (w.projectile.wType.StartTime - player.params.LightRocketSpeedUpscale))
+				player.curWeapon.shootCooldown.Restart(time.Millisecond * (w.projectile.wType.StartTime - player.params.LightRocketSpeedUpscale))
 			},
-			shootCooldown: config.NewTimer(time.Millisecond * (300 - p.params.LightRocketSpeedUpscale)),
+			shootCooldown: config.NewTimer(time.Millisecond * (lightRType.StartTime - p.params.LightRocketSpeedUpscale)),
 			ammo:          100,
 			Shoot: func(p *Player) {
 				bounds := p.sprite.Bounds()
@@ -529,60 +530,6 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	return nil
 }
 
-var enemyLightRocket = Weapon{
-	projectile: Projectile{
-		wType: &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.EnemyLightMissile, 0.7),
-			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
-			Velocity:                      150,
-			Damage:                        1,
-			TargetType:                    "straight",
-		},
-	},
-	ammo: 10,
-	EnemyShoot: func(e *Enemy) {
-		bounds := e.enemyType.Sprite.Bounds()
-		halfW := float64(bounds.Dx()) / 2
-		halfH := float64(bounds.Dy()) / 2
-
-		spawnPos := config.Vector{
-			X: e.position.X + halfW + math.Sin(e.rotation)*bulletSpawnOffset,
-			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
-		}
-		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
-		projectile.owner = "enemy"
-		e.game.AddProjectile(projectile)
-	},
-}
-
-var enemyAutoLightRocket = Weapon{
-	projectile: Projectile{
-		wType: &config.WeaponType{
-			Sprite:                        assets.EnemyAutoLightMissile,
-			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
-			Velocity:                      3,
-			Damage:                        5,
-			TargetType:                    "auto",
-		},
-	},
-	ammo: 3,
-	EnemyShoot: func(e *Enemy) {
-		bounds := e.enemyType.Sprite.Bounds()
-		halfW := float64(bounds.Dx()) / 2
-		halfH := float64(bounds.Dy()) / 2
-
-		spawnPos := config.Vector{
-			X: e.position.X + halfW + math.Sin(e.rotation)*bulletSpawnOffset,
-			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
-		}
-		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
-		projectile.owner = "enemy"
-		e.game.AddProjectile(projectile)
-	},
-}
-
 func NewProjectile(g *Game, pos config.Vector, rotation float64, wType *config.WeaponType, animation *Animation, hp int) *Projectile {
 	bounds := wType.Sprite.Bounds()
 	halfW := float64(bounds.Dx()) / 2
@@ -615,7 +562,7 @@ func (p *Projectile) Update() {
 	if p.owner == "player" {
 		quant = -speed
 	}
-	if p.wType.TargetType == "auto" {
+	if p.wType.TargetType == config.TargetTypePlayer {
 		p.position.X += p.movement.X
 		p.position.Y += p.movement.Y
 

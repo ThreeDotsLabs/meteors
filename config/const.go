@@ -1,6 +1,8 @@
 package config
 
 import (
+	"astrogame/assets"
+	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -34,6 +36,7 @@ const (
 	MeteorSpeedUpAmount = 0.1
 	MeteorSpeedUpTime   = 5 * time.Second
 	TargetTypePlayer    = "player"
+	TargetTypeStraight  = "straight"
 	LightRocket         = "lightRocket"
 	AutoLightRocket     = "autoLightRocket"
 	DoubleLightRocket   = "doubleLightRocket"
@@ -64,6 +67,7 @@ type EnemyType struct {
 	EnemiesStartPos Vector
 	EnemySpawnTime  time.Duration
 	WeaponTypeStr   string
+	WeaponType      *WeaponType
 	StartHP         int
 }
 
@@ -71,6 +75,36 @@ type LevelTemplate struct {
 	Stages []*StageTemplate
 	BgImg  *ebiten.Image
 	Name   string
+}
+
+var startPosTypes = []string{"centered", "lines", "checkmate"}
+
+func (l *LevelTemplate) ToLevel() *Level {
+	var level *Level
+	for s, _ := range l.Stages {
+		level.Stages = append(level.Stages, Stage{StageId: s})
+	}
+	for s, _ := range level.Stages {
+		for w, _ := range l.Stages[s].Waves {
+			level.Stages[s].Waves = append(level.Stages[s].Waves, Wave{WaveId: w})
+		}
+	}
+	for s, stage := range level.Stages {
+		for w := range stage.Waves {
+			for _, batch := range l.Stages[s].Waves[w].Batches {
+				randPosType := startPosTypes[rand.Intn(len(startPosTypes))]
+				stage.Waves[w].Batches = append(level.Stages[s].Waves[w].Batches, EnemyBatch{
+					Type:              batch.Enemies[0].ToEnemy(),
+					TargetType:        batch.Enemies[0].TargetType,
+					StartPositionType: randPosType,
+					BatchSpawnTime:    batch.Enemies[0].EnemySpawnTime,
+					Count:             len(batch.Enemies) * 10,
+					StartPosOffset:    batch.Enemies[0].StartPosOffset,
+				})
+			}
+		}
+	}
+	return level
 }
 
 type StageTemplate struct {
@@ -85,12 +119,253 @@ type BatchTemplate struct {
 }
 
 type EnemyTemplate struct {
+	CurCost        int
 	Sprite         *ebiten.Image
 	Velocity       float64
 	EnemySpawnTime time.Duration
-	WeaponTypeStr  string
+	WeaponType     *WeaponType
 	StartHP        int
 	StartPosOffset float64
+	CritChance     float64
+	TargetType     string
+}
+
+func (e *EnemyTemplate) ToEnemy() *EnemyType {
+	return &EnemyType{
+		Sprite:         e.Sprite,
+		Velocity:       e.Velocity,
+		EnemySpawnTime: e.EnemySpawnTime,
+		WeaponType:     e.WeaponType,
+		StartHP:        e.StartHP,
+	}
+}
+
+type EnemyBody struct {
+	cost           int
+	sprite         *ebiten.Image
+	velocity       float64
+	startHP        int
+	targetType     string
+	enemySpawnTime time.Duration
+}
+
+func NewEnemyBodies() []*EnemyBody {
+	var enemyBodies []*EnemyBody
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           20,
+		sprite:         assets.Enemy1,
+		velocity:       1,
+		startHP:        1,
+		targetType:     TargetTypeStraight,
+		enemySpawnTime: 2 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           30,
+		sprite:         assets.Enemy2,
+		velocity:       1,
+		startHP:        3,
+		targetType:     TargetTypePlayer,
+		enemySpawnTime: 4 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           42,
+		sprite:         assets.Enemy3,
+		velocity:       1.5,
+		startHP:        3,
+		targetType:     TargetTypeStraight,
+		enemySpawnTime: 4 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           65,
+		sprite:         assets.Enemy4,
+		velocity:       1.4,
+		startHP:        6,
+		targetType:     TargetTypePlayer,
+		enemySpawnTime: 4 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           66,
+		sprite:         assets.Enemy5,
+		velocity:       1.8,
+		startHP:        4,
+		targetType:     TargetTypeStraight,
+		enemySpawnTime: 5 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           78,
+		sprite:         assets.Enemy6,
+		velocity:       1.2,
+		startHP:        7,
+		targetType:     TargetTypeStraight,
+		enemySpawnTime: 5 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           90,
+		sprite:         assets.Enemy7,
+		velocity:       2,
+		startHP:        5,
+		targetType:     TargetTypeStraight,
+		enemySpawnTime: 5 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           120,
+		sprite:         assets.Enemy8,
+		velocity:       1.3,
+		startHP:        8,
+		targetType:     TargetTypePlayer,
+		enemySpawnTime: 6 * time.Second,
+	})
+	return enemyBodies
+}
+
+func NewWeaponTypes() []*WeaponType {
+	var weaponTypes []*WeaponType
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          6,
+		Sprite:        assets.EnemyLightMissile,
+		Velocity:      150,
+		StartVelocity: 150,
+		Damage:        2,
+		TargetType:    TargetTypeStraight,
+		AnimationOnly: false,
+		StartTime:     1400,
+		StartAmmo:     30,
+	})
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          20,
+		Sprite:        assets.EnemyAutoLightMissile,
+		Velocity:      3,
+		StartVelocity: 3,
+		Damage:        2,
+		TargetType:    TargetTypePlayer,
+		AnimationOnly: false,
+		StartTime:     2000,
+		StartAmmo:     5,
+	})
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          28,
+		Sprite:        assets.EnemyHeavyMissile,
+		Velocity:      130,
+		StartVelocity: 130,
+		Damage:        5,
+		TargetType:    TargetTypeStraight,
+		AnimationOnly: false,
+		StartTime:     1700,
+		StartAmmo:     10,
+	})
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          42,
+		Sprite:        assets.EnemyHeavyMissile,
+		Velocity:      4,
+		StartVelocity: 4,
+		Damage:        5,
+		TargetType:    TargetTypePlayer,
+		AnimationOnly: false,
+		StartTime:     2600,
+		StartAmmo:     5,
+	})
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          36,
+		Sprite:        assets.EnemyGunProjevtile,
+		Velocity:      280,
+		StartVelocity: 280,
+		Damage:        3,
+		TargetType:    TargetTypeStraight,
+		AnimationOnly: false,
+		StartTime:     1600,
+		StartAmmo:     16,
+	})
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          46,
+		Sprite:        assets.EnemyBullet,
+		Velocity:      350,
+		StartVelocity: 350,
+		Damage:        1,
+		TargetType:    TargetTypeStraight,
+		AnimationOnly: false,
+		StartTime:     400,
+		StartAmmo:     100,
+	})
+	weaponTypes = append(weaponTypes, &WeaponType{
+		cost:          52,
+		Sprite:        assets.EnemyMidMissile,
+		Velocity:      4,
+		StartVelocity: 4,
+		Damage:        4,
+		TargetType:    TargetTypePlayer,
+		AnimationOnly: false,
+		StartTime:     1200,
+		StartAmmo:     6,
+	})
+	return weaponTypes
+}
+
+func (e *EnemyTemplate) SetBody(body *EnemyBody) {
+	if e.CurCost >= body.cost {
+		e.CurCost -= body.cost
+		e.Sprite = body.sprite
+		e.Velocity = body.velocity
+		e.StartHP = body.startHP
+		e.TargetType = body.targetType
+		e.EnemySpawnTime = body.enemySpawnTime
+	}
+}
+
+func (e *EnemyTemplate) SetWeapon(w *WeaponType) {
+	if e.CurCost >= w.cost {
+		e.CurCost -= w.cost
+		e.WeaponType = w
+	}
+}
+
+func (e *EnemyTemplate) AddHP() {
+	if e.CurCost >= 20 {
+		e.CurCost -= 20
+		e.StartHP++
+	}
+}
+
+func (e *EnemyTemplate) AddVelocity() {
+	if e.CurCost >= 12 {
+		e.CurCost -= 12
+		e.Velocity++
+	}
+}
+
+func (e *EnemyTemplate) AddWeaponProjectileVelocity() {
+	if e.CurCost >= 1 && e.WeaponType != nil {
+		e.CurCost--
+		e.WeaponType.Velocity++
+		e.WeaponType.StartVelocity++
+
+	}
+}
+
+func (e *EnemyTemplate) AddWeaponProjectileFireRate() {
+	if e.CurCost >= 1 && e.WeaponType != nil {
+		e.CurCost--
+		e.WeaponType.StartTime++
+	}
+}
+
+func (e *EnemyTemplate) AddWeaponProjectileDamage() {
+	if e.CurCost >= 40 && e.WeaponType != nil {
+		e.CurCost -= 40
+		e.WeaponType.Damage++
+	}
+}
+
+func (e *EnemyTemplate) AddWeaponAmmo() {
+	if e.CurCost >= 1 && e.WeaponType != nil {
+		e.CurCost--
+		e.WeaponType.StartAmmo++
+	}
+}
+
+func (e *EnemyTemplate) DecreaseCost() {
+	if e.CurCost > 0 {
+		e.CurCost--
+	}
 }
 
 type ItemTemplate struct {
@@ -146,6 +421,9 @@ type WeaponType struct {
 	Target                        Vector
 	TargetType                    string
 	WeaponName                    string
+	cost                          int
+	StartTime                     time.Duration
+	StartAmmo                     int
 }
 
 type AmmoType struct {
