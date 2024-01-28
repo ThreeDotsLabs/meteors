@@ -155,15 +155,21 @@ func DecorateEnemyTemplate(e *config.EnemyTemplate, l int, s int, w int, cost in
 		if bodyAdded && e.CurCost >= weaponMinCost && !weaponAdded {
 			randWeaponCount := objects.RandInt(0, len(eWeapons)-1)
 			e.SetWeapon(eWeapons[randWeaponCount])
-			weaponAdded = true
+			if e.WeaponType != nil {
+				weaponAdded = true
+			}
 		}
 		if bodyAdded {
 			e.AddHP()
 			e.AddVelocity()
 		}
 		if bodyAdded && weaponAdded {
+			velocity := 12.0
+			if config.TargetTypePlayer == e.WeaponType.TargetType {
+				velocity = 0.1
+			}
 			e.AddWeaponProjectileDamage()
-			e.AddWeaponProjectileVelocity()
+			e.AddWeaponProjectileVelocity(velocity)
 			e.AddWeaponProjectileFireRate()
 			e.AddWeaponAmmo()
 		}

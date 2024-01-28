@@ -203,18 +203,19 @@ func (l *LevelTemplate) ToLevel() *Level {
 		BgImg:  l.BgImg,
 		Name:   l.Name,
 	}
-	for s, _ := range l.Stages {
+	for s := range l.Stages {
 		level.Stages = append(level.Stages, Stage{StageId: s})
 	}
-	for s, _ := range level.Stages {
+	for s := range level.Stages {
 		var items []Item
 		level.Stages[s].Items = items
 		conVItems := ConvertItems(l.Stages[s].Items)
-		for i, _ := range conVItems {
-			level.Stages[s].Items = append(level.Stages[s].Items, conVItems[i])
-		}
+		// for i := range conVItems {
+		// 	level.Stages[s].Items = append(level.Stages[s].Items, conVItems[i])
+		// }
+		level.Stages[s].Items = append(level.Stages[s].Items, conVItems...)
 		level.Stages[s].Items = append(level.Stages[s].Items, ConvertItems(l.Stages[s].Items)...)
-		for w, _ := range l.Stages[s].Waves {
+		for w := range l.Stages[s].Waves {
 			level.Stages[s].Waves = append(level.Stages[s].Waves, Wave{WaveId: w})
 		}
 	}
@@ -312,11 +313,7 @@ func (e *EnemyTemplate) AddVelocity() {
 	}
 }
 
-func (e *EnemyTemplate) AddWeaponProjectileVelocity() {
-	velocity := 12.0
-	if e.WeaponType.TargetType == TargetTypePlayer {
-		velocity = 0.1
-	}
+func (e *EnemyTemplate) AddWeaponProjectileVelocity(velocity float64) {
 	if e.CurCost >= 100 && e.WeaponType != nil {
 		e.CurCost -= 100
 		e.WeaponType.Velocity += velocity
