@@ -17,6 +17,207 @@ import (
 	"golang.org/x/image/font"
 )
 
+func NewLevels() []*config.Level {
+	var lvl = config.Level{
+		Name:    "Level 1",
+		Number:  1,
+		LevelId: 0,
+		Stages: []config.Stage{
+			{
+				StageId:      0,
+				MeteorsCount: 0,
+				Items: []config.Item{
+					{
+						RotationSpeed: 0,
+						Sprite:        assets.PentaLaser,
+						Velocity:      1.5,
+						SecondWeaponType: &config.WeaponType{
+							WeaponName: config.PentaLaser,
+						},
+						ItemSpawnTime: 1 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
+						Sprite:        assets.DoubleLaserCanon,
+						Velocity:      1.2,
+						WeaponType: &config.WeaponType{
+							WeaponName: config.DoubleLaserCanon,
+						},
+						ItemSpawnTime: 5 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
+						Sprite:        assets.ClusterMines,
+						Velocity:      1.5,
+						SecondWeaponType: &config.WeaponType{
+							WeaponName: config.ClusterMines,
+						},
+						ItemSpawnTime: 5 * time.Second,
+					},
+					{
+						RotationSpeed: 0,
+						Sprite:        assets.ShieldSprite,
+						Velocity:      2,
+						ShieldType: &config.ShieldType{
+							HP:     5,
+							Sprite: assets.ShieldSprite,
+						},
+						ItemSpawnTime: 5 * time.Second,
+					},
+					// {
+					// 	RotationSpeed: 0,
+					// 	Sprite:        assets.MachineGun,
+					// 	Velocity:      1.7,
+					// 	WeaponType: &WeaponType{
+					// 		WeaponName: MachineGun,
+					// 	},
+					// 	ItemSpawnTime: 5 * time.Second,
+					// },
+					{
+						RotationSpeed: 0,
+						Sprite:        assets.BigBomb,
+						Velocity:      2,
+						SecondWeaponType: &config.WeaponType{
+							WeaponName: config.BigBomb,
+						},
+						ItemSpawnTime: 20 * time.Second,
+					},
+					// {
+					// 	RotationSpeed: 0.2,
+					// 	Sprite:        assets.MissileSprite,
+					// 	Velocity:      1,
+					// 	AmmoType: &AmmoType{
+					// 		WeaponType: LightRocket,
+					// 		Amount:     50,
+					// 	},
+					// 	ItemSpawnTime: 1 * time.Second,
+					// },
+					// {
+					// 	RotationSpeed: 0,
+					// 	Sprite:        assets.DoubleMissileSprite,
+					// 	Velocity:      1.3,
+					// 	WeaponType: &WeaponType{
+					// 		WeaponName: DoubleLightRocket,
+					// 	},
+					// 	ItemSpawnTime: 5 * time.Second,
+					// },
+				},
+				Waves: []config.Wave{
+					{
+						WaveId: 0,
+						Batches: []config.EnemyBatch{
+							{
+								Type: &config.EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.HighSpeedFollowPlayerEnemySprite,
+									Velocity:      2,
+									StartHP:       6,
+									WeaponType:    enemyLightRocket.projectile.wType,
+								},
+								Count:             6,
+								TargetType:        config.TargetTypePlayer,
+								BatchSpawnTime:    1 * time.Second,
+								StartPositionType: "centered",
+								StartPosOffset:    40.0,
+							},
+							{
+								Type: &config.EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.LowSpeedEnemyLightMissile,
+									Velocity:      1,
+									WeaponTypeStr: config.LightRocket,
+									StartHP:       1,
+								},
+								Count:             20,
+								TargetType:        "straight",
+								BatchSpawnTime:    5 * time.Second,
+								StartPositionType: "checkmate",
+							},
+							{
+								Type: &config.EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.LowSpeedEnemyAutoLightMissile,
+									Velocity:      1,
+									WeaponTypeStr: config.AutoLightRocket,
+									StartHP:       2,
+								},
+								Count:             4,
+								TargetType:        "straight",
+								BatchSpawnTime:    10 * time.Second,
+								StartPositionType: "checkmate",
+							},
+						},
+					},
+					{
+						WaveId: 1,
+						Batches: []config.EnemyBatch{
+							{
+								Type: &config.EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.HighSpeedFollowPlayerEnemySprite,
+									Velocity:      2,
+									StartHP:       3,
+								},
+								Count:             8,
+								TargetType:        config.TargetTypePlayer,
+								BatchSpawnTime:    1 * time.Second,
+								StartPositionType: "lines",
+								StartPosOffset:    20.0,
+							},
+							{
+								Type: &config.EnemyType{
+									RotationSpeed: 0,
+									Sprite:        assets.LowSpeedEnemyLightMissile,
+									Velocity:      1,
+									WeaponTypeStr: config.LightRocket,
+									StartHP:       3,
+								},
+								Count:             10,
+								TargetType:        "straight",
+								BatchSpawnTime:    5 * time.Second,
+								StartPositionType: "checkmate",
+							},
+							// {
+							// 	Type: &EnemyType{
+							// 		RotationSpeed: 0,
+							// 		Sprite:        assets.LowSpeedEnemyAutoLightMissile,
+							// 		Velocity:      1,
+							// 		WeaponTypeStr: AutoLightRocket,
+							// 		StartHP:       3,
+							// 	},
+							// 	Count:             5,
+							// 	TargetType:        "straight",
+							// 	BatchSpawnTime:    10 * time.Second,
+							// 	StartPositionType: "checkmate",
+							// },
+							// {
+							// 	Type: &EnemyType{
+							// 		RotationSpeed: 0,
+							// 		Sprite:        assets.LowSpeedEnemyAutoLightMissile,
+							// 		Velocity:      1,
+							// 		WeaponTypeStr: AutoLightRocket,
+							// 		StartHP:       3,
+							// 	},
+							// 	Count:             5,
+							// 	TargetType:        "straight",
+							// 	BatchSpawnTime:    10 * time.Second,
+							// 	StartPositionType: "checkmate",
+							// },
+						},
+					},
+				},
+			},
+		},
+		BgImg: assets.FirstLevelBg,
+	}
+	lvls := []*config.Level{
+		&lvl,
+	}
+	return lvls
+}
+
+var Levels = NewLevels()
+
 type options struct {
 	Fullscreen              bool
 	ResolutionMultipler     float64
@@ -74,9 +275,7 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	l := GenerateLevelStructure()
-	l.DecorateLevels()
-	_ = l
+	l := GenerateLevels()
 	scale := ebiten.DeviceScaleFactor()
 	g := &Game{
 		Options: &options{
@@ -105,14 +304,14 @@ func NewGame() *Game {
 		meteorSpawnTimer:  config.NewTimer(config.MeteorSpawnTime),
 		baseVelocity:      config.BaseMeteorVelocity,
 		velocityTimer:     config.NewTimer(config.MeteorSpeedUpTime),
-		enemySpawnTimer:   config.NewTimer(config.Levels[0].Stages[0].Waves[0].Batches[0].Type.EnemySpawnTime),
-		batchesSpawnTimer: config.NewTimer(config.Levels[0].Stages[0].Waves[0].Batches[0].BatchSpawnTime),
-		itemSpawnTimer:    config.NewTimer(config.Levels[0].Stages[0].Items[0].ItemSpawnTime),
-		bgImage:           config.Levels[0].BgImg,
-		levels:            config.Levels,
-		curLevel:          config.Levels[0],
-		CurStage:          &config.Levels[0].Stages[0],
-		CurWave:           &config.Levels[0].Stages[0].Waves[0],
+		enemySpawnTimer:   config.NewTimer(l[0].Stages[0].Waves[0].Batches[0].Type.EnemySpawnTime),
+		batchesSpawnTimer: config.NewTimer(l[0].Stages[0].Waves[0].Batches[0].BatchSpawnTime),
+		itemSpawnTimer:    config.NewTimer(time.Second * 2),
+		bgImage:           Levels[0].BgImg,
+		levels:            l,
+		curLevel:          l[0],
+		CurStage:          &l[0].Stages[0],
+		CurWave:           &l[0].Stages[0].Waves[0],
 		started:           false,
 		ResolutionChange:  false,
 	}
@@ -253,7 +452,7 @@ func (g *Game) Update() error {
 				var xOffsetMod float64
 				if batch.StartPositionType == "centered" {
 					eTst := NewEnemy(g, config.Vector{}, config.Vector{}, *batch.Type)
-					enemyWidthTst := eTst.enemyType.Sprite.Bounds().Dx()
+					enemyWidthTst := eTst.enemyType.Sprite.Bounds().Dx() / 2
 					xOffsetMod = (g.Options.ScreenWidth - float64(batch.Count*(enemyWidthTst+int(batch.StartPosOffset))-int(batch.StartPosOffset))) / 2
 				}
 				for i := 0; i < batch.Count; i++ {
@@ -261,8 +460,8 @@ func (g *Game) Update() error {
 					var startPos config.Vector
 					e := NewEnemy(g, target, startPos, *batch.Type)
 					e.TargetType = batch.TargetType
-					enemyWidth := e.enemyType.Sprite.Bounds().Dx()
-					enemyHight := e.enemyType.Sprite.Bounds().Dy()
+					enemyWidth := e.enemyType.Sprite.Bounds().Dx() / 2
+					enemyHight := e.enemyType.Sprite.Bounds().Dy() / 2
 					switch batch.StartPositionType {
 					case "centered":
 						xOffset := batch.StartPosOffset
@@ -276,7 +475,7 @@ func (g *Game) Update() error {
 						}
 						startPos = config.Vector{
 							X: (float64(enemyWidth)+xOffset)*float64(elemInLineCount) + xOffsetMod,
-							Y: -(float64(enemyHight)*linesCount + 10),
+							Y: -(float64(enemyHight)*linesCount + float64(enemyHight*2)),
 						}
 					case "lines":
 						xOffset := batch.StartPosOffset
@@ -290,27 +489,28 @@ func (g *Game) Update() error {
 						}
 						startPos = config.Vector{
 							X: (float64(enemyWidth) + xOffset) * float64(elemInLineCount),
-							Y: -(float64(enemyHight)*linesCount + 10),
+							Y: -(float64(enemyHight*2)*linesCount*linesCount + float64(enemyHight)),
 						}
 					case "checkmate":
-						elemInLine := int(g.Options.ScreenWidth) / (enemyWidth * 2)
+						cellWidth := enemyWidth * 2
+						elemInLine := int(g.Options.ScreenWidth) / (cellWidth * 2)
 						if elemInLineCount >= elemInLine {
 							elemInLineCount = 0
 							linesCount++
 						}
 						startPos = config.Vector{
-							X: float64(enemyWidth)*float64(elemInLineCount)*2 + float64(enemyWidth),
-							Y: -(float64(enemyHight)*linesCount + 10),
+							X: float64(cellWidth)*float64(elemInLineCount)*2 + float64(cellWidth),
+							Y: -(float64(enemyHight*4)*linesCount + 10),
 						}
 						if int(linesCount)%2 == 0 {
 							startPos = config.Vector{
-								X: float64(enemyWidth) * float64(elemInLineCount) * 2,
-								Y: -(float64(enemyHight)*linesCount + 10),
+								X: float64(cellWidth) * float64(elemInLineCount) * 2,
+								Y: -(float64(enemyHight*4)*linesCount + 10),
 							}
 						}
 					}
 					switch batch.TargetType {
-					case "player":
+					case config.OwnerPlayer:
 						target = config.Vector{
 							X: g.player.position.X,
 							Y: g.player.position.Y,
@@ -366,7 +566,7 @@ func (g *Game) Update() error {
 		}
 
 		for i, p := range g.enemyProjectiles {
-			if p.wType.TargetType == config.TargetTypePlayer && p.owner == "enemy" {
+			if p.wType.TargetType == config.TargetTypePlayer && p.owner == config.OwnerEnemy {
 				p.target = config.Vector{
 					X: g.player.position.X,
 					Y: g.player.position.Y,
@@ -427,7 +627,7 @@ func (g *Game) Update() error {
 			}
 
 			for j, b := range g.projectiles {
-				if config.IntersectRect(m.Collider(), b.Collider()) && b.owner == "player" {
+				if config.IntersectRect(m.Collider(), b.Collider()) && b.owner == config.OwnerPlayer {
 					switch b.wType.WeaponName {
 					case config.BigBomb:
 						bounds := b.wType.Sprite.Bounds()
@@ -687,7 +887,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) AddProjectile(p *Projectile) {
-	if p.owner == "player" {
+	if p.owner == config.OwnerPlayer {
 		g.projectiles = append(g.projectiles, p)
 	} else {
 		g.enemyProjectiles = append(g.enemyProjectiles, p)
@@ -695,7 +895,7 @@ func (g *Game) AddProjectile(p *Projectile) {
 }
 
 func (g *Game) AddBeam(b *Beam) {
-	if b.owner == "player" {
+	if b.owner == config.OwnerPlayer {
 		g.beams = append(g.beams, b)
 	} else {
 		g.enemyBeams = append(g.enemyBeams, b)
@@ -744,7 +944,7 @@ func (g *Game) Reset() {
 	g.animations = nil
 	g.score = 0
 	g.player = NewPlayer(g)
-	var newLevels = config.NewLevels()
+	var newLevels = GenerateLevels()
 	g.curLevel = newLevels[0]
 	g.CurStage = &g.curLevel.Stages[0]
 	g.CurWave = &g.CurStage.Waves[0]

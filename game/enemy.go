@@ -3,7 +3,6 @@ package game
 import (
 	"image"
 	"math"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -34,7 +33,7 @@ func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.En
 		X: normalizedDirection.X * enType.Velocity,
 		Y: normalizedDirection.Y * enType.Velocity,
 	}
-	enType.Sprite = objects.ScaleImg(enType.Sprite, g.Options.ResolutionMultipler)
+	enType.Sprite = objects.ScaleImg(enType.Sprite, 0.5)
 
 	e := &Enemy{
 		game:      g,
@@ -43,18 +42,9 @@ func NewEnemy(g *Game, target config.Vector, pos config.Vector, enType config.En
 		enemyType: &enType,
 		HP:        enType.StartHP,
 	}
-
-	switch enType.WeaponTypeStr {
-	case config.LightRocket:
-		startWeapon := enemyLightRocket
-		e.weapon = startWeapon
-		e.weapon.shootCooldown = config.NewTimer(time.Millisecond * 1600)
-	case config.AutoLightRocket:
-		startWeapon := enemyAutoLightRocket
-		e.weapon = startWeapon
-		e.weapon.shootCooldown = config.NewTimer(time.Millisecond * 2300)
+	if enType.WeaponType != nil {
+		e.weapon = NewEnemyWeapon(enType.WeaponType)
 	}
-
 	return e
 }
 

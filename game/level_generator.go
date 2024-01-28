@@ -6,11 +6,11 @@ import (
 	"astrogame/objects"
 	"fmt"
 	"math"
+	"time"
 )
 
 type levelTemplatesGen struct {
-	lvls    []*config.LevelTemplate
-	sumCost []int
+	lvls []*config.LevelTemplate
 }
 
 func GenerateLevels() []*config.Level {
@@ -148,7 +148,9 @@ func DecorateEnemyTemplate(e *config.EnemyTemplate, l int, s int, w int, cost in
 		if !bodyAdded {
 			randBodyCount := objects.RandInt(0, len(eBodies)-1)
 			e.SetBody(eBodies[randBodyCount])
-			bodyAdded = true
+			if e.StartHP != 0 {
+				bodyAdded = true
+			}
 		}
 		if bodyAdded && e.CurCost >= weaponMinCost && !weaponAdded {
 			randWeaponCount := objects.RandInt(0, len(eWeapons)-1)
@@ -214,15 +216,6 @@ func GenerateLevelStructure() levelTemplatesGen {
 	return structure
 }
 
-func generateWaves(count int) []*config.WaveTemplate {
-	var waves []*config.WaveTemplate
-	for w := 0; w < count; w++ {
-		var wave config.WaveTemplate
-		waves = append(waves, &wave)
-	}
-	return waves
-}
-
 func generateStages(l int, count int) []*config.StageTemplate {
 	var stages []*config.StageTemplate
 	thirdPart := count / 3
@@ -264,12 +257,24 @@ func generateStages(l int, count int) []*config.StageTemplate {
 			}
 		}
 		randWaveCount := objects.RandInt(waveCountLLimit, waveCountRLimit)
+		randItemCount := objects.RandInt(waveCountLLimit/2, waveCountRLimit/2)
 		var stage config.StageTemplate
 		waves := generateWaves(randWaveCount)
 		stage.Waves = waves
+		items := generateItems(l, randItemCount)
+		stage.Items = items
 		stages = append(stages, &stage)
 	}
 	return stages
+}
+
+func generateWaves(count int) []*config.WaveTemplate {
+	var waves []*config.WaveTemplate
+	for w := 0; w < count; w++ {
+		var wave config.WaveTemplate
+		waves = append(waves, &wave)
+	}
+	return waves
 }
 
 func generateBatches(l int, count int) []*config.BatchTemplate {
@@ -307,6 +312,16 @@ func generateEnemies(count int) []*config.EnemyTemplate {
 	return enemies
 }
 
+func generateItems(l int, count int) []*config.ItemTemplate {
+	var items []*config.ItemTemplate
+	for w := 0; w < count; w++ {
+		itemsForLvl := config.NewItemTypes(l)
+		itemRandNumber := objects.RandInt(0, len(itemsForLvl)-1)
+		items = append(items, itemsForLvl[itemRandNumber])
+	}
+	return items
+}
+
 var enemyLightRocket = Weapon{
 	projectile: Projectile{
 		wType: &config.WeaponType{
@@ -315,6 +330,8 @@ var enemyLightRocket = Weapon{
 			Velocity:                      150,
 			Damage:                        1,
 			TargetType:                    "straight",
+			StartTime:                     time.Duration(1000) * time.Millisecond,
+			StartAmmo:                     10,
 		},
 	},
 	ammo: 10,
@@ -329,7 +346,7 @@ var enemyLightRocket = Weapon{
 		}
 		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
 		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
-		projectile.owner = "enemy"
+		projectile.owner = config.OwnerEnemy
 		e.game.AddProjectile(projectile)
 	},
 }
@@ -356,7 +373,7 @@ var enemyAutoLightRocket = Weapon{
 		}
 		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
 		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
-		projectile.owner = "enemy"
+		projectile.owner = config.OwnerEnemy
 		e.game.AddProjectile(projectile)
 	},
 }

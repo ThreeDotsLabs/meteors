@@ -18,6 +18,7 @@ var assets embed.FS
 var PlayerSprite = MustLoadImage("img/Ships/spaceShips_007.png")
 var ShieldSprite = MustLoadImage("img/Ships/shield.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
+var Heal = MustLoadImage("img/Parts/heal1.png")
 var HighSpeedFollowPlayerEnemySprite = MustLoadImage("img/Ships/spaceShips_006.png")
 var LowSpeedEnemyLightMissile = MustLoadImage("img/Ships/spaceShips_005.png")
 var LowSpeedEnemyAutoLightMissile = MustLoadImage("img/Ships/spaceShips_003.png")
