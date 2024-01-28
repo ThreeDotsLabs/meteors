@@ -56,7 +56,7 @@ func NewPlayerProfile(g *Game) *ProfileScreen {
 	section := barWidth / 10
 	profileScreen := ProfileScreen{
 		Game:    g,
-		credits: 5000,
+		credits: 50,
 		returnButton: &MenuItem{
 			Active:  true,
 			Choosen: false,

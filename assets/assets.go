@@ -56,7 +56,7 @@ var EnemyBullet = MustLoadImage("img/Missiles/spaceMissiles_037.png")
 var EnemyMidMissile = MustLoadImage("img/Missiles/spaceMissiles_009.png")
 
 // backgrounds
-var FirstLevelBg = MustLoadImage("img/bg1.png")
+var Backgrounds = mustLoadImages("img/Backgrounds/*.png")
 
 // spritesheets
 var EnemyBlowSpriteSheet = MustLoadImage("img/Effects/blow.png")

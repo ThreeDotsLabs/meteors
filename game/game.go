@@ -208,7 +208,7 @@ func NewLevels() []*config.Level {
 				},
 			},
 		},
-		BgImg: assets.FirstLevelBg,
+		BgImg: assets.Backgrounds[0],
 	}
 	lvls := []*config.Level{
 		&lvl,
@@ -307,7 +307,7 @@ func NewGame() *Game {
 		enemySpawnTimer:   config.NewTimer(l[0].Stages[0].Waves[0].Batches[0].Type.EnemySpawnTime),
 		batchesSpawnTimer: config.NewTimer(l[0].Stages[0].Waves[0].Batches[0].BatchSpawnTime),
 		itemSpawnTimer:    config.NewTimer(time.Second * 2),
-		bgImage:           Levels[0].BgImg,
+		bgImage:           l[0].BgImg,
 		levels:            l,
 		curLevel:          l[0],
 		CurStage:          &l[0].Stages[0],
@@ -957,6 +957,7 @@ func (g *Game) Reset() {
 	g.started = false
 	g.menu = NewMainMenu(g)
 	g.profile = NewPlayerProfile(g)
+	g.bgImage = newLevels[0].BgImg
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
