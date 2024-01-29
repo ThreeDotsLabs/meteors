@@ -15,7 +15,7 @@ import (
 var assets embed.FS
 
 // objects
-var PlayerSprite = MustLoadImage("img/Ships/ship2.png")
+var PlayerSprite = MustLoadImage("img/Ships/ship4.png")
 var ShieldSprite = MustLoadImage("img/Ships/shield.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
 var Heal = MustLoadImage("img/Parts/heal1.png")
@@ -30,14 +30,15 @@ var ItemLaserCanonSprite = MustLoadImage("img/Items/laser_cannon_item.png")
 var ItemDoubleLaserCanonSprite = MustLoadImage("img/Items/double_laser_cannon_item.png")
 
 // enemies
-var Enemy1 = MustLoadImage("img/Ships/spaceShips_001.png")
-var Enemy2 = MustLoadImage("img/Ships/spaceShips_002.png")
-var Enemy3 = MustLoadImage("img/Ships/spaceShips_003.png")
-var Enemy4 = MustLoadImage("img/Ships/spaceShips_004.png")
-var Enemy5 = MustLoadImage("img/Ships/spaceShips_005.png")
-var Enemy6 = MustLoadImage("img/Ships/spaceShips_006.png")
-var Enemy7 = MustLoadImage("img/Ships/spaceShips_008.png")
-var Enemy8 = MustLoadImage("img/Ships/spaceShips_009.png")
+var Enemy1 = MustLoadImage("img/Ships/enemy1.png")
+var Enemy2 = MustLoadImage("img/Ships/enemy2.png")
+var Enemy3 = MustLoadImage("img/Ships/enemy3.png")
+var Enemy4 = MustLoadImage("img/Ships/enemy4.png")
+var Enemy5 = MustLoadImage("img/Ships/enemy5.png")
+var Enemy6 = MustLoadImage("img/Ships/enemy6.png")
+var Enemy7 = MustLoadImage("img/Ships/enemy7.png")
+var Enemy8 = MustLoadImage("img/Ships/enemy8.png")
+var Enemy9 = MustLoadImage("img/Ships/enemy9.png")
 
 // weapons
 var MissileSprite = MustLoadImage("img/Missiles/spaceMissiles_016.png")

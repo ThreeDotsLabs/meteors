@@ -33,7 +33,7 @@ func NewEnemyBodies() []*EnemyBody {
 		enemySpawnTime: 4 * time.Second,
 	})
 	enemyBodies = append(enemyBodies, &EnemyBody{
-		cost:           65,
+		cost:           76,
 		sprite:         assets.Enemy4,
 		velocity:       1.4,
 		startHP:        6,
@@ -41,7 +41,7 @@ func NewEnemyBodies() []*EnemyBody {
 		enemySpawnTime: 4 * time.Second,
 	})
 	enemyBodies = append(enemyBodies, &EnemyBody{
-		cost:           66,
+		cost:           120,
 		sprite:         assets.Enemy5,
 		velocity:       1.8,
 		startHP:        4,
@@ -49,7 +49,7 @@ func NewEnemyBodies() []*EnemyBody {
 		enemySpawnTime: 5 * time.Second,
 	})
 	enemyBodies = append(enemyBodies, &EnemyBody{
-		cost:           78,
+		cost:           178,
 		sprite:         assets.Enemy6,
 		velocity:       1.2,
 		startHP:        7,
@@ -57,7 +57,7 @@ func NewEnemyBodies() []*EnemyBody {
 		enemySpawnTime: 5 * time.Second,
 	})
 	enemyBodies = append(enemyBodies, &EnemyBody{
-		cost:           90,
+		cost:           290,
 		sprite:         assets.Enemy7,
 		velocity:       2,
 		startHP:        5,
@@ -65,12 +65,20 @@ func NewEnemyBodies() []*EnemyBody {
 		enemySpawnTime: 5 * time.Second,
 	})
 	enemyBodies = append(enemyBodies, &EnemyBody{
-		cost:           120,
+		cost:           520,
 		sprite:         assets.Enemy8,
 		velocity:       1.3,
 		startHP:        8,
 		targetType:     TargetTypePlayer,
 		enemySpawnTime: 6 * time.Second,
+	})
+	enemyBodies = append(enemyBodies, &EnemyBody{
+		cost:           640,
+		sprite:         assets.Enemy9,
+		velocity:       1.5,
+		startHP:        12,
+		targetType:     TargetTypePlayer,
+		enemySpawnTime: 8 * time.Second,
 	})
 	return enemyBodies
 }
