@@ -31,7 +31,7 @@ func NewItem(g *Game, target config.Vector, pos config.Vector, itemType *config.
 		Y: normalizedDirection.Y * itemType.Velocity,
 	}
 
-	modSprite := objects.ScaleImg(itemType.Sprite, 1.2)
+	modSprite := objects.ScaleImg(itemType.Sprite, 0.5)
 	itemType.Sprite = modSprite
 
 	i := &Item{

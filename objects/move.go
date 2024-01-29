@@ -23,7 +23,7 @@ func RotateAndTranslateAnimation(angle float64, object *ebiten.Image, screen *eb
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Rotate(angle)
 	op.GeoM.Translate(x, y)
-	// vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 2, color.RGBA{255, 255, 255, 255}, false)
+	//vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 2, color.RGBA{255, 255, 255, 255}, false)
 	screen.DrawImage(object, op)
 }
 

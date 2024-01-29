@@ -313,7 +313,7 @@ func NewPlayer(curgame *Game) *Player {
 		Y: curgame.Options.ScreenHeight/2 + float64(bounds.Dy()/2),
 	}
 
-	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 1, 192, 96, true, "engineFireburst", 0)
+	engineFireburst := NewAnimation(posFireburst, assets.PlayerFireburstSpriteSheet, 1, 90, 85, true, "engineFireburst", 0)
 	curgame.AddAnimation(engineFireburst)
 	p := &Player{
 		params: &PlayerParams{

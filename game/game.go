@@ -296,7 +296,7 @@ func NewGame() *Game {
 			ScreenYProfileMenuShift: int(config.Screen1024X768YProfileMenuShift * scale),
 			ScoreFont:               assets.ScoreFont1024x768,
 			InfoFont:                assets.InfoFont1024x768,
-			SmallFont:               assets.SmallFont1024x768,
+			SmallFont:               assets.SmallUIFont1024x768,
 			ProfileFont:             assets.ProfileFont1024x768,
 			ProfileBigFont:          assets.ProfileBigFont1024x768,
 		},
@@ -489,7 +489,7 @@ func (g *Game) Update() error {
 						}
 						startPos = config.Vector{
 							X: (float64(enemyWidth) + xOffset) * float64(elemInLineCount),
-							Y: -(float64(enemyHight*2)*linesCount*linesCount + float64(enemyHight)),
+							Y: -(float64(enemyHight*2)*linesCount*linesCount + float64(enemyHight) + float64(enemyHight)),
 						}
 					case "checkmate":
 						cellWidth := enemyWidth * 2
@@ -825,65 +825,71 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				a.Draw(screen)
 			}
 		}
+		g.drawUI(screen)
+	}
+}
 
-		// Draw the hit points bar
-		barX := g.Options.ScreenWidth - 120*g.Options.ResolutionMultiplerX
-		backWidth := float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultiplerX) + 4
-		if backWidth < 104*float32(g.Options.ResolutionMultiplerX) {
+func (g *Game) drawUI(screen *ebiten.Image) {
+	// Draw the hit points bar
+	barX := g.Options.ScreenWidth - 120*g.Options.ResolutionMultiplerX
+	backWidth := float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultiplerX) + 4
+	if backWidth < 104*float32(g.Options.ResolutionMultiplerX) {
+		backWidth = 104
+	}
+
+	vector.DrawFilledRect(screen, float32(barX-2), 38*float32(g.Options.ResolutionMultiplerY), backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
+	vector.DrawFilledRect(screen, float32(barX), 40*float32(g.Options.ResolutionMultiplerY), float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultiplerX), 20*float32(g.Options.ResolutionMultiplerY), color.RGBA{179, 14, 14, 255}, false)
+
+	// Draw shield bar
+	if g.player.shield != nil {
+		backWidth := float32(g.player.shield.HP)*10 + 4
+		if backWidth < 104 {
 			backWidth = 104
 		}
-
-		vector.DrawFilledRect(screen, float32(barX-2), 38*float32(g.Options.ResolutionMultiplerY), backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
-		vector.DrawFilledRect(screen, float32(barX), 40*float32(g.Options.ResolutionMultiplerY), float32(g.player.params.HP)*10*float32(g.Options.ResolutionMultiplerX), 20*float32(g.Options.ResolutionMultiplerY), color.RGBA{179, 14, 14, 255}, false)
-
-		// Draw shield bar
-		if g.player.shield != nil {
-			backWidth := float32(g.player.shield.HP)*10 + 4
-			if backWidth < 104 {
-				backWidth = 104
-			}
-			shiftX := float64(backWidth) - 104
-			vector.DrawFilledRect(screen, float32(barX-shiftX-2), 82*float32(g.Options.ResolutionMultiplerY), backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
-			vector.DrawFilledRect(screen, float32(barX-shiftX), 84*float32(g.Options.ResolutionMultiplerY), float32(g.player.shield.HP)*10*float32(g.Options.ResolutionMultiplerX), 20, color.RGBA{26, 14, 189, 255}, false)
-		}
-
-		// Draw weapons
-		for i, w := range g.player.weapons {
-			offset := 20 * int(g.Options.ResolutionMultiplerX)
-			object := w.projectile.wType.Sprite
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(i*offset+offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultiplerY)))
-			if w.projectile.wType.WeaponName == g.player.curWeapon.projectile.wType.WeaponName {
-				vector.DrawFilledRect(screen, float32(i*offset+offset-2), float32(g.Options.ScreenHeight-float64(30*int(g.Options.ResolutionMultiplerY))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultiplerX)), 3*float32(g.Options.ResolutionMultiplerY), color.RGBA{255, 255, 255, 255}, false)
-			}
-			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, i*offset+offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultiplerY), color.White)
-			screen.DrawImage(object, op)
-		}
-
-		// Draw secondary weapons
-		for i, w := range g.player.secondaryWeapons {
-			startOffset := int(g.Options.ScreenWidth) - 40*int(g.Options.ResolutionMultiplerX)
-			offset := 20 * int(g.Options.ResolutionMultiplerX)
-			object := w.projectile.wType.Sprite
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(startOffset-i*offset), g.Options.ScreenHeight-float64(60*int(g.Options.ResolutionMultiplerY)))
-			if g.player.curSecondaryWeapon != nil && w.projectile.wType.WeaponName == g.player.curSecondaryWeapon.projectile.wType.WeaponName {
-				vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(g.Options.ScreenHeight-float64(30*float32(g.Options.ResolutionMultiplerY))), float32(object.Bounds().Dx()+4*int(g.Options.ResolutionMultiplerX)), 3*float32(g.Options.ResolutionMultiplerY), color.RGBA{255, 255, 255, 255}, false)
-			}
-			text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, startOffset-i*offset, int(g.Options.ScreenHeight)-80*int(g.Options.ResolutionMultiplerY), color.White)
-			screen.DrawImage(object, op)
-		}
-
-		// for _, a := range g.animations {
-		// 	if a.name == "engineFireburst" {
-		// 		msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v, Step: %v, Frame: %v", a.position.X, a.position.Y, a.rotation, a.currF, a.curTick)
-		// 		ebitenutil.DebugPrint(screen, msg)
-		// 	}
-		// }
-
-		text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId), g.Options.InfoFont, 20, 50, color.White)
-		text.Draw(screen, fmt.Sprintf("%06d", g.score), g.Options.ScoreFont, int(g.Options.ScreenWidth)/2-100, 50, color.White)
+		shiftX := float64(backWidth) - 104
+		vector.DrawFilledRect(screen, float32(barX-shiftX-2), 82*float32(g.Options.ResolutionMultiplerY), backWidth, 24, color.RGBA{255, 255, 255, 255}, false)
+		vector.DrawFilledRect(screen, float32(barX-shiftX), 84*float32(g.Options.ResolutionMultiplerY), float32(g.player.shield.HP)*10*float32(g.Options.ResolutionMultiplerX), 20, color.RGBA{26, 14, 189, 255}, false)
 	}
+
+	// Draw weapons
+	for i, w := range g.player.weapons {
+		object := objects.ScaleImg(w.projectile.wType.Sprite, 0.5)
+		if w.projectile.wType.ItemSprite != nil {
+			object = objects.ScaleImg(w.projectile.wType.ItemSprite, 0.5)
+		}
+		offset := object.Bounds().Dx() * int(g.Options.ResolutionMultiplerX)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(i*offset+offset), g.Options.ScreenHeight-float64(offset*2*int(g.Options.ResolutionMultiplerY)))
+		if w.projectile.wType.WeaponName == g.player.curWeapon.projectile.wType.WeaponName {
+			vector.DrawFilledRect(screen, float32(i*offset+offset), float32(g.Options.ScreenHeight-float64(offset*int(g.Options.ResolutionMultiplerY))), float32(offset/2+4*int(g.Options.ResolutionMultiplerX)), 3*float32(g.Options.ResolutionMultiplerY), color.RGBA{255, 255, 255, 255}, false)
+		}
+		text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, i*offset+offset, int(g.Options.ScreenHeight)-(offset*2+8)*int(g.Options.ResolutionMultiplerY), color.White)
+		screen.DrawImage(object, op)
+	}
+
+	// Draw secondary weapons
+	for i, w := range g.player.secondaryWeapons {
+		startOffset := int(g.Options.ScreenWidth) - 40*int(g.Options.ResolutionMultiplerX)
+		offset := 20 * int(g.Options.ResolutionMultiplerX)
+		object := w.projectile.wType.Sprite
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(startOffset-i*offset), g.Options.ScreenHeight-float64(offset*2*int(g.Options.ResolutionMultiplerY)))
+		if g.player.curSecondaryWeapon != nil && w.projectile.wType.WeaponName == g.player.curSecondaryWeapon.projectile.wType.WeaponName {
+			vector.DrawFilledRect(screen, float32(startOffset-i*offset-2), float32(g.Options.ScreenHeight-float64(float32(offset)*float32(g.Options.ResolutionMultiplerY))), float32(offset/2+4*int(g.Options.ResolutionMultiplerX)), 3*float32(g.Options.ResolutionMultiplerY), color.RGBA{255, 255, 255, 255}, false)
+		}
+		text.Draw(screen, fmt.Sprintf("%v", w.ammo), g.Options.SmallFont, startOffset-i*offset, int(g.Options.ScreenHeight)-(offset*2+8)*int(g.Options.ResolutionMultiplerY), color.White)
+		screen.DrawImage(object, op)
+	}
+
+	// for _, a := range g.animations {
+	// 	if a.name == "engineFireburst" {
+	// 		msg := fmt.Sprintf("X: %v, Y: %v, Angle: %v, Step: %v, Frame: %v", a.position.X, a.position.Y, a.rotation, a.currF, a.curTick)
+	// 		ebitenutil.DebugPrint(screen, msg)
+	// 	}
+	// }
+
+	text.Draw(screen, fmt.Sprintf("Level: %v Stage: %v Wave: %v", g.curLevel.LevelId+1, g.CurStage.StageId+1, g.CurWave.WaveId), g.Options.InfoFont, 20, 50, color.White)
+	text.Draw(screen, fmt.Sprintf("%06d", g.score), g.Options.ScoreFont, int(g.Options.ScreenWidth)/2-100, 50, color.White)
 }
 
 func (g *Game) AddProjectile(p *Projectile) {

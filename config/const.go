@@ -126,6 +126,7 @@ type EnemyBatch struct {
 
 type WeaponType struct {
 	Sprite                        *ebiten.Image
+	ItemSprite                    *ebiten.Image
 	IntercectAnimationSpriteSheet *ebiten.Image
 	InstantAnimationSpiteSheet    *ebiten.Image
 	Scale                         float64
@@ -330,7 +331,7 @@ func (e *EnemyTemplate) AddWeaponProjectileFireRate() {
 }
 
 func (e *EnemyTemplate) AddWeaponProjectileDamage() {
-	if e.CurCost >= 40 && e.WeaponType != nil {
+	if e.CurCost >= 140 && e.WeaponType != nil {
 		e.CurCost -= 140
 		e.WeaponType.Damage++
 	}

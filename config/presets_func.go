@@ -168,7 +168,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 	var itemTypes []*ItemTemplate
 	if l < 3 {
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.MissileSprite, 1),
+			Sprite:        assets.ItemMissileSprite,
 			Velocity:      1.2,
 			ItemSpawnTime: 5 * time.Second,
 			WeaponType: &WeaponType{
@@ -176,7 +176,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.DoubleMissileSprite, 1),
+			Sprite:        assets.ItemDoubleMissileSprite,
 			Velocity:      1.3,
 			ItemSpawnTime: 6 * time.Second,
 			WeaponType: &WeaponType{
@@ -184,7 +184,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.LaserCanon, 1),
+			Sprite:        assets.ItemLaserCanonSprite,
 			Velocity:      1.5,
 			ItemSpawnTime: 7 * time.Second,
 			WeaponType: &WeaponType{
@@ -258,7 +258,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			})
 		}
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.MissileSprite, 1),
+			Sprite:        assets.ItemMissileSprite,
 			Velocity:      1.2,
 			ItemSpawnTime: 5 * time.Second,
 			WeaponType: &WeaponType{
@@ -275,7 +275,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.DoubleMissileSprite, 1),
+			Sprite:        assets.ItemDoubleMissileSprite,
 			Velocity:      1.3,
 			ItemSpawnTime: 6 * time.Second,
 			WeaponType: &WeaponType{
@@ -292,7 +292,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.LaserCanon, 1),
+			Sprite:        assets.ItemLaserCanonSprite,
 			Velocity:      1.5,
 			ItemSpawnTime: 7 * time.Second,
 			WeaponType: &WeaponType{
@@ -309,7 +309,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.DoubleLaserCanon, 1),
+			Sprite:        assets.ItemDoubleLaserCanonSprite,
 			Velocity:      1.5,
 			ItemSpawnTime: 7 * time.Second,
 			WeaponType: &WeaponType{
@@ -402,7 +402,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.DoubleMissileSprite, 1),
+			Sprite:        assets.ItemDoubleMissileSprite,
 			Velocity:      1.4,
 			ItemSpawnTime: 6 * time.Second,
 			WeaponType: &WeaponType{
@@ -419,7 +419,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.LaserCanon, 1),
+			Sprite:        assets.ItemLaserCanonSprite,
 			Velocity:      1.5,
 			ItemSpawnTime: 6 * time.Second,
 			WeaponType: &WeaponType{
@@ -436,7 +436,7 @@ func NewItemTypes(l int) []*ItemTemplate {
 			},
 		})
 		itemTypes = append(itemTypes, &ItemTemplate{
-			Sprite:        objects.ScaleImg(assets.DoubleLaserCanon, 1),
+			Sprite:        assets.ItemDoubleLaserCanonSprite,
 			Velocity:      1.6,
 			ItemSpawnTime: 7 * time.Second,
 			WeaponType: &WeaponType{

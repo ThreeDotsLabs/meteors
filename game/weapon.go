@@ -92,6 +92,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	case config.LightRocket:
 		lightRType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.MissileSprite, 0.7),
+			ItemSprite:                    objects.ScaleImg(assets.ItemMissileSprite, 0.5),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
 			Velocity:                      400 + p.params.LightRocketVelocityMultiplier,
 			Damage:                        3,
@@ -131,6 +132,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	case config.DoubleLightRocket:
 		boubleRType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.DoubleMissileSprite, 0.7*p.game.Options.ResolutionMultipler),
+			ItemSprite:                    objects.ScaleImg(assets.ItemDoubleMissileSprite, 0.5),
 			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
 			Velocity:                      400 + p.params.DoubleLightRocketVelocityMultiplier,
 			Damage:                        3,
@@ -178,6 +180,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	case config.LaserCanon:
 		laserCType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5*p.game.Options.ResolutionMultipler),
+			ItemSprite:                    objects.ScaleImg(assets.ItemLaserCanonSprite, 0.5),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Damage:                        3,
 			TargetType:                    config.TargetTypeStraight,
@@ -214,6 +217,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 	case config.DoubleLaserCanon:
 		doubleLaserCType := &config.WeaponType{
 			Sprite:                        objects.ScaleImg(assets.LaserCanon, 0.5*p.game.Options.ResolutionMultipler),
+			ItemSprite:                    objects.ScaleImg(assets.ItemDoubleLaserCanonSprite, 0.5),
 			IntercectAnimationSpriteSheet: assets.ProjectileBlowSpriteSheet,
 			Damage:                        2,
 			TargetType:                    config.TargetTypeStraight,

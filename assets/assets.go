@@ -15,13 +15,19 @@ import (
 var assets embed.FS
 
 // objects
-var PlayerSprite = MustLoadImage("img/Ships/spaceShips_007.png")
+var PlayerSprite = MustLoadImage("img/Ships/ship2.png")
 var ShieldSprite = MustLoadImage("img/Ships/shield.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
 var Heal = MustLoadImage("img/Parts/heal1.png")
 var HighSpeedFollowPlayerEnemySprite = MustLoadImage("img/Ships/spaceShips_006.png")
 var LowSpeedEnemyLightMissile = MustLoadImage("img/Ships/spaceShips_005.png")
 var LowSpeedEnemyAutoLightMissile = MustLoadImage("img/Ships/spaceShips_003.png")
+
+// items
+var ItemMissileSprite = MustLoadImage("img/Items/missile_item.png")
+var ItemDoubleMissileSprite = MustLoadImage("img/Items/double_missile_item.png")
+var ItemLaserCanonSprite = MustLoadImage("img/Items/laser_cannon_item.png")
+var ItemDoubleLaserCanonSprite = MustLoadImage("img/Items/double_laser_cannon_item.png")
 
 // enemies
 var Enemy1 = MustLoadImage("img/Ships/spaceShips_001.png")
@@ -61,7 +67,7 @@ var Backgrounds = mustLoadImages("img/Backgrounds/*.png")
 // spritesheets
 var EnemyBlowSpriteSheet = MustLoadImage("img/Effects/blow.png")
 var BigBlowSpriteSheet = MustLoadImage("img/Effects/bigblow.png")
-var PlayerFireburstSpriteSheet = MustLoadImage("img/Effects/fire.png")
+var PlayerFireburstSpriteSheet = MustLoadImage("img/Effects/fire1.png")
 var ShieldSpriteSheet = MustLoadImage("img/Ships/shieldSpriteSheet1.png")
 var ProjectileBlowSpriteSheet = MustLoadImage("img/Effects/projectile_blow.png")
 var LightMissileBlowSpriteSheet = MustLoadImage("img/Effects/light_missile_blow2.png")
@@ -70,8 +76,9 @@ var PlasmaGunProjectileSpriteSheet = MustLoadImage("img/Effects/plasma_gun1.png"
 
 // fonts
 var ScoreFont1024x768 = mustLoadFont("fonts/Kenney Pixel.ttf", 48)
-var InfoFont1024x768 = mustLoadFont("fonts/Kenney Pixel.ttf", 32)
+var InfoFont1024x768 = mustLoadFont("fonts/Kenney Future.ttf", 18)
 var SmallFont1024x768 = mustLoadFont("fonts/Kenney Mini.ttf", 18)
+var SmallUIFont1024x768 = mustLoadFont("fonts/Kenney Future.ttf", 8)
 var ProfileFont1024x768 = mustLoadFont("fonts/Kenney Future.ttf", 12)
 var ProfileBigFont1024x768 = mustLoadFont("fonts/Kenney Future.ttf", 24)
 
