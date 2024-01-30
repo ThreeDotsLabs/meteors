@@ -18,21 +18,24 @@ var assets embed.FS
 var PlayerSprite = MustLoadImage("img/Ships/ship4.png")
 var ShieldSprite = MustLoadImage("img/Ships/shield.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
-var Heal = MustLoadImage("img/Parts/heal1.png")
 var HighSpeedFollowPlayerEnemySprite = MustLoadImage("img/Ships/enemy5.png")
 var LowSpeedEnemyLightMissile = MustLoadImage("img/Ships/enemy4.png")
 var LowSpeedEnemyAutoLightMissile = MustLoadImage("img/Ships/enemy3.png")
 
 // items
+var Heal = MustLoadImage("img/Items/heal_item.png")
 var ItemMissileSprite = MustLoadImage("img/Items/missile_item.png")
 var ItemDoubleMissileSprite = MustLoadImage("img/Items/double_missile_item.png")
 var ItemLaserCanonSprite = MustLoadImage("img/Items/laser_cannon_item.png")
 var ItemDoubleLaserCanonSprite = MustLoadImage("img/Items/double_laser_cannon_item.png")
-var ItemMachineGun = MustLoadImage("img/Items/machine_gun_item.png")
-var ItemDoubleMachineGun = MustLoadImage("img/Items/double_machine_gun_item.png")
-var ItemPlasmaGun = MustLoadImage("img/Items/plasma_gun_item.png")
-var ItemDoublePlasmaGun = MustLoadImage("img/Items/double_plasma_gun_item.png")
-var ItemClusterMines = MustLoadImage("img/Items/cluster_mines_item.png")
+var ItemMachineGunSprite = MustLoadImage("img/Items/machine_gun_item.png")
+var ItemDoubleMachineGunSprite = MustLoadImage("img/Items/double_machine_gun_item.png")
+var ItemPlasmaGunSprite = MustLoadImage("img/Items/plasma_gun_item.png")
+var ItemDoublePlasmaGunSprite = MustLoadImage("img/Items/double_plasma_gun_item.png")
+var ItemClusterMinesSprite = MustLoadImage("img/Items/cluster_mines_item.png")
+var ItemBigBombSprite = MustLoadImage("img/Items/big_bomb_item.png")
+var ItemPentaLaserSprite = MustLoadImage("img/Items/penta_laser_item.png")
+var ItemPentaPlasmaGunSprite = MustLoadImage("img/Items/penta_plasma_gun_item.png")
 
 // enemies
 var Enemy1 = MustLoadImage("img/Ships/enemy1.png")
@@ -48,14 +51,14 @@ var Enemy9 = MustLoadImage("img/Ships/enemy9.png")
 // weapons projectiles
 var MissileSprite = MustLoadImage("img/Missiles/player_missile_projectile3.png")
 var DoubleMissileSprite = MustLoadImage("img/Missiles/player_missile_projectile3.png")
-var LaserCanon = MustLoadImage("img/Items/laser_cannon_item.png")
 var DoubleLaserCanon = MustLoadImage("img/Items/double_laser_cannon_item.png")
 var MachineGun = MustLoadImage("img/Missiles/player_bullet_projectile1.png")
 var DoubleMachineGun = MustLoadImage("img/Missiles/player_bullet_projectile1.png")
 var PlasmaGun = MustLoadImage("img/Effects/plasma_gun2.png")
 var ClusterMines = MustLoadImage("img/Missiles/cluster_mines_projectile.png")
-var BigBomb = MustLoadImage("img/Building/spaceBuilding_004.png")
-var PentaLaser = MustLoadImage("img/Effects/spaceEffects_002.png")
+var BigBomb = MustLoadImage("img/Missiles/big_bomb_projectile.png")
+var LaserCanon = ItemLaserCanonSprite
+var PentaLaser = ItemPentaLaserSprite
 
 // enemy weapons projectiles
 var EnemyLightMissile = MustLoadImage("img/Missiles/missile_projectile1.png")
