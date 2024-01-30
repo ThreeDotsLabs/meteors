@@ -15,7 +15,7 @@ import (
 var assets embed.FS
 
 // objects
-var PlayerSprite = MustLoadImage("img/Ships/ship4.png")
+var PlayerSprite = MustLoadImage("img/Ships/ship5.png")
 var ShieldSprite = MustLoadImage("img/Ships/shield.png")
 var MeteorSprites = mustLoadImages("img/Meteors/*.png")
 var HighSpeedFollowPlayerEnemySprite = MustLoadImage("img/Ships/enemy5.png")
