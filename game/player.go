@@ -339,7 +339,7 @@ func NewPlayer(curgame *Game) *Player {
 			engineFireburst,
 		},
 	}
-	startWeapon := NewWeapon(config.LightRocket, p)
+	startWeapon := NewWeapon(config.DoubleMachineGun, p)
 	p.weapons = append(p.weapons, startWeapon)
 	p.curWeapon = p.weapons[0]
 	return p
@@ -430,7 +430,7 @@ func (p *Player) Update() {
 	} else if ebiten.IsKeyPressed(ebiten.Key3) && len(p.weapons) > 2 {
 		p.curWeapon = p.weapons[2]
 	} else if ebiten.IsKeyPressed(ebiten.Key4) && len(p.weapons) > 3 {
-		p.curSecondaryWeapon = p.secondaryWeapons[3]
+		p.curWeapon = p.weapons[3]
 	} else if ebiten.IsKeyPressed(ebiten.Key5) && len(p.weapons) > 4 {
 		p.curWeapon = p.weapons[4]
 	} else if ebiten.IsKeyPressed(ebiten.Key6) && len(p.weapons) > 5 {
