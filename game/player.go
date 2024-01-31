@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"astrogame/assets"
 	"astrogame/config"
@@ -451,6 +452,18 @@ func (p *Player) Update() {
 		p.curWeapon = p.weapons[5]
 	}
 
+	if inpututil.IsKeyJustPressed(ebiten.KeyQ) && len(p.weapons) > 1 {
+		for i := range p.weapons {
+			if i < len(p.weapons)-1 && p.curWeapon == p.weapons[i] {
+				p.curWeapon = p.weapons[(i + 1)]
+				break
+			} else if i == len(p.weapons)-1 && p.curWeapon == p.weapons[i] {
+				p.curWeapon = p.weapons[0]
+				break
+			}
+		}
+	}
+
 	if ebiten.IsKeyPressed(ebiten.Key7) && len(p.secondaryWeapons) > 0 {
 		p.curSecondaryWeapon = p.secondaryWeapons[0]
 	} else if ebiten.IsKeyPressed(ebiten.Key8) && len(p.secondaryWeapons) > 1 {
@@ -459,6 +472,18 @@ func (p *Player) Update() {
 		p.curSecondaryWeapon = p.secondaryWeapons[2]
 	} else if ebiten.IsKeyPressed(ebiten.Key0) && len(p.secondaryWeapons) > 3 {
 		p.curSecondaryWeapon = p.secondaryWeapons[3]
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyE) && len(p.secondaryWeapons) > 1 {
+		for i := range p.secondaryWeapons {
+			if i < len(p.secondaryWeapons)-1 && p.curWeapon == p.secondaryWeapons[i] {
+				p.curSecondaryWeapon = p.secondaryWeapons[(i + 1)]
+				break
+			} else if i == len(p.secondaryWeapons)-1 && p.curWeapon == p.secondaryWeapons[i] {
+				p.curSecondaryWeapon = p.secondaryWeapons[0]
+				break
+			}
+		}
 	}
 
 	p.curWeapon.shootCooldown.Update()
