@@ -443,7 +443,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			InstantAnimationSpiteSheet:    assets.PlasmaGunProjectileSpriteSheet,
 			Velocity:                      (500 + p.params.PlasmaGunVelocityMultiplier) * p.params.Ship.WeaponProjectileVelocityMod,
 			AnimationOnly:                 true,
-			Damage:                        6,
+			Damage:                        4,
 			TargetType:                    config.TargetTypeStraight,
 			WeaponName:                    config.PlasmaGun,
 			StartTime:                     time.Duration(p.params.Ship.WeaponFireRateMod * 560),
@@ -452,6 +452,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 		plasmaG := Weapon{
 			projectile: Projectile{
 				wType: plasmaGType,
+				HP:    4,
 			},
 			UpdateParams: func(player *Player, w *Weapon) {
 				w.projectile.wType.Velocity = (500 + player.params.PlasmaGunVelocityMultiplier) * p.params.Ship.WeaponProjectileVelocityMod
@@ -471,7 +472,7 @@ func NewWeapon(wType string, p *Player) *Weapon {
 				}
 				plasmaAnimation := NewAnimation(config.Vector{}, plasmaGType.InstantAnimationSpiteSheet, 1, 55, 50, true, "projectileInstant", 0)
 				animation := NewAnimation(config.Vector{}, plasmaGType.IntercectAnimationSpriteSheet, 1, 40, 40, false, "projectileBlow", 0)
-				projectile := NewProjectile(p.game, spawnPos, p.rotation, plasmaGType, animation, 6)
+				projectile := NewProjectile(p.game, spawnPos, p.rotation, plasmaGType, animation, 4)
 				projectile.owner = config.OwnerPlayer
 				projectile.instantAnimation = plasmaAnimation
 				p.game.AddProjectile(projectile)
@@ -487,18 +488,15 @@ func NewWeapon(wType string, p *Player) *Weapon {
 			InstantAnimationSpiteSheet:    assets.PlasmaGunProjectileSpriteSheet,
 			Velocity:                      (500 + p.params.DoublePlasmaGunVelocityMultiplier) * p.params.Ship.WeaponProjectileVelocityMod,
 			AnimationOnly:                 true,
-			Damage:                        6,
+			Damage:                        4,
 			TargetType:                    config.TargetTypeStraight,
 			WeaponName:                    config.DoublePlasmaGun,
 			StartTime:                     time.Duration(p.params.Ship.WeaponFireRateMod * 620),
 		}
 		doublePlasmaG := Weapon{
 			projectile: Projectile{
-				position: config.Vector{},
-				target:   config.Vector{},
-				movement: config.Vector{},
-				rotation: 0,
-				wType:    doublePlasmaGType,
+				wType: doublePlasmaGType,
+				HP:    4,
 			},
 			UpdateParams: func(player *Player, w *Weapon) {
 				w.projectile.wType.Velocity = (500 + player.params.DoublePlasmaGunVelocityMultiplier) * p.params.Ship.WeaponProjectileVelocityMod

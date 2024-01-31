@@ -296,7 +296,9 @@ type Player struct {
 func (p *Player) SetShip(s *Ship) {
 	p.params.HP += s.HP
 	p.params.speed += s.Velocity
-	p.sprite = s.Sprite
+	p.sprite = objects.ScaleImg(s.Sprite, p.game.Options.ResolutionMultipler)
+	p.weapons = append(p.weapons, s.UniqueWeapon)
+	p.curWeapon = s.UniqueWeapon
 	p.params.Ship = s
 }
 
@@ -328,9 +330,14 @@ func NewPlayer(curgame *Game) *Player {
 			Level: 1,
 			HP:    10,
 			speed: 10,
-
-			Ship: AngryOcelot,
-
+			Ship: &Ship{
+				HP:                0,
+				Velocity:          0,
+				HPMod:             0,
+				VelocityMod:       1,
+				WeaponFireRateMod: 1,
+				WeaponDamageMod:   1,
+			},
 			LightRocketVelocityMultiplier:       1,
 			AutoLightRocketVelocityMultiplier:   1,
 			DoubleLightRocketVelocityMultiplier: 1,
@@ -349,9 +356,6 @@ func NewPlayer(curgame *Game) *Player {
 			engineFireburst,
 		},
 	}
-	startWeapon := NewWeapon(config.DoubleMachineGun, p)
-	p.weapons = append(p.weapons, startWeapon)
-	p.curWeapon = p.weapons[0]
 	return p
 }
 

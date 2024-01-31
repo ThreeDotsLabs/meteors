@@ -317,7 +317,6 @@ func NewGame() *Game {
 		started:           false,
 		ResolutionChange:  false,
 	}
-	g.choosenStartShip = AngryOcelot
 	g.player = NewPlayer(g)
 	g.menu = NewMainMenu(g)
 	g.shipChoosingScreen = NewShipChoosingScreen(g)
@@ -957,6 +956,7 @@ func (g *Game) Reset() {
 	g.animations = nil
 	g.score = 0
 	g.player = NewPlayer(g)
+	g.player.SetShip(g.choosenStartShip)
 	var newLevels = GenerateLevels()
 	g.curLevel = newLevels[0]
 	g.CurStage = &g.curLevel.Stages[0]
