@@ -22,6 +22,11 @@ var HighSpeedFollowPlayerEnemySprite = MustLoadImage("img/Ships/enemy5.png")
 var LowSpeedEnemyLightMissile = MustLoadImage("img/Ships/enemy4.png")
 var LowSpeedEnemyAutoLightMissile = MustLoadImage("img/Ships/enemy3.png")
 
+// ships
+var ShipMightyOrcaSprite = MustLoadImage("img/Ships/ship2.png")
+var ShipShadyWeaselSprite = MustLoadImage("img/Ships/ship5.png")
+var ShipAngryOcelotSprite = MustLoadImage("img/Ships/ship4.png")
+
 // items
 var Heal = MustLoadImage("img/Items/heal_item.png")
 var ItemMissileSprite = MustLoadImage("img/Items/missile_item.png")

@@ -34,7 +34,7 @@ func StartGame(g *Game) error {
 	if g.started {
 		g.Reset()
 	}
-	g.state = config.InGame
+	g.state = config.ShipChoosingWindow
 	return nil
 }
 
@@ -105,7 +105,7 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 }
 
 func MenuDraw(g *Game, Items []*MenuItem, screen *ebiten.Image) {
-	g.DrawBg(screen)
+	//g.DrawBg(screen)
 	scale := ebiten.DeviceScaleFactor()
 	// for _, i := range m.Items {
 	// 	chars := len([]rune(i.Label))

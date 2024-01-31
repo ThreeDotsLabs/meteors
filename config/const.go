@@ -55,10 +55,11 @@ const (
 type GameState string
 
 var (
-	MainMenu GameState = "mainMenu"
-	InGame   GameState = "inGame"
-	Profile  GameState = "profile"
-	Options  GameState = "options"
+	MainMenu           GameState = "mainMenu"
+	InGame             GameState = "inGame"
+	Profile            GameState = "profile"
+	Options            GameState = "options"
+	ShipChoosingWindow GameState = "shipChoosing"
 )
 
 type ItemTemplate struct {

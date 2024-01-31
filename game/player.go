@@ -19,6 +19,7 @@ const (
 )
 
 type PlayerParams struct {
+	Ship  *Ship
 	Level int
 	HP    int
 	speed float64
@@ -292,6 +293,13 @@ type Player struct {
 	shield              *Shield
 }
 
+func (p *Player) SetShip(s *Ship) {
+	p.params.HP += s.HP
+	p.params.speed += s.Velocity
+	p.sprite = s.Sprite
+	p.params.Ship = s
+}
+
 type Shield struct {
 	position config.Vector
 	sprite   *ebiten.Image
@@ -320,6 +328,8 @@ func NewPlayer(curgame *Game) *Player {
 			Level: 1,
 			HP:    10,
 			speed: 10,
+
+			Ship: AngryOcelot,
 
 			LightRocketVelocityMultiplier:       1,
 			AutoLightRocketVelocityMultiplier:   1,
@@ -454,7 +464,6 @@ func (p *Player) Update() {
 		}
 		p.curWeapon.shootCooldown.Reset()
 		p.curWeapon.Shoot(p)
-		p.curWeapon.ammo--
 	}
 	if p.curSecondaryWeapon != nil {
 		p.curSecondaryWeapon.shootCooldown.Update()
@@ -464,7 +473,6 @@ func (p *Player) Update() {
 			}
 			p.curSecondaryWeapon.shootCooldown.Reset()
 			p.curSecondaryWeapon.Shoot(p)
-			p.curSecondaryWeapon.ammo--
 		}
 	}
 }

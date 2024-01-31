@@ -241,37 +241,39 @@ type options struct {
 	ProfileBigFont          font.Face
 }
 type Game struct {
-	Options           *options
-	menu              *MainMenu
-	optionsMenu       *OptionsMenu
-	profile           *ProfileScreen
-	state             config.GameState
-	player            *Player
-	meteorSpawnTimer  *config.Timer
-	meteors           []*Meteor
-	projectiles       []*Projectile
-	blows             []*Blow
-	beams             []*Beam
-	beamAnimations    []*BeamAnimation
-	enemyBeams        []*Beam
-	enemyProjectiles  []*Projectile
-	enemies           []*Enemy
-	items             []*Item
-	animations        []*Animation
-	bgImage           *ebiten.Image
-	score             int
-	viewport          viewport
-	levels            []*config.Level
-	curLevel          *config.Level
-	CurStage          *config.Stage
-	baseVelocity      float64
-	velocityTimer     *config.Timer
-	enemySpawnTimer   *config.Timer
-	batchesSpawnTimer *config.Timer
-	itemSpawnTimer    *config.Timer
-	CurWave           *config.Wave
-	started           bool
-	ResolutionChange  bool
+	Options            *options
+	menu               *MainMenu
+	optionsMenu        *OptionsMenu
+	shipChoosingScreen *shipChoosingScreen
+	profile            *ProfileScreen
+	state              config.GameState
+	player             *Player
+	choosenStartShip   *Ship
+	meteorSpawnTimer   *config.Timer
+	meteors            []*Meteor
+	projectiles        []*Projectile
+	blows              []*Blow
+	beams              []*Beam
+	beamAnimations     []*BeamAnimation
+	enemyBeams         []*Beam
+	enemyProjectiles   []*Projectile
+	enemies            []*Enemy
+	items              []*Item
+	animations         []*Animation
+	bgImage            *ebiten.Image
+	score              int
+	viewport           viewport
+	levels             []*config.Level
+	curLevel           *config.Level
+	CurStage           *config.Stage
+	baseVelocity       float64
+	velocityTimer      *config.Timer
+	enemySpawnTimer    *config.Timer
+	batchesSpawnTimer  *config.Timer
+	itemSpawnTimer     *config.Timer
+	CurWave            *config.Wave
+	started            bool
+	ResolutionChange   bool
 }
 
 func NewGame() *Game {
@@ -315,9 +317,10 @@ func NewGame() *Game {
 		started:           false,
 		ResolutionChange:  false,
 	}
-
+	g.choosenStartShip = AngryOcelot
 	g.player = NewPlayer(g)
 	g.menu = NewMainMenu(g)
+	g.shipChoosingScreen = NewShipChoosingScreen(g)
 	g.optionsMenu = NewOptionsMenu(g)
 	g.profile = NewPlayerProfile(g)
 
@@ -355,6 +358,8 @@ func (g *Game) MoveBgPosition() {
 func (g *Game) Update() error {
 	g.MoveBgPosition()
 	switch g.state {
+	case config.ShipChoosingWindow:
+		g.shipChoosingScreen.Update()
 	case config.Options:
 		err := g.optionsMenu.Update()
 		if err != nil {
@@ -785,6 +790,8 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.state {
+	case config.ShipChoosingWindow:
+		g.shipChoosingScreen.Draw(screen)
 	case config.Options:
 		g.optionsMenu.Draw(screen)
 	case config.Profile:
