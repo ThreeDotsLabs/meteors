@@ -956,7 +956,6 @@ func (g *Game) Reset() {
 	g.animations = nil
 	g.score = 0
 	g.player = NewPlayer(g)
-	g.player.SetShip(g.choosenStartShip)
 	var newLevels = GenerateLevels()
 	g.curLevel = newLevels[0]
 	g.CurStage = &g.curLevel.Stages[0]
@@ -971,6 +970,7 @@ func (g *Game) Reset() {
 	g.menu = NewMainMenu(g)
 	g.profile = NewPlayerProfile(g)
 	g.bgImage = newLevels[0].BgImg
+	g.state = config.ShipChoosingWindow
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

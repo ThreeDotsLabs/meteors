@@ -300,6 +300,7 @@ func (p *Player) SetShip(s *Ship) {
 	p.sprite = objects.ScaleImg(s.Sprite, p.game.Options.ResolutionMultipler)
 	p.weapons = append(p.weapons, s.UniqueWeapon)
 	p.curWeapon = s.UniqueWeapon
+	p.curWeapon.ammo = s.UniqueWeapon.projectile.wType.StartAmmo
 	p.params.Ship = s
 }
 

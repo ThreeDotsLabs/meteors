@@ -70,6 +70,7 @@ func NewAngryOcelotWeapon(p *Player) *Weapon {
 		WeaponName:                    "angryOcelotWeapon",
 		Scale:                         p.game.Options.ResolutionMultipler,
 		StartTime:                     250,
+		StartAmmo:                     120,
 	}
 	weapon := Weapon{
 		projectile: Projectile{
@@ -78,7 +79,6 @@ func NewAngryOcelotWeapon(p *Player) *Weapon {
 		UpdateParams: func(player *Player, w *Weapon) {
 		},
 		shootCooldown: config.NewTimer(time.Millisecond * weaponType.StartTime),
-		ammo:          250,
 		Shoot: func(p *Player) {
 			bounds := p.sprite.Bounds()
 			halfW := float64(bounds.Dx()) / 2
@@ -109,6 +109,7 @@ func NewMightyOrcaWeapon(p *Player) *Weapon {
 		TargetType:                    config.TargetTypeStraight,
 		WeaponName:                    "mightyOrcaWeapon",
 		StartTime:                     180,
+		StartAmmo:                     180,
 	}
 	weapon := Weapon{
 		projectile: Projectile{
@@ -117,7 +118,6 @@ func NewMightyOrcaWeapon(p *Player) *Weapon {
 		UpdateParams: func(player *Player, w *Weapon) {
 		},
 		shootCooldown: config.NewTimer(time.Millisecond * weaponType.StartTime),
-		ammo:          199,
 		Shoot: func(p *Player) {
 			bounds := p.sprite.Bounds()
 			halfW := float64(bounds.Dx()) / 2
@@ -149,6 +149,7 @@ func NewShadyWeaselWeapon(p *Player) *Weapon {
 		TargetType:                    config.TargetTypeStraight,
 		WeaponName:                    "shadyWeaselWeapon",
 		StartTime:                     480,
+		StartAmmo:                     80,
 	}
 
 	weapon := Weapon{
@@ -160,7 +161,6 @@ func NewShadyWeaselWeapon(p *Player) *Weapon {
 			// w.shootCooldown.Restart(time.Millisecond * (w.projectile.wType.StartTime - player.params.PlasmaGunSpeedUpscale))
 		},
 		shootCooldown: config.NewTimer(time.Millisecond * (weaponType.StartTime - p.params.PlasmaGunSpeedUpscale)),
-		ammo:          150,
 		Shoot: func(p *Player) {
 			bounds := p.sprite.Bounds()
 			halfW := float64(bounds.Dx()) / 2
