@@ -5,8 +5,6 @@ import (
 	"astrogame/config"
 	"astrogame/objects"
 	"fmt"
-	"math"
-	"time"
 )
 
 type levelTemplatesGen struct {
@@ -327,33 +325,4 @@ func generateItems(l int, count int) []*config.ItemTemplate {
 		items = append(items, itemsForLvl[itemRandNumber])
 	}
 	return items
-}
-
-var enemyLightRocket = Weapon{
-	projectile: Projectile{
-		wType: &config.WeaponType{
-			Sprite:                        objects.ScaleImg(assets.EnemyLightMissile, 0.7),
-			IntercectAnimationSpriteSheet: assets.LightMissileBlowSpriteSheet,
-			Velocity:                      150,
-			Damage:                        1,
-			TargetType:                    "straight",
-			StartTime:                     time.Duration(1000) * time.Millisecond,
-			StartAmmo:                     10,
-		},
-	},
-	ammo: 10,
-	EnemyShoot: func(e *Enemy) {
-		bounds := e.enemyType.Sprite.Bounds()
-		halfW := float64(bounds.Dx()) / 2
-		halfH := float64(bounds.Dy()) / 2
-
-		spawnPos := config.Vector{
-			X: e.position.X + halfW + math.Sin(e.rotation)*bulletSpawnOffset,
-			Y: e.position.Y + halfH + math.Cos(e.rotation)*bulletSpawnOffset,
-		}
-		animation := NewAnimation(config.Vector{}, e.weapon.projectile.wType.IntercectAnimationSpriteSheet, 1, 56, 60, false, "projectileBlow", 0)
-		projectile := NewProjectile(e.game, spawnPos, e.rotation, e.weapon.projectile.wType, animation, 0)
-		projectile.owner = config.OwnerEnemy
-		e.game.AddProjectile(projectile)
-	},
 }
