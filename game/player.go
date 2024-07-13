@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	shootCooldown     = time.Millisecond * 500
+	shootCooldown     = time.Millisecond * 250
 	rotationPerSecond = math.Pi
 
 	bulletSpawnOffset = 50.0

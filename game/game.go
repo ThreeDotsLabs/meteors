@@ -3,9 +3,11 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 
 	"github.com/ThreeDotsLabs/meteors/assets"
@@ -15,7 +17,7 @@ const (
 	screenWidth  = 800
 	screenHeight = 600
 
-	meteorSpawnTime = 1 * time.Second
+	meteorSpawnTime = 2 * time.Second
 
 	baseMeteorVelocity  = 0.25
 	meteorSpeedUpAmount = 0.1
@@ -85,8 +87,22 @@ func (g *Game) Update() error {
 	// Check for meteor/player collisions
 	for _, m := range g.meteors {
 		if m.Collider().Intersects(g.player.Collider()) {
-			g.Reset()
+			//g.Reset() // adding shields update
 			break
+		}
+	}
+
+	// Check for out of bounds meteors
+	for i, m := range g.meteors {
+		if m.position.Y > screenHeight || m.position.Y < 0 || m.position.X > screenWidth || m.position.X < 0 {
+			g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
+		}
+	}
+
+	// Check for out of bounds bullets
+	for i, m := range g.bullets {
+		if m.position.Y > screenHeight || m.position.Y < 0 || m.position.X > screenWidth || m.position.X < 0 {
+			g.bullets = append(g.bullets[:i], g.bullets[i+1:]...)
 		}
 	}
 
@@ -105,6 +121,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	text.Draw(screen, fmt.Sprintf("%06d", g.score), assets.ScoreFont, screenWidth/2-100, 50, color.White)
+	ebitenutil.DebugPrintAt(screen, "Meteors: "+strconv.Itoa(len(g.meteors)), 0, 0)
+	ebitenutil.DebugPrintAt(screen, "Bullets: "+strconv.Itoa(len(g.bullets)), 0, 15)
 }
 
 func (g *Game) AddBullet(b *Bullet) {
